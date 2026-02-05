@@ -18,8 +18,7 @@ numpy>=1.26.0
 rembg>=2.0.50
 
 # Deepfake & Face Analysis
-insightface>=0.7.3
-onnxruntime-gpu>=1.16.0
+onnxruntime>=1.16.0
 
 # Telegram Bot
 aiogram>=3.3.0
