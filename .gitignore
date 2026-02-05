@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.DS_Store
+data/models/*
+data/output/*
+data/datasets/*
+!data/models/.keep
+!data/output/.keep
+!data/datasets/.keep
+venv/
+.idea/
+.vscode/

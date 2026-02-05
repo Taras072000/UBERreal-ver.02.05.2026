@@ -1,0 +1,34 @@
+# Core AI & Torch (Assume CUDA 12.1 compatible environment)
+torch>=2.1.2
+torchvision>=0.16.2
+torchaudio>=2.1.2
+xformers>=0.0.23 --index-url https://download.pytorch.org/whl/cu121
+
+# HuggingFace & Diffusers (for custom pipelines if needed, though ComfyUI uses its own)
+diffusers>=0.25.0
+transformers>=4.36.0
+accelerate>=0.25.0
+safetensors>=0.4.1
+huggingface_hub>=0.20.0
+
+# Image Processing
+opencv-python-headless>=4.9.0
+Pillow>=10.2.0
+numpy>=1.26.0
+rembg>=2.0.50
+
+# Deepfake & Face Analysis
+insightface>=0.7.3
+onnxruntime-gpu>=1.16.0
+
+# Telegram Bot
+aiogram>=3.3.0
+python-dotenv>=1.0.0
+redis>=5.0.1
+
+# Utilities
+requests>=2.31.0
+aiohttp>=3.9.1
+tqdm>=4.66.0
+pyyaml>=6.0.1
+runpod>=1.3.0
