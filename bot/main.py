@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
@@ -29,6 +30,23 @@ dp = Dispatcher()
 # RunPod Configuration
 runpod.api_key = RUNPOD_API_KEY
 
+def load_workflow_with_prompt(prompt: str) -> dict:
+    """Загружает дефолтный workflow и подставляет положительный промпт"""
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        wf_path = os.path.normpath(os.path.join(base_dir, "..", "engine", "workflows", "default_text2img.json"))
+        with open(wf_path, "r") as f:
+            workflow = json.load(f)
+        if prompt:
+            for node in workflow.get("nodes", []):
+                if node.get("type") == "CLIPTextEncode" and node.get("widgets_values"):
+                    node["widgets_values"][0] = prompt
+                    break
+        return workflow
+    except Exception as e:
+        logger.error(f"Failed to load workflow: {e}")
+        return {}
+
 async def generate_image_task(prompt: str, chat_id: int):
     """
     Sends a generation task to RunPod Serverless and waits for the result.
@@ -41,11 +59,17 @@ async def generate_image_task(prompt: str, chat_id: int):
     
     try:
         # Input payload for the worker
-        # TODO: Add full workflow JSON here later
         input_payload = {
             "input": {
                 "prompt": prompt,
-                "workflow": {} # Placeholder for now
+                "width": 1024,
+                "height": 1024,
+                "steps": 20,
+                "cfg": 8,
+                "sampler_name": "euler",
+                "scheduler": "normal",
+                "seed": 0,
+                "negative_prompt": "text, watermark, blur, deformed, painting, cartoon"
             }
         }
         
@@ -57,18 +81,44 @@ async def generate_image_task(prompt: str, chat_id: int):
         
         # Polling for status
         # Note: In production, use webhooks for better efficiency
-        output = run_request.output(timeout=120) 
-        
-        if "error" in output:
-             await bot.send_message(chat_id, f"❌ Ошибка генерации: {output['error']}")
-        else:
-            # Assuming output contains a URL or base64
-            # For now, just echo success
-            image_url = output.get("output") # Adjust based on actual worker response
-            if image_url:
-                 await bot.send_message(chat_id, f"✅ Готово! URL: {image_url}")
-            else:
-                 await bot.send_message(chat_id, "✅ Генерация завершена (нет URL в ответе).")
+        if run_request is None:
+            await bot.send_message(chat_id, "❌ Ошибка: RunPod вернул пустой ответ на запуск задачи.")
+            return
+        await bot.send_message(chat_id, "🕓 Задача принята. Это может занять 2–6 минут.")
+        # Выполняем блокирующий опрос в отдельном потоке, чтобы не блокировать Telegram-поллинг
+        output = None
+        try:
+            output = await asyncio.to_thread(run_request.output, timeout=600)
+        except Exception as poll_err:
+            logger.error(f"RunPod Poll Error: {poll_err}")
+        if not output:
+            await bot.send_message(chat_id, "❌ Ошибка: пустой ответ от RunPod или таймаут. Попробуй еще раз.")
+            return
+        if isinstance(output, dict) and "error" in output:
+            await bot.send_message(chat_id, f"❌ Ошибка генерации: {output.get('error')}")
+            dbg = output.get("debug_prompt")
+            if dbg:
+                try:
+                    import json
+                    from aiogram.types import BufferedInputFile
+                    data = json.dumps(dbg, ensure_ascii=False, indent=2).encode("utf-8")
+                    await bot.send_document(chat_id, BufferedInputFile(data, filename="last_prompt.json"))
+                except Exception as send_err:
+                    logger.error(f"Failed to send debug prompt: {send_err}")
+            return
+        image_b64 = None
+        if isinstance(output, dict):
+            image_b64 = output.get("image_base64")
+        if image_b64:
+            try:
+                import base64
+                img_bytes = base64.b64decode(image_b64)
+                from aiogram.types import BufferedInputFile
+                await bot.send_photo(chat_id, photo=BufferedInputFile(img_bytes, filename="result.png"), caption="✅ Готово")
+                return
+            except Exception as send_err:
+                logger.error(f"Failed to send photo: {send_err}")
+        await bot.send_message(chat_id, "❌ Ошибка: В ответе нет изображения. Попробуй еще раз.")
 
     except Exception as e:
         logger.error(f"RunPod Error: {e}")

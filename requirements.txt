@@ -2,7 +2,8 @@
 torch>=2.1.2
 torchvision>=0.16.2
 torchaudio>=2.1.2
-xformers>=0.0.23 --index-url https://download.pytorch.org/whl/cu121
+# Install xformers only on Linux (server/GPU). macOS build often fails.
+xformers==0.0.23; platform_system == "Linux"
 
 # HuggingFace & Diffusers (for custom pipelines if needed, though ComfyUI uses its own)
 diffusers>=0.25.0
