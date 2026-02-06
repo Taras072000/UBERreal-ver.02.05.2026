@@ -15,6 +15,9 @@ OUTPUT_DIR = "/app/ComfyUI/output"
 MODELS_DIR = "/app/ComfyUI/models/checkpoints"
 CHECKPOINT_FILE = f"{MODELS_DIR}/juggernautXL_v9.safetensors"
 
+# Deepfake models path
+INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
+
 def log(message):
     print(f"[Handler] {message}", flush=True)
 
@@ -58,9 +61,14 @@ def ensure_models():
             log("Model download complete.")
         else:
             log("Model exists.")
+            
+        # Ensure InsightFace models exist (if directory is empty, download them)
+        # This part will be enabled once we add insightface lib
+        # if not os.path.exists(INSIGHTFACE_DIR):
+        #     os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
+            
     except Exception as e:
         log(f"Model download failed: {e}")
-        # Не фейлим задачу, просто продолжаем — ComfyUI может иметь другую модель
         pass
 
 def latest_image_b64():
@@ -83,10 +91,11 @@ def latest_image_b64():
         log(f"Error reading image: {e}")
         return None
 
-def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, high_res_fix=True):
+def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, high_res_fix=True, face_swap_image=None):
     """
     Строит JSON Workflow для ComfyUI.
     high_res_fix=True включает 2-pass генерацию (Latent Upscale).
+    face_swap_image: base64 string of face image (if provided)
     """
     # Базовые ноды
     workflow = {
@@ -136,15 +145,10 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         }
     }
 
+    # High-Res Fix
+    last_image_node = "15" # VAE Decode output
+    
     if high_res_fix:
-        # Добавляем узлы для Latent Upscale (x1.5)
-        # 20: LatentUpscaleBy
-        # 21: KSampler (Refiner)
-        # 22: VAEDecode (Final)
-        # 23: SaveImage (Final)
-        
-        # Меняем workflow: "16" (SaveImage) нам не нужен как финал, но пусть будет для дебага
-        
         workflow["20"] = {
             "class_type": "LatentUpscaleBy",
             "inputs": {
@@ -157,25 +161,37 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "KSampler",
             "inputs": {
                 "seed": seed,
-                "steps": int(steps / 2) + 5, # Меньше шагов для рефайна
+                "steps": int(steps / 2) + 5,
                 "cfg": cfg,
                 "sampler_name": sampler_name,
-                "scheduler": "karras", # Karras часто лучше для рефайна
+                "scheduler": "karras",
                 "model": ["10", 0],
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
-                "denoise": 0.55 # Важно: не 1.0, иначе перерисует всё заново
+                "denoise": 0.55
             }
         }
         workflow["22"] = {
             "class_type": "VAEDecode",
             "inputs": {"samples": ["21", 0], "vae": ["10", 2]}
         }
+        last_image_node = "22"
+        
+        # Обновляем SaveImage
         workflow["23"] = {
             "class_type": "SaveImage",
-            "inputs": {"images": ["22", 0], "filename_prefix": "runpod_hires_"}
+            "inputs": {"images": [last_image_node, 0], "filename_prefix": "runpod_hires_"}
         }
+
+    # Face Swap (Placeholder logic for future)
+    if face_swap_image:
+        # Здесь будет логика добавления нод ReActor
+        # 30: LoadImage (Face)
+        # 31: ReActorFaceSwap
+        # workflow["31"] = { ... inputs: {"input_image": [last_image_node, 0], "source_image": ["30", 0]} ... }
+        # last_image_node = "31"
+        pass
 
     return workflow
 
@@ -189,15 +205,15 @@ def handler(job):
         prompt_text = job_input.get("prompt", "")
         width = int(job_input.get("width", 1024))
         height = int(job_input.get("height", 1024))
-        steps = int(job_input.get("steps", 25)) # Чуть больше шагов для качества
+        steps = int(job_input.get("steps", 25))
         cfg = float(job_input.get("cfg", 7.0))
-        sampler_name = job_input.get("sampler_name", "dpmpp_2m") # Лучше для SDXL
+        sampler_name = job_input.get("sampler_name", "dpmpp_2m")
         scheduler = job_input.get("scheduler", "karras")
         seed = int(job_input.get("seed", 0))
         negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly")
         
-        # Опция High-Res (по умолчанию True для качества)
         enable_highres = job_input.get("highres_fix", True)
+        face_swap_img = job_input.get("face_image", None) # Base64 string if present
 
         # 1. Запуск ComfyUI (если нужно)
         if not check_comfy_status():
@@ -212,14 +228,14 @@ def handler(job):
         # 3. Формируем API prompt (Workflow)
         prompt = build_workflow(
             prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, 
-            high_res_fix=enable_highres
+            high_res_fix=enable_highres,
+            face_swap_image=face_swap_img
         )
         
         log(f"Generated prompt: {json.dumps(prompt)}")
 
         # 4. Отправка задачи в ComfyUI API
         try:
-            # Сохраняем для дебага
             try:
                 os.makedirs("/app/ComfyUI/user", exist_ok=True)
                 with open("/app/ComfyUI/user/last_prompt.json", "w") as f:
@@ -252,8 +268,6 @@ def handler(job):
             if img_b64:
                 log("Image found!")
                 break
-            # Проверяем, не упал ли ComfyUI или не выдал ли ошибку в истории
-            # (Опционально можно опрашивать /history, но пока просто ждем файл)
             time.sleep(2)
             
         if not img_b64:
