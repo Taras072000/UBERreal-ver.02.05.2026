@@ -87,122 +87,129 @@ def handler(job):
     """
     Основная функция-обработчик RunPod Serverless.
     """
-    log(f"Received job: {job}")
-    job_input = job["input"]
-    prompt_text = job_input.get("prompt", "")
-    width = int(job_input.get("width", 1024))
-    height = int(job_input.get("height", 1024))
-    steps = int(job_input.get("steps", 20))
-    cfg = float(job_input.get("cfg", 8))
-    sampler_name = job_input.get("sampler_name", "euler")
-    scheduler = job_input.get("scheduler", "normal")
-    seed = int(job_input.get("seed", 0))
-    negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon")
-
-    # 1. Запуск ComfyUI (если нужно)
-    if not check_comfy_status():
-        log("Starting ComfyUI...")
-        subprocess.Popen(["python3", "/app/ComfyUI/main.py", "--listen", "0.0.0.0", "--port", "8188"])
-        if not check_comfy_status():
-             return {"error": "ComfyUI failed to start"}
-
-    # 2. Проверка моделей
-    ensure_models()
-
-    # 3. Формируем API prompt
-    # Используем строковые ID "10", "11"... чтобы избежать путаницы
-    prompt = {
-        "10": {
-            "class_type": "CheckpointLoaderSimple",
-            "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
-        },
-        "11": {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "text": prompt_text or "beautiful woman",
-                "clip": ["10", 1]
-            }
-        },
-        "12": {
-            "class_type": "CLIPTextEncode",
-            "inputs": {
-                "text": negative_prompt,
-                "clip": ["10", 1]
-            }
-        },
-        "13": {
-            "class_type": "EmptyLatentImage",
-            "inputs": {"width": width, "height": height, "batch_size": 1}
-        },
-        "14": {
-            "class_type": "KSampler",
-            "inputs": {
-                "seed": seed,
-                "steps": steps,
-                "cfg": cfg,
-                "sampler_name": sampler_name,
-                "scheduler": scheduler,
-                "model": ["10", 0],
-                "positive": ["11", 0],
-                "negative": ["12", 0],
-                "latent_image": ["13", 0]
-            }
-        },
-        "15": {
-            "class_type": "VAEDecode",
-            "inputs": {"samples": ["14", 0], "vae": ["10", 2]}
-        },
-        "16": {
-            "class_type": "SaveImage",
-            "inputs": {"images": ["15", 0], "filename_prefix": "runpod_"}
-        }
-    }
-    
-    log(f"Generated prompt: {json.dumps(prompt)}")
-
-    # 4. Отправка задачи в ComfyUI API
     try:
-        # Сохраняем для дебага
+        log(f"Received job: {job}")
+        job_input = job["input"]
+        prompt_text = job_input.get("prompt", "")
+        width = int(job_input.get("width", 1024))
+        height = int(job_input.get("height", 1024))
+        steps = int(job_input.get("steps", 20))
+        cfg = float(job_input.get("cfg", 8))
+        sampler_name = job_input.get("sampler_name", "euler")
+        scheduler = job_input.get("scheduler", "normal")
+        seed = int(job_input.get("seed", 0))
+        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon")
+
+        # 1. Запуск ComfyUI (если нужно)
+        if not check_comfy_status():
+            log("Starting ComfyUI...")
+            subprocess.Popen(["python3", "/app/ComfyUI/main.py", "--listen", "0.0.0.0", "--port", "8188"])
+            if not check_comfy_status():
+                 return {"error": "ComfyUI failed to start"}
+
+        # 2. Проверка моделей
+        ensure_models()
+
+        # 3. Формируем API prompt
+        # Используем строковые ID "10", "11"... чтобы избежать путаницы
+        prompt = {
+            "10": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
+            },
+            "11": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "text": prompt_text or "beautiful woman",
+                    "clip": ["10", 1]
+                }
+            },
+            "12": {
+                "class_type": "CLIPTextEncode",
+                "inputs": {
+                    "text": negative_prompt,
+                    "clip": ["10", 1]
+                }
+            },
+            "13": {
+                "class_type": "EmptyLatentImage",
+                "inputs": {"width": width, "height": height, "batch_size": 1}
+            },
+            "14": {
+                "class_type": "KSampler",
+                "inputs": {
+                    "seed": seed,
+                    "steps": steps,
+                    "cfg": cfg,
+                    "sampler_name": sampler_name,
+                    "scheduler": scheduler,
+                    "model": ["10", 0],
+                    "positive": ["11", 0],
+                    "negative": ["12", 0],
+                    "latent_image": ["13", 0]
+                }
+            },
+            "15": {
+                "class_type": "VAEDecode",
+                "inputs": {"samples": ["14", 0], "vae": ["10", 2]}
+            },
+            "16": {
+                "class_type": "SaveImage",
+                "inputs": {"images": ["15", 0], "filename_prefix": "runpod_"}
+            }
+        }
+        
+        log(f"Generated prompt: {json.dumps(prompt)}")
+
+        # 4. Отправка задачи в ComfyUI API
         try:
-            os.makedirs("/app/ComfyUI/user", exist_ok=True)
-            with open("/app/ComfyUI/user/last_prompt.json", "w") as f:
-                json.dump(prompt, f)
-        except Exception:
-            pass
+            # Сохраняем для дебага
+            try:
+                os.makedirs("/app/ComfyUI/user", exist_ok=True)
+                with open("/app/ComfyUI/user/last_prompt.json", "w") as f:
+                    json.dump(prompt, f)
+            except Exception:
+                pass
 
-        p = {"prompt": prompt, "client_id": "serverless"}
-        response = requests.post(f"{COMFY_URL}/prompt", json=p)
-        
-        log(f"ComfyUI response: {response.status_code} - {response.text}")
-        
-        if response.status_code != 200:
-            return {"error": f"ComfyUI /prompt failed: {response.text}", "debug_prompt": prompt}
+            p = {"prompt": prompt, "client_id": "serverless"}
+            response = requests.post(f"{COMFY_URL}/prompt", json=p)
             
-        prompt_id = response.json().get("prompt_id")
-        log(f"Prompt ID: {prompt_id}")
-        
-    except Exception as e:
-        log(f"Failed to queue prompt: {e}")
-        return {"error": f"Failed to queue prompt: {str(e)}", "debug_prompt": prompt}
+            log(f"ComfyUI response: {response.status_code} - {response.text}")
+            
+            if response.status_code != 200:
+                return {"error": f"ComfyUI /prompt failed: {response.text}", "debug_prompt": prompt}
+                
+            prompt_id = response.json().get("prompt_id")
+            log(f"Prompt ID: {prompt_id}")
+            
+        except Exception as e:
+            log(f"Failed to queue prompt: {e}")
+            return {"error": f"Failed to queue prompt: {str(e)}", "debug_prompt": prompt}
 
-    # 5. Ожидание результата
-    log("Waiting for image generation...")
-    deadline = time.time() + 600
-    img_b64 = None
-    
-    while time.time() < deadline:
-        img_b64 = latest_image_b64()
-        if img_b64:
-            log("Image found!")
-            break
-        # Проверяем, не упал ли ComfyUI или не выдал ли ошибку в истории
-        # (Опционально можно опрашивать /history, но пока просто ждем файл)
-        time.sleep(2)
+        # 5. Ожидание результата
+        log("Waiting for image generation...")
+        deadline = time.time() + 600
+        img_b64 = None
         
-    if not img_b64:
-        log("Timeout waiting for image.")
-        return {"error": "Timeout waiting for output image", "debug_prompt": prompt}
+        while time.time() < deadline:
+            img_b64 = latest_image_b64()
+            if img_b64:
+                log("Image found!")
+                break
+            # Проверяем, не упал ли ComfyUI или не выдал ли ошибку в истории
+            # (Опционально можно опрашивать /history, но пока просто ждем файл)
+            time.sleep(2)
+            
+        if not img_b64:
+            log("Timeout waiting for image.")
+            return {"error": "Timeout waiting for output image", "debug_prompt": prompt}
 
-    return {"status": "success", "image_base64": img_b64}
+        return {"status": "success", "image_base64": img_b64}
+        
+    except Exception as fatal_error:
+        import traceback
+        err_msg = f"FATAL HANDLER ERROR: {str(fatal_error)}\n{traceback.format_exc()}"
+        log(err_msg)
+        return {"error": err_msg}
 
 runpod.serverless.start({"handler": handler})
