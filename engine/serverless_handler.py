@@ -83,6 +83,102 @@ def latest_image_b64():
         log(f"Error reading image: {e}")
         return None
 
+def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, high_res_fix=True):
+    """
+    Строит JSON Workflow для ComfyUI.
+    high_res_fix=True включает 2-pass генерацию (Latent Upscale).
+    """
+    # Базовые ноды
+    workflow = {
+        "10": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
+        },
+        "11": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+                "text": prompt_text or "beautiful woman",
+                "clip": ["10", 1]
+            }
+        },
+        "12": {
+            "class_type": "CLIPTextEncode",
+            "inputs": {
+                "text": negative_prompt,
+                "clip": ["10", 1]
+            }
+        },
+        "13": {
+            "class_type": "EmptyLatentImage",
+            "inputs": {"width": width, "height": height, "batch_size": 1}
+        },
+        "14": {
+            "class_type": "KSampler",
+            "inputs": {
+                "seed": seed,
+                "steps": steps,
+                "cfg": cfg,
+                "sampler_name": sampler_name,
+                "scheduler": scheduler,
+                "model": ["10", 0],
+                "positive": ["11", 0],
+                "negative": ["12", 0],
+                "latent_image": ["13", 0]
+            }
+        },
+        "15": {
+            "class_type": "VAEDecode",
+            "inputs": {"samples": ["14", 0], "vae": ["10", 2]}
+        },
+        "16": {
+            "class_type": "SaveImage",
+            "inputs": {"images": ["15", 0], "filename_prefix": "runpod_base_"}
+        }
+    }
+
+    if high_res_fix:
+        # Добавляем узлы для Latent Upscale (x1.5)
+        # 20: LatentUpscaleBy
+        # 21: KSampler (Refiner)
+        # 22: VAEDecode (Final)
+        # 23: SaveImage (Final)
+        
+        # Меняем workflow: "16" (SaveImage) нам не нужен как финал, но пусть будет для дебага
+        
+        workflow["20"] = {
+            "class_type": "LatentUpscaleBy",
+            "inputs": {
+                "samples": ["14", 0],
+                "upscale_method": "nearest-exact",
+                "scale_by": 1.5
+            }
+        }
+        workflow["21"] = {
+            "class_type": "KSampler",
+            "inputs": {
+                "seed": seed,
+                "steps": int(steps / 2) + 5, # Меньше шагов для рефайна
+                "cfg": cfg,
+                "sampler_name": sampler_name,
+                "scheduler": "karras", # Karras часто лучше для рефайна
+                "model": ["10", 0],
+                "positive": ["11", 0],
+                "negative": ["12", 0],
+                "latent_image": ["20", 0],
+                "denoise": 0.55 # Важно: не 1.0, иначе перерисует всё заново
+            }
+        }
+        workflow["22"] = {
+            "class_type": "VAEDecode",
+            "inputs": {"samples": ["21", 0], "vae": ["10", 2]}
+        }
+        workflow["23"] = {
+            "class_type": "SaveImage",
+            "inputs": {"images": ["22", 0], "filename_prefix": "runpod_hires_"}
+        }
+
+    return workflow
+
 def handler(job):
     """
     Основная функция-обработчик RunPod Serverless.
@@ -93,12 +189,15 @@ def handler(job):
         prompt_text = job_input.get("prompt", "")
         width = int(job_input.get("width", 1024))
         height = int(job_input.get("height", 1024))
-        steps = int(job_input.get("steps", 20))
-        cfg = float(job_input.get("cfg", 8))
-        sampler_name = job_input.get("sampler_name", "euler")
-        scheduler = job_input.get("scheduler", "normal")
+        steps = int(job_input.get("steps", 25)) # Чуть больше шагов для качества
+        cfg = float(job_input.get("cfg", 7.0))
+        sampler_name = job_input.get("sampler_name", "dpmpp_2m") # Лучше для SDXL
+        scheduler = job_input.get("scheduler", "karras")
         seed = int(job_input.get("seed", 0))
-        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon")
+        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly")
+        
+        # Опция High-Res (по умолчанию True для качества)
+        enable_highres = job_input.get("highres_fix", True)
 
         # 1. Запуск ComfyUI (если нужно)
         if not check_comfy_status():
@@ -110,54 +209,11 @@ def handler(job):
         # 2. Проверка моделей
         ensure_models()
 
-        # 3. Формируем API prompt
-        # Используем строковые ID "10", "11"... чтобы избежать путаницы
-        prompt = {
-            "10": {
-                "class_type": "CheckpointLoaderSimple",
-                "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
-            },
-            "11": {
-                "class_type": "CLIPTextEncode",
-                "inputs": {
-                    "text": prompt_text or "beautiful woman",
-                    "clip": ["10", 1]
-                }
-            },
-            "12": {
-                "class_type": "CLIPTextEncode",
-                "inputs": {
-                    "text": negative_prompt,
-                    "clip": ["10", 1]
-                }
-            },
-            "13": {
-                "class_type": "EmptyLatentImage",
-                "inputs": {"width": width, "height": height, "batch_size": 1}
-            },
-            "14": {
-                "class_type": "KSampler",
-                "inputs": {
-                    "seed": seed,
-                    "steps": steps,
-                    "cfg": cfg,
-                    "sampler_name": sampler_name,
-                    "scheduler": scheduler,
-                    "model": ["10", 0],
-                    "positive": ["11", 0],
-                    "negative": ["12", 0],
-                    "latent_image": ["13", 0]
-                }
-            },
-            "15": {
-                "class_type": "VAEDecode",
-                "inputs": {"samples": ["14", 0], "vae": ["10", 2]}
-            },
-            "16": {
-                "class_type": "SaveImage",
-                "inputs": {"images": ["15", 0], "filename_prefix": "runpod_"}
-            }
-        }
+        # 3. Формируем API prompt (Workflow)
+        prompt = build_workflow(
+            prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, 
+            high_res_fix=enable_highres
+        )
         
         log(f"Generated prompt: {json.dumps(prompt)}")
 
