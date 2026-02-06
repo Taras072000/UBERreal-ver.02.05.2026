@@ -88,11 +88,14 @@ async def generate_image_task(prompt: str, chat_id: int):
         # Выполняем блокирующий опрос в отдельном потоке, чтобы не блокировать Telegram-поллинг
         output = None
         try:
+            # run_request.output(timeout=...) блокирует поток до завершения или таймаута
             output = await asyncio.to_thread(run_request.output, timeout=600)
         except Exception as poll_err:
             logger.error(f"RunPod Poll Error: {poll_err}")
+            await bot.send_message(chat_id, f"⚠️ Debug: Ошибка при ожидании ответа от RunPod:\n{str(poll_err)}")
+        
         if not output:
-            await bot.send_message(chat_id, "❌ Ошибка: пустой ответ от RunPod или таймаут. Попробуй еще раз.")
+            await bot.send_message(chat_id, "❌ Ошибка: пустой ответ от RunPod (None). Возможно, воркер упал.")
             return
         if isinstance(output, dict) and "error" in output:
             await bot.send_message(chat_id, f"❌ Ошибка генерации: {output.get('error')}")
