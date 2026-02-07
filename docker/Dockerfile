@@ -31,10 +31,6 @@ RUN pip install --upgrade pip && \
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
 RUN cd /app/ComfyUI && pip install -r requirements.txt
 
-# Install ComfyUI Manager
-RUN cd /app/ComfyUI/custom_nodes && \
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git
-
 # Copy project files
 COPY . /app
 
