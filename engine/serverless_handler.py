@@ -220,12 +220,31 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     return workflow
 
+import shutil
+
+# ... (imports)
+
+# ... (constants)
+
+def clear_output_dir():
+    """Очистка папки output перед генерацией, чтобы не отправить старую картинку"""
+    if os.path.exists(OUTPUT_DIR):
+        try:
+            shutil.rmtree(OUTPUT_DIR)
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            log("Output directory cleared.")
+        except Exception as e:
+            log(f"Failed to clear output dir: {e}")
+
 def handler(job):
     """
     Основная функция-обработчик RunPod Serverless.
     """
     try:
         log(f"Received job: {job}")
+        
+        # Очищаем старые картинки перед запуском
+        clear_output_dir()
         job_input = job["input"]
         prompt_text = job_input.get("prompt", "")
         width = int(job_input.get("width", 1024))
