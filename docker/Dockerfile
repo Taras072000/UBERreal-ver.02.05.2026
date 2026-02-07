@@ -1,5 +1,5 @@
-# Base image with CUDA 12.1 and PyTorch 2.1 (DEVEL version for compiling InsightFace)
-FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
+# Base image with CUDA 12.1 and PyTorch 2.2 (RunPod official image for faster caching)
+FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1

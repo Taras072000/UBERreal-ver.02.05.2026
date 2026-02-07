@@ -1,7 +1,7 @@
 # Core AI & Torch (Use pre-installed from Docker base image)
-# torch>=2.1.2
-# torchvision>=0.16.2
-# torchaudio>=2.1.2
+# torch>=2.2.0
+# torchvision>=0.17.0
+# torchaudio>=2.2.0
 
 # Install xformers only on Linux (server/GPU). macOS build often fails.
 xformers==0.0.23; platform_system == "Linux"
