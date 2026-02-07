@@ -1,5 +1,5 @@
-# Base image with CUDA 12.1 and PyTorch 2.1.2 (Using runtime to force cache refresh)
-FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-runtime
+# Base image with CUDA 12.1 and PyTorch 2.1 (DEVEL version for compiling InsightFace)
+FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
