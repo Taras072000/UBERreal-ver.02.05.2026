@@ -44,8 +44,8 @@ def ensure_models():
         
         if not os.path.exists(CHECKPOINT_FILE):
             log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
-            # Загрузка с CivitAI (прямая ссылка на Juggernaut XL v9)
-            url = "https://civitai.com/api/download/models/348913?type=Model&format=SafeTensor&size=pruned&fp=fp16"
+            # Альтернативная прямая ссылка (Mirror)
+            url = "https://huggingface.co/RunDiffusion/Juggernaut-X-v9/resolve/main/JuggernautXL_v9.safetensors"
             # Используем stream=True и большой таймаут
             r = requests.get(url, stream=True, timeout=600)
             r.raise_for_status()
