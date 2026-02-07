@@ -14,6 +14,10 @@ COMFY_URL = "http://127.0.0.1:8188"
 OUTPUT_DIR = "/app/ComfyUI/output"
 MODELS_DIR = "/app/ComfyUI/models/checkpoints"
 CHECKPOINT_FILE = f"{MODELS_DIR}/RealVisXL_V4.0.safetensors"
+VAE_DIR = "/app/ComfyUI/models/vae"
+VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
+LORA_DIR = "/app/ComfyUI/models/loras"
+LORA_FILE = f"{LORA_DIR}/Hinata_SDXL.safetensors"
 
 # Deepfake models path
 INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
@@ -84,7 +88,39 @@ def ensure_models():
                         break
                     else:
                         log(f"Failed with status {r.status_code}")
-                except Exception as e:
+                    # Download VAE
+        if not os.path.exists(VAE_DIR):
+            os.makedirs(VAE_DIR, exist_ok=True)
+        if not os.path.exists(VAE_FILE):
+            log(f"Downloading VAE to {VAE_FILE}...")
+            vae_url = "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors"
+            try:
+                r = requests.get(vae_url, stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(VAE_FILE, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("VAE downloaded.")
+            except Exception as e:
+                log(f"VAE download failed: {e}")
+
+        # Download LoRA (Hinata)
+        if not os.path.exists(LORA_DIR):
+            os.makedirs(LORA_DIR, exist_ok=True)
+        if not os.path.exists(LORA_FILE):
+            log(f"Downloading LoRA to {LORA_FILE}...")
+            lora_url = "https://civitai.com/api/download/models/287086?type=Model&format=SafeTensor" # Hinata SDXL
+            try:
+                r = requests.get(lora_url, stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(LORA_FILE, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("LoRA downloaded.")
+            except Exception as e:
+                log(f"LoRA download failed: {e}")
+
+    except Exception as e:
                     log(f"Download failed: {e}")
             
             if not success:
@@ -133,18 +169,32 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "CheckpointLoaderSimple",
             "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
         },
+        "90": {
+            "class_type": "VAELoader",
+            "inputs": {"vae_name": os.path.basename(VAE_FILE)}
+        },
+        "100": { # LoRA Loader
+            "class_type": "LoraLoader",
+            "inputs": {
+                "lora_name": os.path.basename(LORA_FILE),
+                "strength_model": 0.8,
+                "strength_clip": 0.8,
+                "model": ["10", 0],
+                "clip": ["10", 1]
+            }
+        },
         "11": {
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": prompt_text or "beautiful woman",
-                "clip": ["10", 1]
+                "clip": ["100", 1] # Connect to LoRA Output
             }
         },
         "12": {
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": negative_prompt,
-                "clip": ["10", 1]
+                "clip": ["100", 1] # Connect to LoRA Output
             }
         },
         "13": {
@@ -157,18 +207,18 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "seed": seed,
                 "steps": steps,
                 "cfg": cfg,
-                "sampler_name": sampler_name,
+                "sampler_name": "dpmpp_sde", # Better quality
                 "scheduler": scheduler,
-                "model": ["10", 0],
+                "model": ["100", 0], # Connect to LoRA Output
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["13", 0],
-                "denoise": 0.35
+                "denoise": 1.0
             }
         },
         "15": {
             "class_type": "VAEDecode",
-            "inputs": {"samples": ["14", 0], "vae": ["10", 2]}
+            "inputs": {"samples": ["14", 0], "vae": ["90", 0]} # Use dedicated VAE
         },
         "16": {
             "class_type": "SaveImage",
@@ -194,9 +244,9 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "seed": seed,
                 "steps": int(steps / 2) + 5,
                 "cfg": cfg,
-                "sampler_name": sampler_name,
+                "sampler_name": "dpmpp_sde",
                 "scheduler": "karras",
-                "model": ["10", 0],
+                "model": ["100", 0],
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
@@ -205,7 +255,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         }
         workflow["22"] = {
             "class_type": "VAEDecode",
-            "inputs": {"samples": ["21", 0], "vae": ["10", 2]}
+            "inputs": {"samples": ["21", 0], "vae": ["90", 0]}
         }
         last_image_node = "22"
         
