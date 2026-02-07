@@ -27,10 +27,6 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-# Install InsightFace & ONNX Runtime (using script)
-COPY scripts/install_insightface.sh /app/scripts/
-RUN bash /app/scripts/install_insightface.sh
-
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
 RUN cd /app/ComfyUI && pip install -r requirements.txt
@@ -38,12 +34,6 @@ RUN cd /app/ComfyUI && pip install -r requirements.txt
 # Install ComfyUI Manager
 RUN cd /app/ComfyUI/custom_nodes && \
     git clone https://github.com/ltdrdata/ComfyUI-Manager.git
-
-# Install ReActor Node (Deepfake)
-RUN cd /app/ComfyUI/custom_nodes && \
-    git clone https://github.com/Gourieff/comfyui-reactor-node.git && \
-    cd comfyui-reactor-node && \
-    pip install -r requirements.txt
 
 # Copy project files
 COPY . /app

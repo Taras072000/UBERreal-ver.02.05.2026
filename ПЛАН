@@ -3,53 +3,40 @@
 [x] 1. Инициализация и Инфраструктура (RunPod)
     [x] 1.1. Разработка структуры репозитория (monorepo: bot, engine, training)
     [x] 1.2. Настройка окружения Python 3.10+ и зависимостей (requirements.txt)
-    [x] 1.3. Создание Dockerfile для RunPod (CUDA 11.8/12.x, PyTorch 2.x)
-    [x] 1.4. Скрипты инициализации RunPod (start.sh, provision.sh)
-    [x] 1.5. Настройка Persistent Volume (структура папок: models, output, datasets)
-    [x] 1.6. Выбор и настройка базового пода (RTX 4090 для тестов)
+    [x] 1.3. Создание Dockerfile для RunPod (CUDA 12.1, PyTorch 2.1)
+    [x] 1.4. Скрипты инициализации RunPod (serverless_handler.py)
+    [x] 1.5. Настройка Persistent Volume (структура папок: models, output)
+    [x] 1.6. Выбор и настройка базового пода (RTX 4090 / L4)
 
-[ ] 2. Telegram Bot (Интерфейс доставки)
-    [ ] 2.1. Регистрация бота и получение API Token
-    [ ] 2.2. Базовая архитектура бота (aiogram или python-telegram-bot)
-    [ ] 2.3. Реализация очереди задач (Redis/Celery или встроенная очередь)
-    [ ] 2.4. Команды администрирования (статус GPU, логи)
-    [ ] 2.5. Команды генерации (прием промпта, отправка фото/видео)
-    [ ] 2.6. Интеграция с файловой системой RunPod для отправки готового контента
-    [ ] 2.7. Механизм вебхуков или polling для получения обновлений
+[~] 2. Telegram Bot (Интерфейс доставки)
+    [x] 2.1. Регистрация бота и получение API Token
+    [x] 2.2. Базовая архитектура бота (aiogram 3.x)
+    [x] 2.3. Интеграция с RunPod Serverless API (запуск задач)
+    [x] 2.4. Обработка ошибок и таймаутов
+    [x] 2.5. Команды генерации (прием промпта, отправка фото/видео)
+    [x] 2.6. Меню стилей (Amateur, PornStar, Model) и Aspect Ratio
+    [ ] 2.7. Админка (баланс, логи)
 
-[ ] 3. Core Generation Engine (ComfyUI Backend)
-    [ ] 3.1. Установка и настройка ComfyUI в режиме API (headless)
-    [ ] 3.2. Загрузка базовых моделей (SDXL, Checkpoints: Juggernaut/RealVis)
-    [ ] 3.3. Настройка ControlNet моделей (OpenPose, Depth, Canny)
-    [ ] 3.4. Настройка IP-Adapter для сохранения стиля тела
-    [ ] 3.5. Разработка базового Workflow для генерации фото (JSON формат)
-    [ ] 3.6. API-обертка для запуска ComfyUI workflow из Python кода
-    [ ] 3.7. Модуль Upscale и High-res fix
+[~] 3. Core Generation Engine (ComfyUI Backend)
+    [x] 3.1. Установка и настройка ComfyUI в режиме API (headless)
+    [x] 3.2. Авто-загрузка модели Juggernaut XL v9 (Ultra-Realism)
+    [x] 3.3. Разработка API-обертки (serverless_handler.py)
+    [x] 3.4. Исправление конфликта Numpy 2.0 / PyTorch (AttributeError)
+    [x] 3.5. Модуль Upscale (Latent Upscale / High-Res Fix)
+    [ ] 3.6. Настройка ControlNet (OpenPose - для поз)
+    [ ] 3.7. Настройка IP-Adapter (для сохранения лица/тела)
 
-[ ] 4. Данные и Обучение (Body LoRA)
-    [ ] 4.1. Скрипт генерации синтетического датасета (SDXL + ControlNet)
-    [ ] 4.2. Пайплайн фильтрации и подготовки датасета (тегирование)
-    [ ] 4.3. Настройка скриптов обучения LoRA (Kohya_ss или аналог)
-    [ ] 4.4. Обучение тестовой версии Body LoRA (v1)
-    [ ] 4.5. Валидация LoRA (grid search параметров)
-    [ ] 4.6. Интеграция обученной LoRA в основной Workflow
+[ ] 4. Deepfake Module (Face Identity Layer) - ОТЛОЖЕНО ДО СТАБИЛИЗАЦИИ БАЗЫ
+    [ ] 4.1. Интеграция InsightFace в Docker (требует отдельной сборки) - *Вызывает сбои билда*
+    [ ] 4.2. Добавление узлов ReActor/FaceFusion в ComfyUI
+    [ ] 4.3. Режим "Виртуальная модель" (вшитое эталонное лицо на сервере)
+    [ ] 4.4. Режим "Face Injection" (бот принимает фото от юзера -> генерирует с ним)
+    [ ] 4.5. Пайплайн: Генерация тела -> FaceSwap -> Restore
 
-[ ] 5. Deepfake Module (Face Identity Layer)
-    [ ] 5.1. Выбор и установка решения (InsightFace / FaceFusion)
-    [ ] 5.2. Изоляция среды для Deepfake (отдельный процесс или Docker слой)
-    [ ] 5.3. Пайплайн: Генерация тела -> Детекция лица -> FaceSwap -> Restore
-    [ ] 5.4. Подготовка набора эталонных лиц (Source images)
-    [ ] 5.5. Интеграция Deepfake модуля в Telegram бот (выбор лица)
+[ ] 5. Видео Пайплайн (AnimateDiff)
+    [ ] 5.1. Тесты AnimateDiff на RunPod
+    [ ] 5.2. Сборка видео в MP4
 
-[ ] 6. Видео Пайплайн (AnimateDiff)
-    [ ] 6.1. Настройка AnimateDiff для SDXL/SD1.5 (в зависимости от стабильности)
-    [ ] 6.2. Интеграция Motion LoRA для управления камерой
-    [ ] 6.3. Workflow: OpenPose Sequence -> AnimateDiff -> FaceSwap Video
-    [ ] 6.4. Оптимизация VRAM для генерации 24-48 кадров
-    [ ] 6.5. Сборка видео в MP4 (ffmpeg) и отправка в Telegram
-
-[ ] 7. Продакшн и Масштабирование
-    [ ] 7.1. Стресс-тесты системы (очередь из 10+ задач)
-    [ ] 7.2. Оптимизация стоимости (Spot instances vs On-Demand)
-    [ ] 7.3. Документация по развертыванию (README.md)
-    [ ] 7.4. Финальная проверка качества контента (QA Checklist)
+[ ] 6. Продакшн
+    [ ] 6.1. Оптимизация скорости старта (Cold Start)
+    [ ] 6.2. Финальная проверка качества
