@@ -1,5 +1,5 @@
-# Base image with PyTorch 2.4 (Required for latest ComfyUI)
-FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-runtime
+# Base image with CUDA 12.1 and PyTorch 2.2 (RunPod official image for faster caching)
+FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -26,6 +26,7 @@ WORKDIR /app
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
+    pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121 && \
     pip install -r requirements.txt
 
 # Install ComfyUI
