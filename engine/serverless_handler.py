@@ -45,11 +45,10 @@ def ensure_models():
         if not os.path.exists(CHECKPOINT_FILE):
             log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
             
-            # Список зеркал (Mirrors)
+            # RealVisXL V4.0 (Lightning / Turbo или обычный - берем обычный для качества)
             urls = [
-                "https://huggingface.co/RunDiffusion/Juggernaut-X-v9/resolve/main/JuggernautXL_v9.safetensors",
-                "https://civitai.com/api/download/models/348913", # CivitAI Direct
-                "https://huggingface.co/stablediffusionapi/juggernaut-xl-v9/resolve/main/juggernaut-xl-v9.safetensors" # Mirror
+                "https://civitai.com/api/download/models/361593?type=Model&format=SafeTensor&size=pruned&fp=fp16", # RealVisXL V4.0
+                "https://huggingface.co/SG161222/RealVisXL_V4.0/resolve/main/RealVisXL_V4.0.safetensors" # HF Mirror
             ]
             
             # Hugging Face Token from Environment Variable
@@ -157,8 +156,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "model": ["10", 0],
                 "positive": ["11", 0],
                 "negative": ["12", 0],
-                "latent_image": ["13", 0],
-                "denoise": 1.0
+                "latent_image": ["20", 0],
+                "denoise": 0.35
             }
         },
         "15": {

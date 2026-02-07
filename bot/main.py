@@ -3,6 +3,7 @@ import logging
 import os
 import runpod
 import json
+import base64
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import (
@@ -132,7 +133,7 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         # Polling
         output = None
         try:
-            output = await asyncio.to_thread(run_request.output, timeout=600)
+            output = await asyncio.to_thread(run_request.output, timeout=900)
         except Exception as poll_err:
             logger.error(f"RunPod Poll Error: {poll_err}")
             await bot.send_message(chat_id, f"⚠️ Таймаут ожидания или ошибка сети:\n{str(poll_err)}")
