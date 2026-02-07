@@ -52,11 +52,18 @@ def ensure_models():
                 "https://huggingface.co/stablediffusionapi/juggernaut-xl-v9/resolve/main/juggernaut-xl-v9.safetensors" # Mirror
             ]
             
+            # Hugging Face Token from Environment Variable
+            hf_token = os.environ.get("HF_TOKEN")
+            headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
+            
             success = False
             for url in urls:
                 try:
                     log(f"Trying to download from: {url}")
-                    r = requests.get(url, stream=True, timeout=600)
+                    # Use headers only for HF URLs
+                    req_headers = headers if "huggingface.co" in url else {}
+                    
+                    r = requests.get(url, stream=True, timeout=600, headers=req_headers)
                     if r.status_code == 200:
                         total_size = int(r.headers.get('content-length', 0))
                         downloaded = 0
