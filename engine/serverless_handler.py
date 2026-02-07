@@ -44,21 +44,39 @@ def ensure_models():
         
         if not os.path.exists(CHECKPOINT_FILE):
             log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
-            # Альтернативная прямая ссылка (Mirror)
-            url = "https://huggingface.co/RunDiffusion/Juggernaut-X-v9/resolve/main/JuggernautXL_v9.safetensors"
-            # Используем stream=True и большой таймаут
-            r = requests.get(url, stream=True, timeout=600)
-            r.raise_for_status()
-            total_size = int(r.headers.get('content-length', 0))
-            downloaded = 0
-            with open(CHECKPOINT_FILE, "wb") as f:
-                for chunk in r.iter_content(chunk_size=1024 * 1024):
-                    if chunk:
-                        f.write(chunk)
-                        downloaded += len(chunk)
-                        if total_size > 0 and downloaded % (100 * 1024 * 1024) == 0:
-                            log(f"Downloaded {downloaded / 1024 / 1024:.0f} MB / {total_size / 1024 / 1024:.0f} MB")
-            log("Model download complete.")
+            
+            # Список зеркал (Mirrors)
+            urls = [
+                "https://huggingface.co/RunDiffusion/Juggernaut-X-v9/resolve/main/JuggernautXL_v9.safetensors",
+                "https://civitai.com/api/download/models/348913", # CivitAI Direct
+                "https://huggingface.co/stablediffusionapi/juggernaut-xl-v9/resolve/main/juggernaut-xl-v9.safetensors" # Mirror
+            ]
+            
+            success = False
+            for url in urls:
+                try:
+                    log(f"Trying to download from: {url}")
+                    r = requests.get(url, stream=True, timeout=600)
+                    if r.status_code == 200:
+                        total_size = int(r.headers.get('content-length', 0))
+                        downloaded = 0
+                        with open(CHECKPOINT_FILE, "wb") as f:
+                            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                                if chunk:
+                                    f.write(chunk)
+                                    downloaded += len(chunk)
+                                    if total_size > 0 and downloaded % (100 * 1024 * 1024) == 0:
+                                        log(f"Downloaded {downloaded / 1024 / 1024:.0f} MB / {total_size / 1024 / 1024:.0f} MB")
+                        log("Model download complete.")
+                        success = True
+                        break
+                    else:
+                        log(f"Failed with status {r.status_code}")
+                except Exception as e:
+                    log(f"Download failed: {e}")
+            
+            if not success:
+                log("ALL DOWNLOAD MIRRORS FAILED. Check internet or URLs.")
         else:
             log("Model exists.")
             
