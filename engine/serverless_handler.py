@@ -16,8 +16,6 @@ MODELS_DIR = "/app/ComfyUI/models/checkpoints"
 CHECKPOINT_FILE = f"{MODELS_DIR}/RealVisXL_V4.0.safetensors"
 VAE_DIR = "/app/ComfyUI/models/vae"
 VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
-VAE_DIR = "/app/ComfyUI/models/vae"
-VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
 LORA_DIR = "/app/ComfyUI/models/loras"
 LORA_FILE = f"{LORA_DIR}/Hinata_SDXL.safetensors"
 
