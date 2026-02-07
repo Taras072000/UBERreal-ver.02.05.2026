@@ -1,5 +1,5 @@
-# Base image with CUDA 12.1 and PyTorch 2.2 (RunPod official image for faster caching)
-FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
+# Base image with PyTorch 2.4 (Required for latest ComfyUI)
+FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     build-essential \
     python3-dev \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
