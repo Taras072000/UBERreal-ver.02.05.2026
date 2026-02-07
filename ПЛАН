@@ -19,7 +19,7 @@
 
 [~] 3. Core Generation Engine (ComfyUI Backend)
     [x] 3.1. Установка и настройка ComfyUI в режиме API (headless)
-    [x] 3.2. Авто-загрузка модели Juggernaut XL v9 (Ultra-Realism)
+    [x] 3.2. Авто-загрузка модели RealVisXL V4.0 (Lightning / Turbo)
     [x] 3.3. Разработка API-обертки (serverless_handler.py)
     [x] 3.4. Исправление конфликта Numpy 2.0 / PyTorch (AttributeError)
     [x] 3.5. Модуль Upscale (Latent Upscale / High-Res Fix)

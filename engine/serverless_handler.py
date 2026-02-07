@@ -13,7 +13,7 @@ import sys
 COMFY_URL = "http://127.0.0.1:8188"
 OUTPUT_DIR = "/app/ComfyUI/output"
 MODELS_DIR = "/app/ComfyUI/models/checkpoints"
-CHECKPOINT_FILE = f"{MODELS_DIR}/juggernautXL_v9.safetensors"
+CHECKPOINT_FILE = f"{MODELS_DIR}/RealVisXL_V4.0.safetensors"
 
 # Deepfake models path
 INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
@@ -41,6 +41,12 @@ def ensure_models():
     try:
         if not os.path.exists(MODELS_DIR):
             os.makedirs(MODELS_DIR, exist_ok=True)
+
+        # Rename old model if exists (migration from previous version)
+        old_checkpoint = f"{MODELS_DIR}/juggernautXL_v9.safetensors"
+        if os.path.exists(old_checkpoint) and not os.path.exists(CHECKPOINT_FILE):
+            log(f"Renaming {old_checkpoint} to {CHECKPOINT_FILE}")
+            os.rename(old_checkpoint, CHECKPOINT_FILE)
         
         if not os.path.exists(CHECKPOINT_FILE):
             log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
@@ -156,7 +162,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "model": ["10", 0],
                 "positive": ["11", 0],
                 "negative": ["12", 0],
-                "latent_image": ["20", 0],
+                "latent_image": ["13", 0],
                 "denoise": 0.35
             }
         },
