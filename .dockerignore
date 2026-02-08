@@ -1,0 +1,17 @@
+.venv
+.git
+.gitignore
+.dockerignore
+.DS_Store
+__pycache__
+*.pyc
+training/dataset
+training/output
+training/sd-scripts
+data/
+docker/
+.trae/
+*.md
+ПЛАН
+ТЗ
+Кто ты такой

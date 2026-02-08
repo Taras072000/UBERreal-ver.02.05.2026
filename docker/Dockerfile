@@ -24,33 +24,23 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# --- INSIGHTFACE & DEEPFAKE PRE-REQUISITES ---
-# 1. Upgrade pip and install build tools
-RUN pip install --upgrade pip setuptools wheel
+# --- PRE-INSTALL HEAVY DEPENDENCIES ---
+# Grouping pip installs to reduce layers and improve caching
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir "numpy<2.0.0" cython && \
+    pip install --no-cache-dir onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/ && \
+    pip install --no-cache-dir insightface
 
-# 2. Install numpy and cython FIRST (Required for building insightface)
-RUN pip install "numpy<2.0.0" cython
+# Install ComfyUI early to cache it
+RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI && \
+    pip install --no-cache-dir -r /app/ComfyUI/requirements.txt
 
-# 3. Install onnxruntime-gpu compatible with CUDA 12
-RUN pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-
-# 4. Install InsightFace
-RUN pip install insightface
-# ---------------------------------------------
-
-# Install Python dependencies
+# Install Project requirements
 COPY requirements.txt .
-# No need to reinstall torch, it's in the base image. Just install requirements.
-RUN pip install -r requirements.txt && \
-    pip install "numpy<2.0.0"
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir "numpy<2.0.0"
 
-# Install ComfyUI
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
-
-# Install ComfyUI requirements cleanly
-RUN pip install -r /app/ComfyUI/requirements.txt
-
-# Copy project files
+# Copy project files (Respects .dockerignore)
 COPY . /app
 
 # Expose ports

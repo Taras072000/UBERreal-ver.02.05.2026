@@ -2,7 +2,8 @@ accelerate>=0.25.0
 transformers>=4.36.0
 diffusers>=0.25.0
 ftfy
-albu
+albumentations
+imagesize
 einops
 pytorch-lightning
 voluptuous
