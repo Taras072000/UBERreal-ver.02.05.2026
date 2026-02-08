@@ -33,6 +33,7 @@ SAM_MODEL = f"{SAM_DIR}/sam_vit_b_01ec64.pth"
 
 # Deepfake models path
 INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
+REACTOR_DIR = "/app/ComfyUI/models/reactor"
 
 def log(message):
     print(f"[Handler] {message}", flush=True)
@@ -52,68 +53,73 @@ def check_comfy_status():
     log("ComfyUI not ready after 60s.")
     return False
 
-def ensure_models():
+def download_file(url, path, headers=None):
+    """Универсальный загрузчик с прогрессом"""
+    try:
+        r = requests.get(url, stream=True, timeout=600, headers=headers)
+        if r.status_code == 200:
+            total_size = int(r.headers.get('content-length', 0))
+            downloaded = 0
+            with open(path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size > 0 and downloaded % (100 * 1024 * 1024) == 0:
+                            log(f"Downloaded {downloaded / 1024 / 1024:.0f} MB / {total_size / 1024 / 1024:.0f} MB")
+            log(f"Download complete: {path}")
+            return True
+        else:
+            log(f"Download failed for {url} with status {r.status_code}")
+            return False
+    except Exception as e:
+        log(f"Download error for {url}: {e}")
+        return False
+
+def ensure_models(custom_loras=None):
     """Минимальная проверка и быстрая загрузка модели, если отсутствует"""
     try:
         if not os.path.exists(MODELS_DIR):
             os.makedirs(MODELS_DIR, exist_ok=True)
-
-        # Rename old model if exists (migration from previous version)
-        old_checkpoint = f"{MODELS_DIR}/juggernautXL_v9.safetensors"
-        if os.path.exists(old_checkpoint) and not os.path.exists(CHECKPOINT_FILE):
-            log(f"Renaming {old_checkpoint} to {CHECKPOINT_FILE}")
-            os.rename(old_checkpoint, CHECKPOINT_FILE)
         
+        # 1. Загрузка основного чекпоинта
         if not os.path.exists(CHECKPOINT_FILE) or os.path.getsize(CHECKPOINT_FILE) < 100 * 1024 * 1024:
             if os.path.exists(CHECKPOINT_FILE):
-                log(f"File {CHECKPOINT_FILE} is too small ({os.path.getsize(CHECKPOINT_FILE)} bytes). Deleting and re-downloading...")
                 os.remove(CHECKPOINT_FILE)
             
-            log(f"Downloading Pony Realism Checkpoint to {CHECKPOINT_FILE}...")
-            
-            # Pony Realism v2.1 Main
-            # PRIORITIZE HUGGINGFACE MIRROR (More stable than CivitAI API without token)
+            log("Downloading Pony Realism Checkpoint...")
             urls = [
                 "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors", 
                 "https://civitai.com/api/download/models/534642?type=Model&format=SafeTensor"
             ]
-            
-            # Hugging Face Token from Environment Variable
             hf_token = os.environ.get("HF_TOKEN")
-            headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
-            # CivitAI often requires User-Agent to avoid 403
-            civitai_headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+            hf_headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
+            civitai_headers = {"User-Agent": "Mozilla/5.0"}
             
-            success = False
             for url in urls:
-                try:
-                    log(f"Trying to download from: {url}")
-                    # Use headers only for HF URLs, use civitai_headers for CivitAI
-                    req_headers = headers if "huggingface.co" in url else civitai_headers
-                    
-                    r = requests.get(url, stream=True, timeout=600, headers=req_headers)
-                    if r.status_code == 200:
-                        total_size = int(r.headers.get('content-length', 0))
-                        downloaded = 0
-                        with open(CHECKPOINT_FILE, "wb") as f:
-                            for chunk in r.iter_content(chunk_size=1024 * 1024):
-                                if chunk:
-                                    f.write(chunk)
-                                    downloaded += len(chunk)
-                                    if total_size > 0 and downloaded % (100 * 1024 * 1024) == 0:
-                                        log(f"Downloaded {downloaded / 1024 / 1024:.0f} MB / {total_size / 1024 / 1024:.0f} MB")
-                        log("Model download complete.")
-                        success = True
-                        break
-                    else:
-                        log(f"Failed with status {r.status_code}")
-                except Exception as e:
-                    log(f"Download failed: {e}")
-            
-            if not success:
-                log("ALL DOWNLOAD MIRRORS FAILED. Check internet or URLs.")
-        else:
-            log("Model exists.")
+                headers = hf_headers if "huggingface.co" in url else civitai_headers
+                if download_file(url, CHECKPOINT_FILE, headers):
+                    break
+
+        # 2. Загрузка кастомных LoRA (для персонажей)
+        if custom_loras:
+            if not os.path.exists(LORA_DIR): os.makedirs(LORA_DIR, exist_ok=True)
+            for lora in custom_loras:
+                name = lora.get("name")
+                url = lora.get("url")
+                if name and url:
+                    path = os.path.join(LORA_DIR, name)
+                    if not os.path.exists(path):
+                        log(f"Downloading custom LoRA: {name}...")
+                        download_file(url, path)
+
+        # 3. Базовые LoRA (Hinata, Cum, Detail, Expressions) - оставим Hinata как пример
+        if not os.path.exists(LORA_HINATA):
+            download_file("https://civitai.com/api/download/models/287086?type=Model&format=SafeTensor", LORA_HINATA, {"User-Agent": "Mozilla/5.0"})
+
+        # 4. Модели для FaceSwap
+        if not os.path.exists(INSIGHTFACE_DIR): os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
+        # ... (остальной код загрузки InsightFace и SAM остается)
 
         # Download VAE
         if not os.path.exists(VAE_DIR):
@@ -296,27 +302,16 @@ def latest_image_b64():
         log(f"Error reading image: {e}")
         return None
 
-def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, high_res_fix=True, face_swap_image=None):
+def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, high_res_fix=True, face_swap_image=None, custom_loras=None):
     """
     Строит JSON Workflow для ComfyUI.
     high_res_fix=True включает 2-pass генерацию (Latent Upscale).
     face_swap_image: base64 string of face image (if provided)
+    custom_loras: list of {"name": "...", "strength_model": 1.0, "strength_clip": 1.0}
     """
-    # Базовые ноды
-    # Detailer prompts
     # CLEANER PROMPT: Added POV/Wide Angle to match the reference style
     detail_prompt = ", (POV:1.2), (wide angle lens:1.2), (soft studio lighting, rim light:1.1), (natural skin texture, flush:0.8), (raw photo, dslr, 8k uhd:1.2), (spread legs:1.4), (legs wide open:1.4), (protruding vulva:1.3), (hands on legs:1.3)"
     
-    # Save Pose Image if present
-    pose_filename = "pose.png"
-    if face_swap_image: # Using face_swap_image var for pose temporarily or add new logic
-        # Logic to save pose image to /app/ComfyUI/input/pose.png
-        pass
-
-    # ControlNet Logic
-    positive_condition_node = ["11", 0]
-    negative_condition_node = ["12", 0]
-
     workflow = {
         "10": {
             "class_type": "CheckpointLoaderSimple",
@@ -330,7 +325,6 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "EmptyLatentImage",
             "inputs": {"width": width, "height": height, "batch_size": 1}
         },
-        # Clip Skip 2 for Pony
         "18": {
             "class_type": "CLIPSetLastLayer",
             "inputs": {
@@ -340,21 +334,34 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         },
     }
 
-    # Dynamic LoRA Chain
-    # We build a chain of models and clips: Checkpoint -> LoRA1 -> LoRA2 -> ... -> TextEncode
-    
     current_model = ["10", 0]
     current_clip = ["18", 0]
     
-        # 1. Detail Slider
+    # 1. Загрузка кастомных LoRA (Персонажи)
+    if custom_loras:
+        for i, lora in enumerate(custom_loras):
+            node_id = f"200_{i}"
+            workflow[node_id] = {
+                "class_type": "LoraLoader",
+                "inputs": {
+                    "lora_name": lora.get("name"),
+                    "strength_model": lora.get("strength_model", 1.0),
+                    "strength_clip": lora.get("strength_clip", 1.0),
+                    "model": current_model,
+                    "clip": current_clip
+                }
+            }
+            current_model = [node_id, 0]
+            current_clip = [node_id, 1]
+
+    # 2. Базовые LoRA (например, Detail Slider)
     if os.path.exists(LORA_DETAIL):
         workflow["100"] = {
             "class_type": "LoraLoader",
             "inputs": {
                 "lora_name": os.path.basename(LORA_DETAIL),
-                # DISABLED: 0.0 to fix skinny body/dirty skin issues
-                "strength_model": 0.0,
-                "strength_clip": 0.0,
+                "strength_model": 0.4,
+                "strength_clip": 0.4,
                 "model": current_model,
                 "clip": current_clip
             }
@@ -362,37 +369,6 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         current_model = ["100", 0]
         current_clip = ["100", 1]
 
-    # 2. Cum Shot (Keep enabled but low)
-    if os.path.exists(LORA_CUM):
-        workflow["101"] = {
-            "class_type": "LoraLoader",
-            "inputs": {
-                "lora_name": os.path.basename(LORA_CUM),
-                "strength_model": 0.8,
-                "strength_clip": 0.8,
-                "model": current_model,
-                "clip": current_clip
-            }
-        }
-        current_model = ["101", 0]
-        current_clip = ["101", 1]
-
-    # 3. Expressions (DISABLED to fix face cloning/distortion)
-    if os.path.exists(LORA_EXPRESSIONS):
-        workflow["102"] = {
-            "class_type": "LoraLoader",
-            "inputs": {
-                "lora_name": os.path.basename(LORA_EXPRESSIONS),
-                "strength_model": 0.0,
-                "strength_clip": 0.0,
-                "model": current_model,
-                "clip": current_clip
-            }
-        }
-        current_model = ["102", 0]
-        current_clip = ["102", 1]
-
-    # Prompts connected to the last CLIP in the chain
     # Pony specific prefixes and negatives
     pony_prefix = "score_9, score_8_up, score_7_up, BREAK, "
     pony_negative = "score_4, score_5, score_6, source_pony, source_furry, text, watermark, blur, deformed, painting, cartoon, low quality, ugly, multiple views, multiple girls, clone, twin, anorexic, skinny, bad anatomy"
@@ -412,63 +388,30 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         }
     }
 
-    # Add ControlNet if image provided
-    if face_swap_image: # Using face_swap_image as placeholder for now, ideally rename var
-        # Save image
-        try:
-            os.makedirs("/app/ComfyUI/input", exist_ok=True)
-            with open(f"/app/ComfyUI/input/{pose_filename}", "wb") as f:
-                f.write(base64.b64decode(face_swap_image))
-        except Exception as e:
-            log(f"Failed to save pose image: {e}")
-
-        workflow["50"] = {
-            "class_type": "ControlNetLoader",
-            "inputs": {"control_net_name": os.path.basename(CONTROLNET_FILE)}
-        }
-        workflow["51"] = {
-            "class_type": "LoadImage",
-            "inputs": {"image": pose_filename}
-        }
-        workflow["52"] = { # ControlNet Apply
-            "class_type": "ControlNetApply",
-            "inputs": {
-                "conditioning": ["11", 0],
-                "control_net": ["50", 0],
-                "image": ["51", 0],
-                "strength": 0.8
-            }
-        }
-        positive_condition_node = ["52", 0]
-
     workflow["14"] = {
-            "class_type": "KSampler",
-            "inputs": {
-                "seed": seed,
-                "steps": steps,
-                "cfg": cfg,
-                "sampler_name": sampler_name,
-                "scheduler": scheduler,
-                "model": current_model, # Connect to last LoRA Model
-                "positive": positive_condition_node,
-                "negative": negative_condition_node,
-                "latent_image": ["13", 0],
-                "denoise": 1.0
-            }
+        "class_type": "KSampler",
+        "inputs": {
+            "seed": seed,
+            "steps": steps,
+            "cfg": cfg,
+            "sampler_name": sampler_name,
+            "scheduler": scheduler,
+            "model": current_model,
+            "positive": ["11", 0],
+            "negative": ["12", 0],
+            "latent_image": ["13", 0],
+            "denoise": 1.0
         }
+    }
     
     workflow["15"] = {
-            "class_type": "VAEDecode",
-            "inputs": {"samples": ["14", 0], "vae": ["19", 0]}
-        }
-    workflow["16"] = {
-            "class_type": "SaveImage",
-            "inputs": {"images": ["15", 0], "filename_prefix": "runpod_base_"}
-        }
+        "class_type": "VAEDecode",
+        "inputs": {"samples": ["14", 0], "vae": ["19", 0]}
+    }
 
-    # High-Res Fix
-    last_image_node = "15" # VAE Decode output
-    
+    last_image_node = "15"
+
+    # 3. High-Res Fix
     if high_res_fix:
         workflow["20"] = {
             "class_type": "LatentUpscaleBy",
@@ -486,11 +429,10 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "cfg": cfg,
                 "sampler_name": "dpmpp_sde",
                 "scheduler": "karras",
-                "model": current_model, # Connect to last LoRA Model
+                "model": current_model,
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
-                # LOWER DENOISE: 0.65 -> 0.45 to preserve details without hallucinating
                 "denoise": 0.45
             }
         }
@@ -499,25 +441,51 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "inputs": {"samples": ["21", 0], "vae": ["19", 0]}
         }
         last_image_node = "22"
-        
-        # Обновляем SaveImage
-        workflow["23"] = {
-            "class_type": "SaveImage",
-            "inputs": {"images": [last_image_node, 0], "filename_prefix": "runpod_hires_"}
-        }
 
-    # Face Swap (Placeholder logic for future)
+    # 4. Face Swap (ReActor)
     if face_swap_image:
-        # Здесь будет логика добавления нод ReActor
-        # 30: LoadImage (Face)
-        # 31: ReActorFaceSwap
-        # workflow["31"] = { ... inputs: {"input_image": [last_image_node, 0], "source_image": ["30", 0]} ... }
-        # last_image_node = "31"
-        pass
+        # Save face image to input folder
+        face_filename = f"face_{seed}.png"
+        try:
+            os.makedirs("/app/ComfyUI/input", exist_ok=True)
+            with open(f"/app/ComfyUI/input/{face_filename}", "wb") as f:
+                f.write(base64.b64decode(face_swap_image))
+            
+            workflow["30"] = {
+                "class_type": "LoadImage",
+                "inputs": {"image": face_filename}
+            }
+            workflow["31"] = {
+                "class_type": "ReActorFaceSwap",
+                "inputs": {
+                    "enabled": True,
+                    "input_image": [last_image_node, 0],
+                    "source_image": ["30", 0],
+                    "face_index_source": 0,
+                    "face_index_input": 0,
+                    "face_model": "inswapper_128.onnx",
+                    "detect_gender_source": "no",
+                    "detect_gender_input": "no",
+                    "upscale_by": 1,
+                    "upscaler_name": "none",
+                    "visibility": 1,
+                    "codeformer_visibility": 0.5,
+                    "codeformer_weight": 0.5
+                }
+            }
+            last_image_node = "31"
+        except Exception as e:
+            log(f"FaceSwap node setup failed: {e}")
+
+    workflow["1000"] = {
+        "class_type": "SaveImage",
+        "inputs": {"images": [last_image_node, 0], "filename_prefix": "uber_"}
+    }
 
     return workflow
 
 import shutil
+import random
 
 # ... (imports)
 
@@ -539,57 +507,53 @@ import random
 
 # Настройки путей на сетевом томе
 VOLUME_PATH = "/runpod-volume"
-COMFY_PATH = f"{VOLUME_PATH}/ComfyUI"
-PYTHON_ENV = f"{VOLUME_PATH}/venv"
+COMFY_PATH = "/app/ComfyUI"
+MODELS_DIR = f"{COMFY_PATH}/models"
+VOLUME_MODELS = f"{VOLUME_PATH}/models"
 
-def setup_full_environment():
-    """Полная установка окружения на сетевой диск при первом запуске"""
+def setup_volume_links():
+    """Разворачивает ComfyUI на сетевой диск, если его там нет"""
     if not os.path.exists(VOLUME_PATH):
-        log("CRITICAL ERROR: Network Volume not attached!")
-        return False
+        log("Network Volume not attached. Using internal storage.")
+        return
 
-    # 1. Создаем виртуальное окружение на диске, если его нет
-    if not os.path.exists(PYTHON_ENV):
-        log("Creating Python Virtual Env on Network Volume...")
-        subprocess.run([sys.executable, "-m", "venv", PYTHON_ENV], check=True)
+    # 1. Проверяем наличие ComfyUI на диске
+    volume_comfy = os.path.join(VOLUME_PATH, "ComfyUI")
+    if not os.path.exists(volume_comfy):
+        log("ComfyUI not found on Volume. Cloning...")
+        subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", volume_comfy], check=True)
+        
+        # Установка базовых нод
+        nodes_dir = os.path.join(volume_comfy, "custom_nodes")
+        log("Installing essential custom nodes...")
+        subprocess.run(["git", "clone", "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git", os.path.join(nodes_dir, "ComfyUI-Impact-Pack")], check=True)
+        subprocess.run(["git", "clone", "https://github.com/Gourieff/comfyui-reactor-node.git", os.path.join(nodes_dir, "comfyui-reactor-node")], check=True)
+        
+        # Установка зависимостей для нод
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(nodes_dir, "ComfyUI-Impact-Pack/requirements.txt")], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(nodes_dir, "comfyui-reactor-node/requirements.txt")], check=True)
+
+    # 2. Создаем симлинк, чтобы /app/ComfyUI указывал на диск
+    if os.path.exists(COMFY_PATH) and not os.path.islink(COMFY_PATH):
+        shutil.rmtree(COMFY_PATH)
     
-    # Путь к pip внутри venv
-    venv_pip = f"{PYTHON_ENV}/bin/pip"
-    venv_python = f"{PYTHON_ENV}/bin/python"
-
-    # 2. Ставим тяжелые либы (PyTorch 2.4.0) на диск
-    if not os.path.exists(f"{PYTHON_ENV}/lib/python3.11/site-packages/torch"):
-        log("Installing PyTorch 2.4.0 to Volume (this happens only once)...")
-        subprocess.run([venv_pip, "install", "torch==2.4.0", "torchvision", "torchaudio", "--index-url", "https://download.pytorch.org/whl/cu121"], check=True)
-        subprocess.run([venv_pip, "install", "numpy<2.0.0", "insightface", "onnxruntime-gpu"], check=True)
-
-    # 3. Клонируем ComfyUI на диск
     if not os.path.exists(COMFY_PATH):
-        log("Cloning ComfyUI to Volume...")
-        subprocess.run(["git", "clone", "--depth", "1", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        subprocess.run([venv_pip, "install", "-r", f"{COMFY_PATH}/requirements.txt"], check=True)
-
-    # 4. Проверяем наши специфичные либы
-    log("Ensuring project requirements...")
-    subprocess.run([venv_pip, "install", "runpod", "requests", "transformers==4.38.2", "imagesize"], check=True)
-
-    return venv_python
+        os.symlink(volume_comfy, COMFY_PATH)
+        log("ComfyUI is now linked to Network Volume.")
 
 def handler(job):
     try:
         log(f"Received job: {job}")
         
-        # Настраиваем всё окружение на внешнем диске
-        venv_python = setup_full_environment()
-        if not venv_python:
-            return {"error": "Environment setup failed"}
-
-        # Запускаем ComfyUI используя python из venv
+        # Настраиваем связь с диском
+        setup_volume_links()
+        
+        # 1. Запуск ComfyUI (библиотеки уже в образе)
         if not check_comfy_status():
-            log("Starting ComfyUI from Volume...")
-            subprocess.Popen([venv_python, f"{COMFY_PATH}/main.py", "--listen", "0.0.0.0", "--port", "8188"])
+            log("Starting ComfyUI...")
+            subprocess.Popen([sys.executable, f"{COMFY_PATH}/main.py", "--listen", "0.0.0.0", "--port", "8188"])
             
-            # Ждем готовности
+            # Ждем запуска
             for _ in range(60):
                 if check_comfy_status(): break
                 time.sleep(2)
@@ -599,38 +563,30 @@ def handler(job):
         width = int(job_input.get("width", 1024))
         height = int(job_input.get("height", 1024))
         steps = int(job_input.get("steps", 25))
-        # Tweaked CFG for better prompt adherence but keeping realism
         cfg = float(job_input.get("cfg", 6.0))
-        # Better sampler for skin texture
         sampler_name = job_input.get("sampler_name", "dpmpp_2m") 
         scheduler = job_input.get("scheduler", "karras")
         
-        # RANDOMIZE SEED if 0 or missing
+        # RANDOMIZE SEED
         seed = int(job_input.get("seed", 0))
         if seed == 0:
             seed = random.randint(1, 18446744073709551615)
         
-        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly, multiple views, multiple girls, clone, twin, anorexic, skinny, bad anatomy")
+        negative_prompt = job_input.get("negative_prompt", "score_4, score_5, score_6, source_pony, source_furry, text, watermark, blur, deformed, painting, cartoon, low quality, ugly, multiple views, multiple girls, clone, twin, anorexic, skinny, bad anatomy")
         
         enable_highres = job_input.get("highres_fix", True)
-        face_swap_img = job_input.get("face_image", None) # Base64 string if present
-        controlnet_img = job_input.get("controlnet_image", None) # Base64 Pose image
+        face_swap_img = job_input.get("face_image", None) # Base64
+        custom_loras = job_input.get("loras", []) # List of {"name": "...", "url": "...", "strength_model": 1.0}
 
-        # 1. Запуск ComfyUI (если нужно)
-        if not check_comfy_status():
-            log("Starting ComfyUI...")
-            subprocess.Popen(["python3", "/app/ComfyUI/main.py", "--listen", "0.0.0.0", "--port", "8188"])
-            if not check_comfy_status():
-                 return {"error": "ComfyUI failed to start"}
-
-        # 2. Проверка моделей
-        ensure_models()
+        # 2. Проверка моделей (включая кастомные LoRA)
+        ensure_models(custom_loras=custom_loras)
 
         # 3. Формируем API prompt (Workflow)
         prompt = build_workflow(
             prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, 
             high_res_fix=enable_highres,
-            face_swap_image=face_swap_img
+            face_swap_image=face_swap_img,
+            custom_loras=custom_loras
         )
         
         log(f"Generated prompt: {json.dumps(prompt)}")
