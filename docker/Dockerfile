@@ -1,5 +1,5 @@
-# Base image with CUDA 12.1 and PyTorch 2.2 (RunPod official image for faster caching)
-FROM runpod/pytorch:2.2.0-py3.10-cuda12.1.1-devel-ubuntu22.04
+# Switch to official PyTorch 2.4.0 image to support new ComfyUI requirements
+FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-devel
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -40,10 +40,8 @@ RUN pip install insightface
 
 # Install Python dependencies
 COPY requirements.txt .
-# Force reinstall numpy and upgrade torch to 2.4.0 (Required by new ComfyUI)
-RUN pip uninstall -y torch torchvision torchaudio && \
-    pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install -r requirements.txt && \
+# No need to reinstall torch, it's in the base image. Just install requirements.
+RUN pip install -r requirements.txt && \
     pip install "numpy<2.0.0"
 
 # Install ComfyUI
