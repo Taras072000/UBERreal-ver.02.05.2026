@@ -523,6 +523,10 @@ def setup_volume_links():
         if not os.path.exists(COMFY_PATH):
             log("Cloning ComfyUI to project root...")
             subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
+        
+        # Всегда проверяем зависимости при отсутствии Volume, так как это чистый контейнер
+        log("Checking/Installing ComfyUI dependencies...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "sqlalchemy", "aiohttp", "requests", "pyyaml", "Pillow", "scipy", "tqdm", "psutil"], check=True)
         return sys.executable
 
     # 1. Проверяем и устанавливаем PyTorch и зависимости на диск

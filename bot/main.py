@@ -56,9 +56,18 @@ def get_dimensions(aspect_ratio):
 def main_menu_keyboard():
     kb = [
         [KeyboardButton(text="📐 Формат (9:16)"), KeyboardButton(text="🎨 Стиль (Realistic)")],
-        [KeyboardButton(text="ℹ️ Статус сервера")]
+        [KeyboardButton(text="👩 Персонаж (Insta Girl)"), KeyboardButton(text="ℹ️ Статус сервера")]
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+def character_keyboard():
+    kb = [
+        [InlineKeyboardButton(text="👩 Insta Girl (LoRA v1 - 930 steps)", callback_data="char_insta_v1")],
+        [InlineKeyboardButton(text="👩 Insta Girl (LoRA v2 - 1860 steps)", callback_data="char_insta_v2")],
+        [InlineKeyboardButton(text="👩 Insta Girl (LoRA v3 - 2790 steps)", callback_data="char_insta_v3")],
+        [InlineKeyboardButton(text="❌ Без персонажа", callback_data="char_none")]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=kb)
 
 def aspect_ratio_keyboard():
     kb = [
@@ -90,8 +99,28 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     settings = get_settings(user_id)
     width, height = get_dimensions(settings["aspect_ratio"])
     
+    # Character LoRA Logic
+    loras = []
+    char_prefix = ""
+    
+    char_version = settings.get("character")
+    char_loras = {
+        "insta_v1": ("insta_girl_v1, ", "insta_girl_v1.safetensors"),
+        "insta_v2": ("insta_girl_v2, ", "insta_girl_v2.safetensors"),
+        "insta_v3": ("insta_girl_v3, ", "insta_girl_v3.safetensors")
+    }
+
+    if char_version in char_loras:
+        prefix, filename = char_loras[char_version]
+        char_prefix = prefix
+        loras.append({
+            "name": filename,
+            "url": f"https://huggingface.co/Taras082498/{filename}/resolve/main/{filename}",
+            "strength_model": 1.0, "strength_clip": 1.0
+        })
+
     # Modify prompt based on style
-    final_prompt = prompt
+    final_prompt = char_prefix + prompt
     if settings["style"] == "Realistic":
         final_prompt += ", (hyperrealism, 8k, extremely detailed, photo, dslr:1.2)"
     elif settings["style"] == "Cinematic":
@@ -125,7 +154,8 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
                            # Let's keep 0 and let worker handle randomization if needed or send random here.
                 "negative_prompt": "text, watermark, blur, deformed, painting, cartoon, low quality, ugly",
                 "highres_fix": True, # Always ON for quality
-                "controlnet_image": controlnet_image
+                "controlnet_image": controlnet_image,
+                "loras": loras
             }
         }
         
@@ -271,6 +301,26 @@ async def menu_aspect(message: types.Message):
 @dp.message(F.text.contains("Стиль"))
 async def menu_style(message: types.Message):
     await message.answer("Выберите стиль генерации:", reply_markup=style_keyboard())
+
+@dp.message(F.text.contains("Персонаж"))
+async def menu_character(message: types.Message):
+    await message.answer("Выберите персонажа для генерации:", reply_markup=character_keyboard())
+
+@dp.callback_query(F.data.startswith("char_"))
+async def callback_character(callback: types.CallbackQuery):
+    if callback.data == "char_insta_v1":
+        get_settings(callback.from_user.id)["character"] = "insta_v1"
+        await callback.message.answer("✅ Персонаж установлен: Insta Girl (v1)")
+    elif callback.data == "char_insta_v2":
+        get_settings(callback.from_user.id)["character"] = "insta_v2"
+        await callback.message.answer("✅ Персонаж установлен: Insta Girl (v2)")
+    elif callback.data == "char_insta_v3":
+        get_settings(callback.from_user.id)["character"] = "insta_v3"
+        await callback.message.answer("✅ Персонаж установлен: Insta Girl (v3)")
+    elif callback.data == "char_none":
+        get_settings(callback.from_user.id)["character"] = None
+        await callback.message.answer("✅ Персонаж отключен")
+    await callback.answer()
 
 @dp.callback_query(F.data.startswith("ar_"))
 async def callback_aspect(callback: types.CallbackQuery):
