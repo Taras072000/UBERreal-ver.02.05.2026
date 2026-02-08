@@ -8,32 +8,32 @@ from io import BytesIO
 import glob
 import subprocess
 import sys
+import shutil
+import random
 
-# URL локального ComfyUI (внутри контейнера Serverless)
+# --- ДИНАМИЧЕСКИЕ НАСТРОЙКИ ПУТЕЙ ---
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+COMFY_PATH = os.path.join(PROJECT_ROOT, "ComfyUI")
+VOLUME_PATH = "/runpod-volume"
+
+# URL локального ComfyUI
 COMFY_URL = "http://127.0.0.1:8188"
-OUTPUT_DIR = "/app/ComfyUI/output"
-MODELS_DIR = "/app/ComfyUI/models/checkpoints"
-CHECKPOINT_FILE = f"{MODELS_DIR}/PonyRealism_v2.1.safetensors"
-VAE_DIR = "/app/ComfyUI/models/vae"
-VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
-LORA_DIR = "/app/ComfyUI/models/loras"
-LORA_HINATA = f"{LORA_DIR}/Hinata_SDXL.safetensors"
-LORA_CUM = f"{LORA_DIR}/Cum_Shot_SDXL.safetensors"
-LORA_DETAIL = f"{LORA_DIR}/Detail_Slider_SDXL.safetensors"
-LORA_EXPRESSIONS = f"{LORA_DIR}/Expressions_SDXL.safetensors"
 
-CONTROLNET_DIR = "/app/ComfyUI/models/controlnet"
-CONTROLNET_FILE = f"{CONTROLNET_DIR}/controlnet-openpose-sdxl-1.0.safetensors"
+# Папки моделей (внутри проекта)
+MODELS_DIR = os.path.join(COMFY_PATH, "models")
+CHECKPOINTS_DIR = os.path.join(MODELS_DIR, "checkpoints")
+CHECKPOINT_FILE = os.path.join(CHECKPOINTS_DIR, "PonyRealism_v2.1.safetensors")
+VAE_DIR = os.path.join(MODELS_DIR, "vae")
+VAE_FILE = os.path.join(VAE_DIR, "sdxl_vae.safetensors")
+LORA_DIR = os.path.join(MODELS_DIR, "loras")
+CONTROLNET_DIR = os.path.join(MODELS_DIR, "controlnet")
+CONTROLNET_FILE = os.path.join(CONTROLNET_DIR, "controlnet-openpose-sdxl-1.0.safetensors")
+OUTPUT_DIR = os.path.join(COMFY_PATH, "output")
 
-# Impact Pack Models
-BBOX_DIR = "/app/ComfyUI/models/ultralytics/bbox"
-SAM_DIR = "/app/ComfyUI/models/sams"
-BBOX_MODEL = f"{BBOX_DIR}/face_yolov8n.pt"
-SAM_MODEL = f"{SAM_DIR}/sam_vit_b_01ec64.pth"
-
-# Deepfake models path
-INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
-REACTOR_DIR = "/app/ComfyUI/models/reactor"
+# Остальные модели
+BBOX_DIR = os.path.join(MODELS_DIR, "ultralytics", "bbox")
+SAM_DIR = os.path.join(MODELS_DIR, "sams")
+INSIGHTFACE_DIR = os.path.join(MODELS_DIR, "insightface")
 
 def log(message):
     print(f"[Handler] {message}", flush=True)
@@ -508,14 +508,8 @@ import random
 # ... (imports)
 
 # Настройки путей
-# Пытаемся определить корень проекта динамически
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VOLUME_PATH = "/runpod-volume"
-COMFY_PATH = os.path.join(PROJECT_ROOT, "ComfyUI")
-MODELS_DIR = os.path.join(COMFY_PATH, "models")
-CHECKPOINT_FILE = os.path.join(MODELS_DIR, "checkpoints", "PonyRealism_v2.1.safetensors")
-LORA_DIR = os.path.join(MODELS_DIR, "loras")
-OUTPUT_DIR = os.path.join(COMFY_PATH, "output")
+# PROJECT_ROOT уже определен в начале файла
+CHECKPOINT_FILE = os.path.join(CHECKPOINTS_DIR, "PonyRealism_v2.1.safetensors")
 
 def setup_volume_links():
     """Разворачивает окружение и ComfyUI на сетевой диск"""
