@@ -111,7 +111,7 @@ def main():
                 f.write(tag_string)
                 
         except Exception as e:
-            print(f"Error processing {filename}: {e}")
+            print(f"Error processing {img_path}: {e}")
 
     print("Tagging complete!")
 

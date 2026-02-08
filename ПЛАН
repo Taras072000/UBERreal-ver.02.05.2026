@@ -1,0 +1,72 @@
+# ПЛАН РЕАЛИЗАЦИИ ПРОЕКТА UBERreal (RunPod + Telegram Bot)
+
+## ✅ ЭТАП 1: БАЗА И ИНФРАСТРУКТУРА (ВЫПОЛНЕНО)
+[x] 1.1. Настройка репозитория и окружения (Python 3.10, Monorepo)
+[x] 1.2. Dockerfile: CUDA 12.1, PyTorch 2.1, ComfyUI, API-режим
+[x] 1.3. Скрипты инициализации RunPod (serverless_handler.py)
+[x] 1.4. Настройка Persistent Volume (50GB+) для моделей
+[x] 1.5. Telegram Bot v1.0: Базовая генерация, интеграция API
+
+## ✅ ЭТАП 2: УЛУЧШЕНИЕ КАЧЕСТВА И UX (ВЫПОЛНЕНО - v2.0/v2.1)
+[x] 2.1. Telegram Bot v2.0:
+    - [x] Меню настроек (Aspect Ratio, Styles)
+    - [x] Админ-панель (/admin) с балансом и статусом
+    - [x] Прием фото-референсов (поз) от пользователя
+[x] 2.2. Core Engine v2.1:
+    - [x] High-Res Fix (Upscale x1.5) для FHD качества
+    - [x] ControlNet OpenPose (управление позой)
+    - [x] LoRA System Basic:
+        - [x] Detail Slider (кожа/текстуры)
+        - [x] Cum Shot (жидкости)
+        - [x] Expressions (эмоции)
+    - [x] Интеграция ComfyUI Impact Pack (библиотеки)
+
+## 🚧 ЭТАП 3: HARDCORE CONTENT & DIVERSITY (В РАБОТЕ - v2.3)
+[ ] 3.1. Deep Anatomy Customization (LoRA & Embeddings):
+    - [ ] ГРУДЬ (Breasts):
+        - Типы: Natural (натуральная), Silicone (силикон), Saggy (обвисшая), Perky (подтянутая), Tubiform
+        - Размеры: Small (A-B), Medium (C-D), Large (E-F), Huge/Gigantic (огромная), Asymmetrical
+        - Соски (Nipples): Puffy (пухлые), Inverted (втянутые), Long (длинные), Hard/Erect (стоячие), Large/Small Areola
+    - [ ] ЖЕНСКИЕ ГЕНИТАЛИИ (Pussy):
+        - Виды: Puffy (пухлая/верблюжья лапка), Innie (аккуратная), Outie (выступающая), Hairy (волосатая), Shaved (бритая)
+        - Анатомия: Tight/Narrow (узкая), Gaping/Wide (широкая/зияющая), Deep (глубокая), Wet (влажная)
+    - [ ] МУЖСКИЕ ГЕНИТАЛИИ (Penis):
+        - Типы: Circumcised (обрезанный), Uncircumcised (необрезанный)
+        - Размеры: Micro, Average, Large, Monster/Huge (гигантский), Thick/Girthy (толстый)
+        - Детали: Veiny (венозный), Curved (изогнутый)
+    - [ ] ТЕЛОСЛОЖЕНИЕ (Body Shapes):
+        - Бедра (Hips): Wide (широкие), Narrow (узкие), Violin Hips
+        - Талия (Waist): Hourglass (песочные часы), Slim, Chubby (полноватая), Toned
+        - Кожа и Текстуры: Goosebumps (мурашки), Sweat (пот), Veins (вены), Stretch marks (растяжки), Cellulite
+[ ] 3.2. Система разнообразия (Diversity):
+    - [ ] Меню выбора национальности/кожи в боте (Asian, Ebony, Latina, Pale, Slavic)
+    - [ ] Рандомизатор "виртуальной модели" (сохранение параметров)
+[ ] 3.3. Расширенная работа с позами:
+    - [ ] Поддержка Multi-Subject ControlNet (позы для пар/секса)
+    - [ ] Catalog of Sex Acts (позиции)
+
+## 🚧 ЭТАП 4: ПРОДВИНУТЫЕ ФУНКЦИИ (ОЧЕРЕДЬ)
+[ ] 4.1. Face Detailer (ADetailer/Impact Pack):
+    - [ ] Внедрение нод FaceDetailer в Workflow (авто-улучшение лиц)
+    - [ ] Настройка моделей детекции (BBOX/SAM)
+[ ] 4.2. Каталог Поз в Боте:
+    - [ ] Вшитый набор пресетов (Doggystyle, Cowgirl, Missionary и др.)
+
+## 📅 ЭТАП 5: DEEPFAKE & IDENTITY (ПЛАНИРУЕТСЯ)
+[ ] 5.1. Deepfake Module:
+    - [ ] Сборка Docker с InsightFace
+    - [ ] Интеграция ReActor
+[ ] 5.2. Режимы работы с лицом:
+    - [ ] "Виртуальная модель" (фиксированное лицо)
+    - [ ] "Face Injection" (лицо клиента)
+
+## 📅 ЭТАП 6: ВИДЕО (ПЛАНИРУЕТСЯ)
+[ ] 6.1. AnimateDiff: Генерация коротких видео (GIF/MP4)
+[ ] 6.2. Видео-пайплайн в боте
+
+## 📈 ЭТАП 7: ПРОДАКШН
+[ ] 7.1. Оптимизация Cold Start
+[ ] 7.2. Стресс-тесты
+
+
+bash -lc 'source .venv/bin/activate && python -m bot.main'

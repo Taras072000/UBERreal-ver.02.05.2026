@@ -1,11 +1,11 @@
-# Use a more common and stable RunPod base image
-FROM runpod/pytorch:2.2.1-py3.10-cuda12.1.1-devel-ubuntu22.04
+# Use PyTorch 2.4.0 to support ComfyUI's new torch.uint64 requirement
+FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
-# Install system dependencies (build-essential added)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     wget \
@@ -25,13 +25,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # --- PRE-INSTALL HEAVY DEPENDENCIES ---
-# Grouping pip installs to reduce layers and improve caching
+# Force numpy < 2.0.0 globally to avoid torch/numpy 2.0 compatibility issues
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir "numpy<2.0.0" cython && \
     pip install --no-cache-dir onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/ && \
     pip install --no-cache-dir insightface
 
-# Install ComfyUI early to cache it
+# Install ComfyUI (Pinned to ensure compatibility with PyTorch 2.4)
 RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI && \
     pip install --no-cache-dir -r /app/ComfyUI/requirements.txt
 
@@ -40,7 +40,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir "numpy<2.0.0"
 
-# Copy project files (Respects .dockerignore)
+# Copy project files
 COPY . /app
 
 # Expose ports

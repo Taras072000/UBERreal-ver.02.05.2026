@@ -570,13 +570,6 @@ def handler(job):
 
         # 1. Запуск ComfyUI (если нужно)
         if not check_comfy_status():
-            log("Forcing numpy<2.0.0 to prevent torch conflict...")
-            try:
-                subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0"], check=True)
-                log("Numpy downgrade complete.")
-            except Exception as e:
-                log(f"Failed to downgrade numpy: {e}")
-
             log("Starting ComfyUI...")
             subprocess.Popen(["python3", "/app/ComfyUI/main.py", "--listen", "0.0.0.0", "--port", "8188"])
             if not check_comfy_status():

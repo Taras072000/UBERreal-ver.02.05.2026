@@ -24,22 +24,34 @@ if [ -f "$MODEL_PATH" ]; then
 fi
 
 if [ ! -f "$MODEL_PATH" ]; then
-    echo "Downloading PonyRealism_v2.1.safetensors (6.46GB) via direct wget..."
-    # This is a confirmed direct link to the safetensors file
-    wget -O "$MODEL_PATH" "https://huggingface.co/Linaqruf/pony-realism-v2.1/resolve/main/pony-realism-v2.1.safetensors?download=true"
+    echo "Downloading PonyRealism_v2.1 Mirror (6.46GB)..."
+    # Этот репозиторий НЕ требует авторизации (Mirror)
+    wget -O "$MODEL_PATH" "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors"
+    
+    # Если файл все еще битый, пробуем Civitai
+    FILE_SIZE=$(stat -c%s "$MODEL_PATH" 2>/dev/null || echo 0)
+    if [ "$FILE_SIZE" -lt 5000000000 ]; then
+        echo "Mirror failed. Trying Civitai direct link..."
+        rm -f "$MODEL_PATH"
+        wget -O "$MODEL_PATH" "https://civitai.com/api/download/models/400435?type=Model&format=SafeTensor&size=full&fp=fp16" --no-check-certificate
+    fi
 fi
 
 # 3. Update/Install necessary dependencies
 pip install --upgrade pip
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install -r training/requirements_train.txt
-pip install transformers==4.38.2  # Critical fix for CLIPFeatureExtractor error
+pip install transformers==4.38.2 imagesize  # Critical fixes
 
-# 3. Fix paths in the main training script to match Pod structure
-# Replacing /app/ with /workspace/UBERreal-ver.02.05.2026/
-sed -i 's|/app/|/workspace/UBERreal-ver.02.05.2026/|g' training/run_training.sh
+# 4. Fix paths in the main training script to match Pod structure
+# Replacing /app/ with current workspace path
+WORKSPACE_PATH="/workspace/UBERreal-ver.02.05.2026"
+sed -i "s|/app/|$WORKSPACE_PATH/|g" training/run_training.sh
 
-# 4. Remove --xformers if it causes issues (using SDPA instead)
+# 5. Create output directory if it doesn't exist
+mkdir -p "$WORKSPACE_PATH/training/output"
+
+# 6. Remove --xformers if it causes issues (using SDPA instead)
 sed -i 's/--xformers//g' training/run_training.sh
 
 # 5. Make sure the script is executable and run it
