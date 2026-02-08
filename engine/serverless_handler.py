@@ -299,7 +299,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     """
     # Базовые ноды
     # Detailer prompts
-    detail_prompt = ", (detailed skin texture:1.3), (detailed nipples:1.2), (detailed pussy:1.2), (hyperdetailed:1.2)"
+    # CLEANER PROMPT: Removing "hyperdetailed" which causes skin artifacts. Adding lighting.
+    detail_prompt = ", (soft studio lighting, rim light, volumetric fog:1.2), (natural skin texture, flush, goosebumps:0.8), (raw photo, dslr, 8k uhd:1.2)"
     
     # Save Pose Image if present
     pose_filename = "pose.png"
@@ -332,14 +333,15 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     current_model = ["10", 0]
     current_clip = ["10", 1]
     
-    # 1. Detail Slider
+        # 1. Detail Slider
     if os.path.exists(LORA_DETAIL):
         workflow["100"] = {
             "class_type": "LoraLoader",
             "inputs": {
                 "lora_name": os.path.basename(LORA_DETAIL),
-                "strength_model": 1.5,
-                "strength_clip": 1.0,
+                # REDUCED STRENGTH: 1.5 -> 0.6 to avoid artifacts/spots on skin
+                "strength_model": 0.6,
+                "strength_clip": 0.6,
                 "model": current_model,
                 "clip": current_clip
             }
@@ -471,7 +473,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
-                "denoise": 0.65
+                # LOWER DENOISE: 0.65 -> 0.45 to preserve details without hallucinating
+                "denoise": 0.45
             }
         }
         workflow["22"] = {
@@ -527,7 +530,8 @@ def handler(job):
         width = int(job_input.get("width", 1024))
         height = int(job_input.get("height", 1024))
         steps = int(job_input.get("steps", 25))
-        cfg = float(job_input.get("cfg", 7.0))
+        # LOWER CFG FOR REALISM: 7.0 -> 4.5
+        cfg = float(job_input.get("cfg", 4.5))
         sampler_name = job_input.get("sampler_name", "dpmpp_2m")
         scheduler = job_input.get("scheduler", "karras")
         seed = int(job_input.get("seed", 0))
