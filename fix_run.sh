@@ -2,12 +2,17 @@
 # Universal Fix & Run script for RunPod GPU Pod
 
 # 1. Export library paths for CUDA/cuDNN
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib
+# Try multiple common paths for RunPod and official images
+CUDNN_PATH=$(find /usr/local -name libcudnn.so.9 | head -n 1)
+if [ -n "$CUDNN_PATH" ]; then
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(dirname $CUDNN_PATH)
+fi
 
 # 2. Update/Install necessary dependencies
 pip install --upgrade pip
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install -r training/requirements_train.txt
+pip install transformers==4.38.2  # Critical fix for CLIPFeatureExtractor error
 
 # 3. Fix paths in the main training script to match Pod structure
 # Replacing /app/ with /workspace/UBERreal-ver.02.05.2026/

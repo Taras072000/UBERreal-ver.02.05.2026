@@ -59,34 +59,51 @@ def main():
     input_name = sess.get_inputs()[0].name
     label_name = sess.get_outputs()[0].name
 
+    # Recursive search for images
     image_exts = ('.png', '.jpg', '.jpeg', '.webp', '.bmp')
-    files = [f for f in os.listdir(args.dir) if f.lower().endswith(image_exts)]
+    files_with_paths = []
+    for root, dirs, files in os.walk(args.dir):
+        for f in files:
+            if f.lower().endswith(image_exts):
+                files_with_paths.append(os.path.join(root, f))
     
-    print(f"Found {len(files)} images. Starting tagging...")
+    print(f"Found {len(files_with_paths)} images. Starting tagging...")
     
-    for filename in tqdm(files):
-        img_path = os.path.join(args.dir, filename)
+    for img_path in tqdm(files_with_paths):
+        # Extract trigger word from parent folder (e.g., 10_hairy_pussy -> hairy_pussy)
+        parent_folder = os.path.basename(os.path.dirname(img_path))
+        trigger_word = ""
+        if "_" in parent_folder:
+            # Check if it starts with a number like 10_
+            parts = parent_folder.split("_", 1)
+            if parts[0].isdigit():
+                trigger_word = parts[1]
+            else:
+                trigger_word = parent_folder
+        else:
+            trigger_word = parent_folder
+
         txt_path = os.path.splitext(img_path)[0] + ".txt"
-        
-        # Skip if txt exists? No, overwrite or append? Overwrite for now.
         
         try:
             img = Image.open(img_path)
-            # WD14 usually takes 448x448
             data = preprocess_image(img, size=448)
             
             probs = sess.run([label_name], {input_name: data})[0][0]
             
             # Filter tags
             active_tags = []
+            # Add the trigger word first
+            if trigger_word:
+                active_tags.append(trigger_word)
+
             for i, p in enumerate(probs):
-                if p >= args.thresh and i < len(tags): # Ensure index bounds
-                    # Skip 'rating' tags if they are at the end, usually general tags are first
-                    # In v2 CSV: tag_id, name, category, count
-                    # We just took names.
-                    # Usually tags[4:] are the descriptive ones.
-                    if i > 3: # Skip rating/general meta tags often at start
-                        active_tags.append(tags[i])
+                if p >= args.thresh and i < len(tags):
+                    if i > 3: # Skip rating/general meta tags
+                        # Clean tag name (replaces underscores with spaces for some models, 
+                        # but Kohya likes underscores often. Let's keep it clean)
+                        tag_name = tags[i].replace("_", " ")
+                        active_tags.append(tag_name)
             
             tag_string = ", ".join(active_tags)
             
