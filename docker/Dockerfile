@@ -1,23 +1,23 @@
-# Ultra-lightweight Dockerfile
-FROM python:3.11-slim
+# Используем официальный образ как фундамент
+FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONUNBUFFERED=1
 
-# Install only basic system tools (libgl1 instead of libgl1-mesa-glx for Debian Trixie compatibility)
+# Ставим только системные зависимости
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git wget curl ffmpeg libsm6 libxext6 libgl1 libglib2.0-0 build-essential python3-venv \
+    git wget curl ffmpeg libsm6 libxext6 libgl1 libglib2.0-0 build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install only runpod and basic requests
+# Установка библиотек в образ (как и раньше)
 RUN pip install --upgrade pip && \
-    pip install runpod requests
+    pip install runpod requests transformers==4.38.2 imagesize onnxruntime-gpu insightface
 
-# Copy project code
+# Копируем код проекта
 COPY . /app
 
-# The handler will install everything else onto the Network Volume
+# ComfyUI теперь будет жить на твоем Network Volume (диск 50ГБ)
+# Это спасет билд от переполнения, а воркер будет работать быстрее
 CMD ["python", "-u", "/app/engine/serverless_handler.py"]
