@@ -20,9 +20,16 @@ LORA_DIR = "/app/ComfyUI/models/loras"
 LORA_HINATA = f"{LORA_DIR}/Hinata_SDXL.safetensors"
 LORA_CUM = f"{LORA_DIR}/Cum_Shot_SDXL.safetensors"
 LORA_DETAIL = f"{LORA_DIR}/Detail_Slider_SDXL.safetensors"
+LORA_EXPRESSIONS = f"{LORA_DIR}/Expressions_SDXL.safetensors"
 
 CONTROLNET_DIR = "/app/ComfyUI/models/controlnet"
 CONTROLNET_FILE = f"{CONTROLNET_DIR}/controlnet-openpose-sdxl-1.0.safetensors"
+
+# Impact Pack Models
+BBOX_DIR = "/app/ComfyUI/models/ultralytics/bbox"
+SAM_DIR = "/app/ComfyUI/models/sams"
+BBOX_MODEL = f"{BBOX_DIR}/face_yolov8n.pt"
+SAM_MODEL = f"{SAM_DIR}/sam_vit_b_01ec64.pth"
 
 # Deepfake models path
 INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
@@ -168,6 +175,40 @@ def ensure_models():
             except Exception as e:
                 log(f"Detail LoRA download failed: {e}")
 
+        # Download LoRA (Expressions)
+        if not os.path.exists(LORA_EXPRESSIONS):
+            log(f"Downloading Expressions LoRA...")
+            try:
+                # CivitAI: Expressions
+                r = requests.get("https://civitai.com/api/download/models/121545?type=Model&format=SafeTensor", stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(LORA_EXPRESSIONS, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("Expressions LoRA downloaded.")
+            except Exception as e:
+                log(f"Expressions LoRA download failed: {e}")
+
+        # Impact Pack Models
+        if not os.path.exists(BBOX_DIR): os.makedirs(BBOX_DIR, exist_ok=True)
+        if not os.path.exists(SAM_DIR): os.makedirs(SAM_DIR, exist_ok=True)
+        
+        if not os.path.exists(BBOX_MODEL):
+            log("Downloading Face YOLO model...")
+            try:
+                r = requests.get("https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt", stream=True, timeout=600)
+                with open(BBOX_MODEL, "wb") as f: f.write(r.content)
+            except Exception as e: log(f"YOLO download failed: {e}")
+
+        if not os.path.exists(SAM_MODEL):
+            log("Downloading SAM model...")
+            try:
+                r = requests.get("https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth", stream=True, timeout=600)
+                with open(SAM_MODEL, "wb") as f: 
+                    for chunk in r.iter_content(chunk_size=1024*1024):
+                        if chunk: f.write(chunk)
+            except Exception as e: log(f"SAM download failed: {e}")
+
         # Download ControlNet (OpenPose)
         if not os.path.exists(CONTROLNET_DIR):
             os.makedirs(CONTROLNET_DIR, exist_ok=True)
@@ -288,6 +329,17 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "clip": ["100", 1]
             }
         },
+        # LORA 3: Expressions (Optional trigger)
+        "102": {
+            "class_type": "LoraLoader",
+            "inputs": {
+                "lora_name": os.path.basename(LORA_EXPRESSIONS),
+                "strength_model": 0.7,
+                "strength_clip": 0.7,
+                "model": ["101", 0],
+                "clip": ["101", 1]
+            }
+        },
         "19": {
             "class_type": "VAELoader",
             "inputs": {"vae_name": os.path.basename(VAE_FILE)}
@@ -296,14 +348,14 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": (prompt_text or "beautiful woman") + detail_prompt,
-                "clip": ["101", 1] # Connect to last LoRA CLIP
+                "clip": ["102", 1] # Connect to last LoRA CLIP
             }
         },
         "12": {
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": negative_prompt,
-                "clip": ["101", 1] # Connect to last LoRA CLIP
+                "clip": ["102", 1] # Connect to last LoRA CLIP
             }
         },
         "13": {
@@ -349,7 +401,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "cfg": cfg,
                 "sampler_name": sampler_name,
                 "scheduler": scheduler,
-                "model": ["101", 0], # Connect to last LoRA Model
+                "model": ["102", 0], # Connect to last LoRA Model
                 "positive": positive_condition_node,
                 "negative": negative_condition_node,
                 "latent_image": ["13", 0],
@@ -386,7 +438,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "cfg": cfg,
                 "sampler_name": "dpmpp_sde",
                 "scheduler": "karras",
-                "model": ["101", 0], # Connect to last LoRA Model
+                "model": ["102", 0], # Connect to last LoRA Model
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],

@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libgl1-mesa-glx \
+    libglib2.0-0 \
     unzip \
     build-essential \
     python3-dev \
@@ -32,6 +33,13 @@ RUN pip install --upgrade pip && \
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
 RUN cd /app/ComfyUI && pip install -r requirements.txt
+
+# Install ComfyUI Custom Nodes (Impact Pack for Face Detailer)
+RUN cd /app/ComfyUI/custom_nodes && \
+    git clone https://github.com/ltdrdata/ComfyUI-Impact-Pack.git && \
+    cd ComfyUI-Impact-Pack && \
+    pip install -r requirements.txt && \
+    python install.py
 
 # Copy project files
 COPY . /app
