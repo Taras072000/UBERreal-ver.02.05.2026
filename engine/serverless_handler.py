@@ -64,13 +64,18 @@ def ensure_models():
             log(f"Renaming {old_checkpoint} to {CHECKPOINT_FILE}")
             os.rename(old_checkpoint, CHECKPOINT_FILE)
         
-        if not os.path.exists(CHECKPOINT_FILE):
-            log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
+        if not os.path.exists(CHECKPOINT_FILE) or os.path.getsize(CHECKPOINT_FILE) < 100 * 1024 * 1024:
+            if os.path.exists(CHECKPOINT_FILE):
+                log(f"File {CHECKPOINT_FILE} is too small ({os.path.getsize(CHECKPOINT_FILE)} bytes). Deleting and re-downloading...")
+                os.remove(CHECKPOINT_FILE)
+            
+            log(f"Downloading Pony Realism Checkpoint to {CHECKPOINT_FILE}...")
             
             # Pony Realism v2.1 Main
+            # PRIORITIZE HUGGINGFACE MIRROR (More stable than CivitAI API without token)
             urls = [
-                "https://civitai.com/api/download/models/534642?type=Model&format=SafeTensor", 
-                "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors"
+                "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors", 
+                "https://civitai.com/api/download/models/534642?type=Model&format=SafeTensor"
             ]
             
             # Hugging Face Token from Environment Variable
