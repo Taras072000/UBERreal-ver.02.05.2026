@@ -27,7 +27,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121 && \
+    # Install dependencies for InsightFace first
+    pip install numpy==1.26.4 cython && \
     pip install -r requirements.txt && \
+    # Install InsightFace and ONNX Runtime
     pip install insightface==0.7.3 onnxruntime-gpu==1.17.1
 
 # Install ComfyUI
