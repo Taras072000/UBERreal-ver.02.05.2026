@@ -3,8 +3,8 @@
 # torchvision>=0.17.0
 # torchaudio>=2.2.0
 
-# Install xformers only on Linux (server/GPU). macOS build often fails.
-xformers==0.0.23; platform_system == "Linux"
+# Install xformers only if compatible (Disabled to prevent PyTorch downgrade)
+# xformers==0.0.23; platform_system == "Linux"
 
 # HuggingFace & Diffusers (for custom pipelines if needed, though ComfyUI uses its own)
 diffusers>=0.25.0
