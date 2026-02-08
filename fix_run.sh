@@ -24,8 +24,9 @@ if [ -f "$MODEL_PATH" ]; then
 fi
 
 if [ ! -f "$MODEL_PATH" ]; then
-    echo "Downloading PonyRealism_v2.1.safetensors (6.46GB) via huggingface-hub..."
-    python3 -c "from huggingface_hub import hf_hub_download; import shutil; path = hf_hub_download(repo_id='Linaqruf/pony-realism-v2.1', filename='pony-realism-v2.1.safetensors'); shutil.copy(path, '$MODEL_PATH')"
+    echo "Downloading PonyRealism_v2.1.safetensors (6.46GB) via direct wget..."
+    # This is a confirmed direct link to the safetensors file
+    wget -O "$MODEL_PATH" "https://huggingface.co/Linaqruf/pony-realism-v2.1/resolve/main/pony-realism-v2.1.safetensors?download=true"
 fi
 
 # 3. Update/Install necessary dependencies
