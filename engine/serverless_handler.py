@@ -168,6 +168,9 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     face_swap_image: base64 string of face image (if provided)
     """
     # Базовые ноды
+    # Detailer prompts
+    detail_prompt = ", (detailed skin texture:1.3), (detailed nipples:1.2), (detailed pussy:1.2), (hyperdetailed:1.2)"
+    
     workflow = {
         "10": {
             "class_type": "CheckpointLoaderSimple",
@@ -180,7 +183,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         "11": {
             "class_type": "CLIPTextEncode",
             "inputs": {
-                "text": prompt_text or "beautiful woman",
+                "text": (prompt_text or "beautiful woman") + detail_prompt,
                 "clip": ["10", 1]
             }
         },
@@ -244,7 +247,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
-                "denoise": 0.55
+                "denoise": 0.65
             }
         }
         workflow["22"] = {
