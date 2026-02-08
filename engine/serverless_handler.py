@@ -539,53 +539,60 @@ import random
 
 # Настройки путей на сетевом томе
 VOLUME_PATH = "/runpod-volume"
-COMFY_PATH = "/app/ComfyUI" # В контейнере ComfyUI лежит тут
-MODELS_ON_VOLUME = f"{VOLUME_PATH}/models"
+COMFY_PATH = f"{VOLUME_PATH}/ComfyUI"
+PYTHON_ENV = f"{VOLUME_PATH}/venv"
 
-def setup_volume_links():
-    """Создает симлинки на сетевой том для моделей"""
+def setup_full_environment():
+    """Полная установка окружения на сетевой диск при первом запуске"""
     if not os.path.exists(VOLUME_PATH):
-        log("Warning: Network Volume not found at /runpod-volume. Using local storage.")
-        return
+        log("CRITICAL ERROR: Network Volume not attached!")
+        return False
 
-    # Создаем структуру папок на диске, если её нет
-    os.makedirs(f"{MODELS_ON_VOLUME}/checkpoints", exist_ok=True)
-    os.makedirs(f"{MODELS_ON_VOLUME}/loras", exist_ok=True)
-    os.makedirs(f"{MODELS_ON_VOLUME}/vae", exist_ok=True)
-    os.makedirs(f"{MODELS_ON_VOLUME}/controlnet", exist_ok=True)
+    # 1. Создаем виртуальное окружение на диске, если его нет
+    if not os.path.exists(PYTHON_ENV):
+        log("Creating Python Virtual Env on Network Volume...")
+        subprocess.run([sys.executable, "-m", "venv", PYTHON_ENV], check=True)
+    
+    # Путь к pip внутри venv
+    venv_pip = f"{PYTHON_ENV}/bin/pip"
+    venv_python = f"{PYTHON_ENV}/bin/python"
 
-    # Список папок, которые мы хотим вынести на диск
-    targets = {
-        f"{COMFY_PATH}/models/checkpoints": f"{MODELS_ON_VOLUME}/checkpoints",
-        f"{COMFY_PATH}/models/loras": f"{MODELS_ON_VOLUME}/loras",
-        f"{COMFY_PATH}/models/vae": f"{MODELS_ON_VOLUME}/vae",
-        f"{COMFY_PATH}/models/controlnet": f"{MODELS_ON_VOLUME}/controlnet",
-    }
+    # 2. Ставим тяжелые либы (PyTorch 2.4.0) на диск
+    if not os.path.exists(f"{PYTHON_ENV}/lib/python3.11/site-packages/torch"):
+        log("Installing PyTorch 2.4.0 to Volume (this happens only once)...")
+        subprocess.run([venv_pip, "install", "torch==2.4.0", "torchvision", "torchaudio", "--index-url", "https://download.pytorch.org/whl/cu121"], check=True)
+        subprocess.run([venv_pip, "install", "numpy<2.0.0", "insightface", "onnxruntime-gpu"], check=True)
 
-    for local_path, vol_path in targets.items():
-        if os.path.exists(local_path) and not os.path.islink(local_path):
-            log(f"Moving {local_path} to volume and creating symlink...")
-            if os.path.isdir(local_path):
-                # Если в локальной папке уже есть файлы, переносим их (кроме пустых)
-                for item in os.listdir(local_path):
-                    shutil.move(os.path.join(local_path, item), vol_path)
-                os.rmdir(local_path)
-            os.symlink(vol_path, local_path)
-        elif not os.path.exists(local_path):
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
-            os.symlink(vol_path, local_path)
+    # 3. Клонируем ComfyUI на диск
+    if not os.path.exists(COMFY_PATH):
+        log("Cloning ComfyUI to Volume...")
+        subprocess.run(["git", "clone", "--depth", "1", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
+        subprocess.run([venv_pip, "install", "-r", f"{COMFY_PATH}/requirements.txt"], check=True)
+
+    # 4. Проверяем наши специфичные либы
+    log("Ensuring project requirements...")
+    subprocess.run([venv_pip, "install", "runpod", "requests", "transformers==4.38.2", "imagesize"], check=True)
+
+    return venv_python
 
 def handler(job):
-    """
-    Основная функция-обработчик RunPod Serverless.
-    """
     try:
         log(f"Received job: {job}")
         
-        # Настраиваем связи с сетевым томом
-        setup_volume_links()
-        
-        # Очищаем старые картинки перед запуском
+        # Настраиваем всё окружение на внешнем диске
+        venv_python = setup_full_environment()
+        if not venv_python:
+            return {"error": "Environment setup failed"}
+
+        # Запускаем ComfyUI используя python из venv
+        if not check_comfy_status():
+            log("Starting ComfyUI from Volume...")
+            subprocess.Popen([venv_python, f"{COMFY_PATH}/main.py", "--listen", "0.0.0.0", "--port", "8188"])
+            
+            # Ждем готовности
+            for _ in range(60):
+                if check_comfy_status(): break
+                time.sleep(2)
         clear_output_dir()
         job_input = job["input"]
         prompt_text = job_input.get("prompt", "")
