@@ -33,16 +33,6 @@ RUN pip install --upgrade pip && \
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
 RUN cd /app/ComfyUI && pip install -r requirements.txt
 
-# Install ComfyUI
-RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
-RUN cd /app/ComfyUI && pip install -r requirements.txt
-
-# Install ComfyUI Custom Nodes (ReActor)
-RUN cd /app/ComfyUI/custom_nodes && \
-    git clone https://github.com/Gourieff/comfyui-reactor-node.git && \
-    cd comfyui-reactor-node && \
-    pip install -r requirements.txt
-
 # Copy project files
 COPY . /app
 
