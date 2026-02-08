@@ -133,9 +133,35 @@ def ensure_models():
                 log(f"LoRA download failed: {e}")
             
         # Ensure InsightFace models exist (if directory is empty, download them)
-        # This part will be enabled once we add insightface lib
-        # if not os.path.exists(INSIGHTFACE_DIR):
-        #     os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
+        if not os.path.exists(INSIGHTFACE_DIR):
+            os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
+            
+        # Check specific models folder usually expected by ReActor/InsightFace
+        # ReActor expects models in: models/insightface/models/antelopev2 or buffalo_l
+        # Let's create the structure
+        IF_MODELS_PATH = os.path.join(INSIGHTFACE_DIR, "models", "buffalo_l")
+        if not os.path.exists(IF_MODELS_PATH):
+            os.makedirs(IF_MODELS_PATH, exist_ok=True)
+            log(f"Downloading InsightFace models to {IF_MODELS_PATH}...")
+            # Download basic models (1w3d65, 2d106det, det_10g, genderage, glintr100)
+            base_url = "https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_l.zip"
+            try:
+                zip_path = os.path.join(INSIGHTFACE_DIR, "buffalo_l.zip")
+                r = requests.get(base_url, stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(zip_path, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("InsightFace zip downloaded. Extracting...")
+                    import zipfile
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.join(INSIGHTFACE_DIR, "models"))
+                    os.remove(zip_path)
+                    log("InsightFace models extracted.")
+                else:
+                     log(f"InsightFace download failed with status {r.status_code}")
+            except Exception as e:
+                log(f"InsightFace setup failed: {e}")
             
     except Exception as e:
         log(f"Model download failed: {e}")

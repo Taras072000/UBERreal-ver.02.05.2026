@@ -27,11 +27,18 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    pip install insightface==0.7.3 onnxruntime-gpu==1.17.1
 
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
 RUN cd /app/ComfyUI && pip install -r requirements.txt
+
+# Install ComfyUI Custom Nodes (ReActor)
+RUN cd /app/ComfyUI/custom_nodes && \
+    git clone https://github.com/Gourieff/comfyui-reactor-node.git && \
+    cd comfyui-reactor-node && \
+    pip install -r requirements.txt
 
 # Copy project files
 COPY . /app
