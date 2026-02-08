@@ -312,8 +312,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     face_swap_image: base64 string of face image (if provided)
     custom_loras: list of {"name": "...", "strength_model": 1.0, "strength_clip": 1.0}
     """
-    # CLEANER PROMPT: Added POV/Wide Angle to match the reference style
-    detail_prompt = ", (POV:1.2), (wide angle lens:1.2), (soft studio lighting, rim light:1.1), (natural skin texture, flush:0.8), (raw photo, dslr, 8k uhd:1.2), (spread legs:1.4), (legs wide open:1.4), (protruding vulva:1.3), (hands on legs:1.3)"
+    # CLEANER PROMPT: Оставляем только теги качества, убираем всё лишнее
+    detail_prompt = ", (soft studio lighting, rim light:1.1), (natural skin texture:1.0), (raw photo, dslr, 8k uhd:1.2), (high quality:1.2)"
     
     workflow = {
         "10": {
