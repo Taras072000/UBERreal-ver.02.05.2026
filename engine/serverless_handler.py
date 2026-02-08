@@ -505,56 +505,60 @@ import random
 
 # ... (imports)
 
-# Настройки путей на сетевом томе
+# Настройки путей
+# Пытаемся определить корень проекта динамически
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VOLUME_PATH = "/runpod-volume"
-COMFY_PATH = "/app/ComfyUI"
-MODELS_DIR = f"{COMFY_PATH}/models"
-VOLUME_MODELS = f"{VOLUME_PATH}/models"
+COMFY_PATH = os.path.join(PROJECT_ROOT, "ComfyUI")
+MODELS_DIR = os.path.join(COMFY_PATH, "models")
+CHECKPOINT_FILE = os.path.join(MODELS_DIR, "checkpoints", "PonyRealism_v2.1.safetensors")
+LORA_DIR = os.path.join(MODELS_DIR, "loras")
+OUTPUT_DIR = os.path.join(COMFY_PATH, "output")
 
 def setup_volume_links():
     """Разворачивает окружение и ComfyUI на сетевой диск"""
     if not os.path.exists(VOLUME_PATH):
-        log("CRITICAL: Network Volume not attached! Need volume for this light build.")
-        return
+        log("Network Volume not attached. Using internal container storage.")
+        # Если ComfyUI нет в папке проекта, скачиваем его туда
+        if not os.path.exists(COMFY_PATH):
+            log("Cloning ComfyUI to project root...")
+            subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
+        return sys.executable
 
     # 1. Проверяем и устанавливаем PyTorch и зависимости на диск
     venv_path = os.path.join(VOLUME_PATH, "venv")
     bin_path = os.path.join(venv_path, "bin", "python")
     
     if not os.path.exists(bin_path):
-        log("Environment not found on Volume. Installing PyTorch (this will take 3-5 mins, once)...")
+        log("Environment not found on Volume. Installing dependencies (once)...")
         subprocess.run([sys.executable, "-m", "venv", venv_path], check=True)
         subprocess.run([bin_path, "-m", "pip", "install", "torch", "torchvision", "torchaudio", "--index-url", "https://download.pytorch.org/whl/cu121"], check=True)
         subprocess.run([bin_path, "-m", "pip", "install", "runpod", "requests", "transformers==4.38.2", "imagesize", "onnxruntime-gpu", "insightface"], check=True)
 
-    # Переключаем текущий запуск на использование библиотек с диска
-    # (Это хитрая замена интерпретатора на лету для воркера)
-    
     # 2. Проверяем наличие ComfyUI на диске
     volume_comfy = os.path.join(VOLUME_PATH, "ComfyUI")
     if not os.path.exists(volume_comfy):
-        log("ComfyUI not found on Volume. Cloning...")
+        log("Cloning ComfyUI to Volume...")
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", volume_comfy], check=True)
         
         # Установка нод
         nodes_dir = os.path.join(volume_comfy, "custom_nodes")
-        log("Installing essential custom nodes...")
         subprocess.run(["git", "clone", "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git", os.path.join(nodes_dir, "ComfyUI-Impact-Pack")], check=True)
         subprocess.run(["git", "clone", "https://github.com/Gourieff/comfyui-reactor-node.git", os.path.join(nodes_dir, "comfyui-reactor-node")], check=True)
         
-        # Установка зависимостей нод через venv с диска
+        # Установка зависимостей нод
         subprocess.run([bin_path, "-m", "pip", "install", "-r", os.path.join(nodes_dir, "ComfyUI-Impact-Pack/requirements.txt")], check=True)
         subprocess.run([bin_path, "-m", "pip", "install", "-r", os.path.join(nodes_dir, "comfyui-reactor-node/requirements.txt")], check=True)
 
-    # 3. Создаем симлинк
+    # 3. Создаем симлинк в папку проекта, чтобы код всегда искал в PROJECT_ROOT/ComfyUI
     if os.path.exists(COMFY_PATH) and not os.path.islink(COMFY_PATH):
         shutil.rmtree(COMFY_PATH)
     
     if not os.path.exists(COMFY_PATH):
         os.symlink(volume_comfy, COMFY_PATH)
-        log("ComfyUI is now linked to Network Volume.")
+        log("ComfyUI linked to Volume.")
 
-    return bin_path # Возвращаем путь к правильному python
+    return bin_path
 
 def handler(job):
     try:
