@@ -8,7 +8,15 @@ if [ -n "$CUDNN_PATH" ]; then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(dirname $CUDNN_PATH)
 fi
 
-# 2. Update/Install necessary dependencies
+# 2. Ensure model directory exists and download Pony Realism if missing
+MODEL_PATH="/workspace/UBERreal-ver.02.05.2026/ComfyUI/models/checkpoints/PonyRealism_v2.1.safetensors"
+mkdir -p "$(dirname "$MODEL_PATH")"
+if [ ! -f "$MODEL_PATH" ]; then
+    echo "Downloading PonyRealism_v2.1.safetensors..."
+    wget -O "$MODEL_PATH" "https://huggingface.co/stablediffusionapi/pony-realism/resolve/main/ponyRealism_v21.safetensors"
+fi
+
+# 3. Update/Install necessary dependencies
 pip install --upgrade pip
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install -r training/requirements_train.txt

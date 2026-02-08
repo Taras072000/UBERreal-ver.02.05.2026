@@ -35,6 +35,7 @@ accelerate launch --num_cpu_threads_per_process=2 sdxl_train_network.py \
     --network_dim=32 \
     --network_alpha=16 \
     --resolution="1024,1024" \
+    --caption_extension=".txt" \
     --train_batch_size=1 \
     --max_train_epochs=10 \
     --save_every_n_epochs=1 \
