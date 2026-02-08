@@ -9,7 +9,7 @@ pytorch-lightning
 voluptuous
 toml
 huggingface_hub
-onnxruntime-gpu
+onnxruntime-gpu==1.17.1
+numpy<2.0.0
 Pillow
-numpy
 tqdm
