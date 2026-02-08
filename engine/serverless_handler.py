@@ -300,7 +300,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Базовые ноды
     # Detailer prompts
     # CLEANER PROMPT: Added POV/Wide Angle to match the reference style
-    detail_prompt = ", (POV:1.2), (wide angle lens:1.2), (soft studio lighting, rim light:1.1), (natural skin texture, flush:0.8), (raw photo, dslr, 8k uhd:1.2)"
+    detail_prompt = ", (POV:1.2), (wide angle lens:1.2), (soft studio lighting, rim light:1.1), (natural skin texture, flush:0.8), (raw photo, dslr, 8k uhd:1.2), (spread legs:1.4), (legs wide open:1.4), (protruding vulva:1.3), (hands on legs:1.3)"
     
     # Save Pose Image if present
     pose_filename = "pose.png"
@@ -339,9 +339,9 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "LoraLoader",
             "inputs": {
                 "lora_name": os.path.basename(LORA_DETAIL),
-                # REDUCED STRENGTH: 0.6 -> 0.35 for cleaner skin and fuller body
-                "strength_model": 0.35,
-                "strength_clip": 0.35,
+                # DISABLED: 0.0 to fix skinny body/dirty skin issues
+                "strength_model": 0.0,
+                "strength_clip": 0.0,
                 "model": current_model,
                 "clip": current_clip
             }
@@ -349,7 +349,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         current_model = ["100", 0]
         current_clip = ["100", 1]
 
-    # 2. Cum Shot (Optional trigger)
+    # 2. Cum Shot (Keep enabled but low)
     if os.path.exists(LORA_CUM):
         workflow["101"] = {
             "class_type": "LoraLoader",
@@ -364,14 +364,14 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         current_model = ["101", 0]
         current_clip = ["101", 1]
 
-    # 3. Expressions (Optional trigger)
+    # 3. Expressions (DISABLED to fix face cloning/distortion)
     if os.path.exists(LORA_EXPRESSIONS):
         workflow["102"] = {
             "class_type": "LoraLoader",
             "inputs": {
                 "lora_name": os.path.basename(LORA_EXPRESSIONS),
-                "strength_model": 0.7,
-                "strength_clip": 0.7,
+                "strength_model": 0.0,
+                "strength_clip": 0.0,
                 "model": current_model,
                 "clip": current_clip
             }
@@ -535,17 +535,17 @@ def handler(job):
         height = int(job_input.get("height", 1024))
         steps = int(job_input.get("steps", 25))
         # Tweaked CFG for better prompt adherence but keeping realism
-        cfg = float(job_input.get("cfg", 5.0))
+        cfg = float(job_input.get("cfg", 6.0))
         # Better sampler for skin texture
-        sampler_name = job_input.get("sampler_name", "dpmpp_3m_sde") 
-        scheduler = job_input.get("scheduler", "exponential")
+        sampler_name = job_input.get("sampler_name", "dpmpp_2m") 
+        scheduler = job_input.get("scheduler", "karras")
         
         # RANDOMIZE SEED if 0 or missing
         seed = int(job_input.get("seed", 0))
         if seed == 0:
             seed = random.randint(1, 18446744073709551615)
         
-        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly")
+        negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly, multiple views, multiple girls, clone, twin, anorexic, skinny, bad anatomy")
         
         enable_highres = job_input.get("highres_fix", True)
         face_swap_img = job_input.get("face_image", None) # Base64 string if present
