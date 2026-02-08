@@ -1,42 +1,56 @@
 # ПЛАН РЕАЛИЗАЦИИ ПРОЕКТА UBERreal (RunPod + Telegram Bot)
 
-[x] 1. Инициализация и Инфраструктура (RunPod)
-    [x] 1.1. Разработка структуры репозитория (monorepo: bot, engine, training)
-    [x] 1.2. Настройка окружения Python 3.10+ и зависимостей (requirements.txt)
-    [x] 1.3. Создание Dockerfile для RunPod (CUDA 12.1, PyTorch 2.1)
-    [x] 1.4. Скрипты инициализации RunPod (serverless_handler.py)
-    [x] 1.5. Настройка Persistent Volume (структура папок: models, output)
-    [x] 1.6. Выбор и настройка базового пода (RTX 4090 / L4)
+## ✅ ЭТАП 1: БАЗА И ИНФРАСТРУКТУРА (ВЫПОЛНЕНО)
+[x] 1.1. Настройка репозитория и окружения (Python 3.10, Monorepo)
+[x] 1.2. Dockerfile: CUDA 12.1, PyTorch 2.1, ComfyUI, API-режим
+[x] 1.3. Скрипты инициализации RunPod (serverless_handler.py)
+[x] 1.4. Настройка Persistent Volume (50GB+) для моделей
+[x] 1.5. Telegram Bot v1.0: Базовая генерация, интеграция API
 
-[~] 2. Telegram Bot (Интерфейс доставки)
-    [x] 2.1. Регистрация бота и получение API Token
-    [x] 2.2. Базовая архитектура бота (aiogram 3.x)
-    [x] 2.3. Интеграция с RunPod Serverless API (запуск задач)
-    [x] 2.4. Обработка ошибок и таймаутов
-    [x] 2.5. Команды генерации (прием промпта, отправка фото/видео)
-    [x] 2.6. Меню стилей (Amateur, PornStar, Model) и Aspect Ratio
-    [ ] 2.7. Админка (баланс, логи)
+## ✅ ЭТАП 2: УЛУЧШЕНИЕ КАЧЕСТВА И UX (ВЫПОЛНЕНО - v2.0/v2.1)
+[x] 2.1. Telegram Bot v2.0:
+    - [x] Меню настроек (Aspect Ratio, Styles)
+    - [x] Админ-панель (/admin) с балансом и статусом
+    - [x] Прием фото-референсов (поз) от пользователя
+[x] 2.2. Core Engine v2.1:
+    - [x] High-Res Fix (Upscale x1.5) для FHD качества
+    - [x] ControlNet OpenPose (управление позой)
+    - [x] LoRA System Basic:
+        - [x] Detail Slider (кожа/текстуры)
+        - [x] Cum Shot (жидкости)
+        - [x] Expressions (эмоции)
+    - [x] Интеграция ComfyUI Impact Pack (библиотеки)
 
-[~] 3. Core Generation Engine (ComfyUI Backend)
-    [x] 3.1. Установка и настройка ComfyUI в режиме API (headless)
-    [x] 3.2. Авто-загрузка модели RealVisXL V4.0 (Lightning / Turbo)
-    [x] 3.3. Разработка API-обертки (serverless_handler.py)
-    [x] 3.4. Исправление конфликта Numpy 2.0 / PyTorch (AttributeError)
-    [x] 3.5. Модуль Upscale (Latent Upscale / High-Res Fix)
-    [ ] 3.6. Настройка ControlNet (OpenPose - для поз)
-    [ ] 3.7. Настройка IP-Adapter (для сохранения лица/тела)
+## 🚧 ЭТАП 3: HARDCORE CONTENT & DIVERSITY (В РАБОТЕ - v2.3)
+[ ] 3.1. Hardcore LoRA Pack (Анатомия 18+):
+    - [ ] Pubic Hair LoRA (реалистичные волосы)
+    - [ ] Genitalia LoRA (Penis, Pussy detailed, Anal)
+    - [ ] Sex Acts LoRA (взаимодействие двух тел)
+[ ] 3.2. Система разнообразия (Diversity):
+    - [ ] Меню выбора национальности/кожи в боте (Asian, Ebony, Latina, Pale)
+    - [ ] Рандомизатор "виртуальной модели", если не задано иное
+[ ] 3.3. Расширенная работа с позами:
+    - [ ] Поддержка Multi-Subject ControlNet (позы для пар/секса)
 
-[ ] 4. Deepfake Module (Face Identity Layer) - ОТЛОЖЕНО ДО СТАБИЛИЗАЦИИ БАЗЫ
-    [ ] 4.1. Интеграция InsightFace в Docker (требует отдельной сборки) - *Вызывает сбои билда*
-    [ ] 4.2. Добавление узлов ReActor/FaceFusion в ComfyUI
-    [ ] 4.3. Режим "Виртуальная модель" (вшитое эталонное лицо на сервере)
-    [ ] 4.4. Режим "Face Injection" (бот принимает фото от юзера -> генерирует с ним)
-    [ ] 4.5. Пайплайн: Генерация тела -> FaceSwap -> Restore
+## 🚧 ЭТАП 4: ПРОДВИНУТЫЕ ФУНКЦИИ (ОЧЕРЕДЬ)
+[ ] 4.1. Face Detailer (ADetailer/Impact Pack):
+    - [ ] Внедрение нод FaceDetailer в Workflow (авто-улучшение лиц)
+    - [ ] Настройка моделей детекции (BBOX/SAM)
+[ ] 4.2. Каталог Поз в Боте:
+    - [ ] Вшитый набор пресетов (Doggystyle, Cowgirl, Missionary и др.)
 
-[ ] 5. Видео Пайплайн (AnimateDiff)
-    [ ] 5.1. Тесты AnimateDiff на RunPod
-    [ ] 5.2. Сборка видео в MP4
+## 📅 ЭТАП 5: DEEPFAKE & IDENTITY (ПЛАНИРУЕТСЯ)
+[ ] 5.1. Deepfake Module:
+    - [ ] Сборка Docker с InsightFace
+    - [ ] Интеграция ReActor
+[ ] 5.2. Режимы работы с лицом:
+    - [ ] "Виртуальная модель" (фиксированное лицо)
+    - [ ] "Face Injection" (лицо клиента)
 
-[ ] 6. Продакшн
-    [ ] 6.1. Оптимизация скорости старта (Cold Start)
-    [ ] 6.2. Финальная проверка качества
+## 📅 ЭТАП 6: ВИДЕО (ПЛАНИРУЕТСЯ)
+[ ] 6.1. AnimateDiff: Генерация коротких видео (GIF/MP4)
+[ ] 6.2. Видео-пайплайн в боте
+
+## 📈 ЭТАП 7: ПРОДАКШН
+[ ] 7.1. Оптимизация Cold Start
+[ ] 7.2. Стресс-тесты

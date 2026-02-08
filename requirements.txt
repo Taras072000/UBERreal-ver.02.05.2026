@@ -16,11 +16,11 @@ huggingface_hub>=0.20.0
 # Image Processing
 opencv-python-headless>=4.9.0
 Pillow>=10.2.0
-numpy<2.0.0
 rembg>=2.0.50
 
 # Deepfake & Face Analysis
-onnxruntime>=1.16.0
+# onnxruntime handled in Dockerfile for GPU support
+
 
 # Telegram Bot
 aiogram>=3.3.0
