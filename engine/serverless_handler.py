@@ -337,6 +337,7 @@ def handler(job):
         
         enable_highres = job_input.get("highres_fix", True)
         face_swap_img = job_input.get("face_image", None) # Base64 string if present
+        controlnet_img = job_input.get("controlnet_image", None) # Base64 Pose image
 
         # 1. Запуск ComfyUI (если нужно)
         if not check_comfy_status():

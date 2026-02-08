@@ -27,12 +27,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu121 && \
-    # Install dependencies
-    pip install -r requirements.txt && \
-    # Install ONNX Runtime GPU (CUDA 12 compatible)
-    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/ && \
-    # Install InsightFace (ignore build errors by using pre-built or simplified install)
-    pip install insightface==0.7.3
+    pip install -r requirements.txt
+
+# Install ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
+RUN cd /app/ComfyUI && pip install -r requirements.txt
 
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI

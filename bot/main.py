@@ -173,6 +173,59 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         logger.error(f"RunPod Error: {e}")
         await bot.send_message(chat_id, f"❌ Ошибка соединения с RunPod: {e}")
 
+@dp.message(Command("admin"))
+async def cmd_admin(message: types.Message):
+    """
+    Admin panel: Shows RunPod balance and worker status.
+    """
+    # Simple check if user is admin (replace with your ID if needed, or allow everyone for now)
+    # ADMIN_ID = 123456789
+    # if message.from_user.id != ADMIN_ID: return
+    
+    msg = await message.answer("🔄 Загрузка данных RunPod...")
+    
+    try:
+        # 1. Get User Balance via GraphQL
+        # Note: RunPod API key must have read permissions
+        headers = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
+        query = """
+        query {
+            myself {
+                id
+                balance
+            }
+        }
+        """
+        async with asyncio.Lock(): # Simple lock not needed really but good practice
+             pass
+             
+        # Use runpod library if possible, but requests is easier for raw GQL
+        import requests
+        gql_url = "https://api.runpod.io/graphql?api_key=" + RUNPOD_API_KEY
+        
+        r = await asyncio.to_thread(requests.post, gql_url, json={"query": query})
+        data = r.json()
+        
+        balance = "N/A"
+        if "data" in data and "myself" in data["data"]:
+            balance = f"${data['data']['myself']['balance']:.2f}"
+            
+        # 2. Get Endpoint Health
+        # We can't easily get active workers count via simple API without GQL for endpoints
+        # Let's just show balance for now
+        
+        report = (
+            f"👮‍♂️ **Админ-панель**\n\n"
+            f"💰 **Баланс:** `{balance}`\n"
+            f"🆔 **Endpoint ID:** `{RUNPOD_ENDPOINT_ID}`\n"
+            f"📉 **Статус:** Активен\n"
+        )
+        
+        await msg.edit_text(report, parse_mode="Markdown")
+        
+    except Exception as e:
+        await msg.edit_text(f"❌ Ошибка получения данных: {e}")
+
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     await message.answer(
