@@ -102,24 +102,25 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     # Character LoRA Logic
     loras = []
     char_prefix = ""
+
+    # Названия файлов внутри репозиториев на HF
+    char_loras = {
+        "insta_v1": ("insta_girl_v1, ", "UBERreal_Anatomy_v1-000001.safetensors", "insta_girl_v1.safetensors"),
+        "insta_v2": ("insta_girl_v2, ", "UBERreal_Anatomy_v1-000002.safetensors", "insta_girl_v2.safetensors"),
+        "insta_v3": ("insta_girl_v3, ", "UBERreal_Anatomy_v1-000003.safetensors", "insta_girl_v3.safetensors")
+    }
     
     char_version = settings.get("character")
-    char_loras = {
-        "insta_v1": ("insta_girl_v1, ", "insta_girl_v1.safetensors"),
-        "insta_v2": ("insta_girl_v2, ", "insta_girl_v2.safetensors"),
-        "insta_v3": ("insta_girl_v3, ", "insta_girl_v3.safetensors")
-    }
-
     if char_version in char_loras:
-         prefix, filename = char_loras[char_version]
-         char_prefix = prefix
-         # Clean repo name (remove .safetensors from repo name part)
-         repo_name = filename.replace(".safetensors", "")
-         loras.append({
-             "name": filename,
-             "url": f"https://huggingface.co/Taras082498/{repo_name}/resolve/main/{filename}",
-             "strength_model": 1.0, "strength_clip": 1.0
-         })
+        prefix, hf_filename, local_filename = char_loras[char_version]
+        char_prefix = prefix
+        # repo_name must be insta_girl_v1.safetensors
+        repo_name = char_version.replace("insta_", "insta_girl_") + ".safetensors"
+        loras.append({
+            "name": local_filename,
+            "url": f"https://huggingface.co/Taras082498/{repo_name}/resolve/main/{hf_filename}",
+            "strength_model": 1.0, "strength_clip": 1.0
+        })
 
     # Modify prompt based on style
     final_prompt = char_prefix + prompt
