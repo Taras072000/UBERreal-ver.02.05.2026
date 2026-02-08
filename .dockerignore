@@ -1,18 +1,13 @@
-.venv
+# Ignore training data and large files
+training/dataset/
+training/output/
+ComfyUI/models/
+**/*.safetensors
+**/*.jpg
+**/*.png
+**/*.jpeg
+**/*.webp
 .git
-.gitignore
-.dockerignore
-.DS_Store
+.venv
 __pycache__
-*.pyc
-training/dataset
-training/output
-training/sd-scripts
-data/
-docker/
-.trae/
-docs/
-*.md
-ПЛАН
-ТЗ
-Кто ты такой
+*.log
