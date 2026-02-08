@@ -104,6 +104,13 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         final_prompt += ", (anime style, 2d, flat color, illustration)"
 
     try:
+        # Check if user has a pose image
+        controlnet_image = None
+        if "controlnet_image" in settings:
+            controlnet_image = settings["controlnet_image"]
+            # Clear pose after one use? Or keep it? Let's keep it until user clears it or sets new one.
+            # But maybe notify user.
+            
         # Input payload for the worker
         input_payload = {
             "input": {
@@ -117,11 +124,16 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
                 "seed": 0, # Random seed will be handled by Comfy if 0, but usually we want random in python. 
                            # Let's keep 0 and let worker handle randomization if needed or send random here.
                 "negative_prompt": "text, watermark, blur, deformed, painting, cartoon, low quality, ugly",
-                "highres_fix": True # Always ON for quality
+                "highres_fix": True, # Always ON for quality
+                "controlnet_image": controlnet_image
             }
         }
         
-        await bot.send_message(chat_id, f"⏳ Запуск генерации...\n⚙️ {settings['aspect_ratio']} | {settings['style']}", reply_markup=main_menu_keyboard())
+        status_msg = f"⏳ Запуск генерации...\n⚙️ {settings['aspect_ratio']} | {settings['style']}"
+        if controlnet_image:
+            status_msg += "\n🧘‍♀️ Используется поза (ControlNet)"
+            
+        await bot.send_message(chat_id, status_msg, reply_markup=main_menu_keyboard())
         
         # Run synchronous run (waits for completion)
         run_request = endpoint.run(input_payload)
@@ -162,6 +174,11 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
             try:
                 img_bytes = base64.b64decode(image_b64)
                 caption = f"✅ {settings['style']} | {settings['aspect_ratio']}"
+                if controlnet_image:
+                    caption += "\n🧘‍♀️ Поза применена"
+                    # Optional: Clear pose after usage
+                    # del user_settings[user_id]["controlnet_image"]
+                    
                 await bot.send_photo(chat_id, photo=BufferedInputFile(img_bytes, filename="result.png"), caption=caption)
                 return
             except Exception as send_err:
@@ -268,6 +285,66 @@ async def callback_style(callback: types.CallbackQuery):
     get_settings(callback.from_user.id)["style"] = style
     await callback.message.answer(f"✅ Установлен стиль: {style}")
     await callback.answer()
+
+@dp.message(F.photo)
+async def handle_photo(message: types.Message):
+    """
+    Handle incoming photos for ControlNet (Pose) or Deepfake (Face).
+    """
+    # Ask user what to do with the photo
+    kb = [
+        [InlineKeyboardButton(text="🧘‍♀️ Использовать как Позу (ControlNet)", callback_data="set_pose")],
+        [InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_photo")]
+    ]
+    
+    # Download photo to memory temporarily
+    photo = message.photo[-1]
+    file_id = photo.file_id
+    
+    # We can't easily pass file_id to callback, so we save it to user_settings temporarily as 'pending_photo'
+    get_settings(message.from_user.id)["pending_photo"] = file_id
+    
+    await message.reply("📸 Вы прислали фото. Что с ним сделать?", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb))
+
+@dp.callback_query(F.data == "set_pose")
+async def callback_set_pose(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    settings = get_settings(user_id)
+    file_id = settings.get("pending_photo")
+    
+    if not file_id:
+        await callback.answer("❌ Ошибка: фото не найдено.")
+        return
+
+    try:
+        # Download photo
+        file = await bot.get_file(file_id)
+        file_content = await bot.download_file(file.file_path)
+        
+        # Convert to base64
+        img_b64 = base64.b64encode(file_content.read()).decode("utf-8")
+        
+        # Save to settings
+        settings["controlnet_image"] = img_b64
+        
+        await callback.message.edit_text("✅ <b>Поза сохранена!</b>\nТеперь отправьте промпт, и бот использует эту позу.\n\n(Чтобы сбросить позу, нажмите /reset_pose или просто отправьте новую).", parse_mode="HTML")
+        
+    except Exception as e:
+        logger.error(f"Photo download error: {e}")
+        await callback.message.edit_text("❌ Ошибка загрузки фото.")
+
+@dp.callback_query(F.data == "cancel_photo")
+async def callback_cancel_photo(callback: types.CallbackQuery):
+    await callback.message.delete()
+
+@dp.message(Command("reset_pose"))
+async def cmd_reset_pose(message: types.Message):
+    settings = get_settings(message.from_user.id)
+    if "controlnet_image" in settings:
+        del settings["controlnet_image"]
+        await message.reply("🗑 Поза сброшена.")
+    else:
+        await message.reply("ℹ️ Поза не была установлена.")
 
 @dp.message()
 async def handle_prompt(message: types.Message):

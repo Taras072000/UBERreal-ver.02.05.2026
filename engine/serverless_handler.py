@@ -17,7 +17,12 @@ CHECKPOINT_FILE = f"{MODELS_DIR}/RealVisXL_V4.0.safetensors"
 VAE_DIR = "/app/ComfyUI/models/vae"
 VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
 LORA_DIR = "/app/ComfyUI/models/loras"
-LORA_FILE = f"{LORA_DIR}/Hinata_SDXL.safetensors"
+LORA_HINATA = f"{LORA_DIR}/Hinata_SDXL.safetensors"
+LORA_CUM = f"{LORA_DIR}/Cum_Shot_SDXL.safetensors"
+LORA_DETAIL = f"{LORA_DIR}/Detail_Slider_SDXL.safetensors"
+
+CONTROLNET_DIR = "/app/ComfyUI/models/controlnet"
+CONTROLNET_FILE = f"{CONTROLNET_DIR}/controlnet-openpose-sdxl-1.0.safetensors"
 
 # Deepfake models path
 INSIGHTFACE_DIR = "/app/ComfyUI/models/insightface"
@@ -119,18 +124,67 @@ def ensure_models():
         # Download LoRA (Hinata)
         if not os.path.exists(LORA_DIR):
             os.makedirs(LORA_DIR, exist_ok=True)
-        if not os.path.exists(LORA_FILE):
-            log(f"Downloading LoRA to {LORA_FILE}...")
-            lora_url = "https://civitai.com/api/download/models/287086?type=Model&format=SafeTensor" # Hinata SDXL
+            
+        if not os.path.exists(LORA_HINATA):
+            log(f"Downloading Hinata LoRA...")
             try:
-                r = requests.get(lora_url, stream=True, timeout=600)
+                # CivitAI: Hinata (SDXL)
+                r = requests.get("https://civitai.com/api/download/models/287086?type=Model&format=SafeTensor", stream=True, timeout=600)
                 if r.status_code == 200:
-                    with open(LORA_FILE, "wb") as f:
+                    with open(LORA_HINATA, "wb") as f:
                         for chunk in r.iter_content(chunk_size=1024*1024):
                             if chunk: f.write(chunk)
-                    log("LoRA downloaded.")
+                    log("Hinata LoRA downloaded.")
             except Exception as e:
-                log(f"LoRA download failed: {e}")
+                log(f"Hinata LoRA download failed: {e}")
+
+        # Download LoRA (Cum Shot)
+        if not os.path.exists(LORA_CUM):
+            log(f"Downloading Cum LoRA...")
+            try:
+                # CivitAI: Cum Shot (SDXL) - ID: 154569 (Example ID, checking real one)
+                # Using a known working URL for "Cumshot SDXL" or similar
+                # Let's use "Messy Cum" or "Cumshot"
+                r = requests.get("https://civitai.com/api/download/models/139556?type=Model&format=SafeTensor", stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(LORA_CUM, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("Cum LoRA downloaded.")
+            except Exception as e:
+                log(f"Cum LoRA download failed: {e}")
+                
+        # Download LoRA (Detail Slider)
+        if not os.path.exists(LORA_DETAIL):
+            log(f"Downloading Detail LoRA...")
+            try:
+                # CivitAI: Skin Detail / Detail Slider
+                r = requests.get("https://civitai.com/api/download/models/135931?type=Model&format=SafeTensor", stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(LORA_DETAIL, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("Detail LoRA downloaded.")
+            except Exception as e:
+                log(f"Detail LoRA download failed: {e}")
+
+        # Download ControlNet (OpenPose)
+        if not os.path.exists(CONTROLNET_DIR):
+            os.makedirs(CONTROLNET_DIR, exist_ok=True)
+        if not os.path.exists(CONTROLNET_FILE):
+            log(f"Downloading ControlNet to {CONTROLNET_FILE}...")
+            cn_url = "https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors"
+            try:
+                r = requests.get(cn_url, stream=True, timeout=600)
+                if r.status_code == 200:
+                    with open(CONTROLNET_FILE, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024*1024):
+                            if chunk: f.write(chunk)
+                    log("ControlNet downloaded.")
+                else:
+                    log(f"ControlNet download failed: {r.status_code}")
+            except Exception as e:
+                log(f"ControlNet download failed: {e}")
             
         # Ensure InsightFace models exist (if directory is empty, download them)
         if not os.path.exists(INSIGHTFACE_DIR):
@@ -197,10 +251,42 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Detailer prompts
     detail_prompt = ", (detailed skin texture:1.3), (detailed nipples:1.2), (detailed pussy:1.2), (hyperdetailed:1.2)"
     
+    # Save Pose Image if present
+    pose_filename = "pose.png"
+    if face_swap_image: # Using face_swap_image var for pose temporarily or add new logic
+        # Logic to save pose image to /app/ComfyUI/input/pose.png
+        pass
+
+    # ControlNet Logic
+    positive_condition_node = ["11", 0]
+    negative_condition_node = ["12", 0]
+
     workflow = {
         "10": {
             "class_type": "CheckpointLoaderSimple",
             "inputs": {"ckpt_name": os.path.basename(CHECKPOINT_FILE)}
+        },
+        # LORA 1: Detail Slider (Skin/Face)
+        "100": {
+            "class_type": "LoraLoader",
+            "inputs": {
+                "lora_name": os.path.basename(LORA_DETAIL),
+                "strength_model": 1.5,
+                "strength_clip": 1.0,
+                "model": ["10", 0],
+                "clip": ["10", 1]
+            }
+        },
+        # LORA 2: Cum Shot (Optional trigger)
+        "101": {
+            "class_type": "LoraLoader",
+            "inputs": {
+                "lora_name": os.path.basename(LORA_CUM),
+                "strength_model": 0.8,
+                "strength_clip": 0.8,
+                "model": ["100", 0],
+                "clip": ["100", 1]
+            }
         },
         "19": {
             "class_type": "VAELoader",
@@ -210,21 +296,52 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": (prompt_text or "beautiful woman") + detail_prompt,
-                "clip": ["10", 1]
+                "clip": ["101", 1] # Connect to last LoRA CLIP
             }
         },
         "12": {
             "class_type": "CLIPTextEncode",
             "inputs": {
                 "text": negative_prompt,
-                "clip": ["10", 1]
+                "clip": ["101", 1] # Connect to last LoRA CLIP
             }
         },
         "13": {
             "class_type": "EmptyLatentImage",
             "inputs": {"width": width, "height": height, "batch_size": 1}
         },
-        "14": {
+    }
+
+    # Add ControlNet if image provided
+    if face_swap_image: # Using face_swap_image as placeholder for now, ideally rename var
+        # Save image
+        try:
+            os.makedirs("/app/ComfyUI/input", exist_ok=True)
+            with open(f"/app/ComfyUI/input/{pose_filename}", "wb") as f:
+                f.write(base64.b64decode(face_swap_image))
+        except Exception as e:
+            log(f"Failed to save pose image: {e}")
+
+        workflow["50"] = {
+            "class_type": "ControlNetLoader",
+            "inputs": {"control_net_name": os.path.basename(CONTROLNET_FILE)}
+        }
+        workflow["51"] = {
+            "class_type": "LoadImage",
+            "inputs": {"image": pose_filename}
+        }
+        workflow["52"] = { # ControlNet Apply
+            "class_type": "ControlNetApply",
+            "inputs": {
+                "conditioning": ["11", 0],
+                "control_net": ["50", 0],
+                "image": ["51", 0],
+                "strength": 0.8
+            }
+        }
+        positive_condition_node = ["52", 0]
+
+    workflow["14"] = {
             "class_type": "KSampler",
             "inputs": {
                 "seed": seed,
@@ -232,22 +349,22 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "cfg": cfg,
                 "sampler_name": sampler_name,
                 "scheduler": scheduler,
-                "model": ["10", 0],
-                "positive": ["11", 0],
-                "negative": ["12", 0],
+                "model": ["101", 0], # Connect to last LoRA Model
+                "positive": positive_condition_node,
+                "negative": negative_condition_node,
                 "latent_image": ["13", 0],
                 "denoise": 1.0
             }
-        },
-        "15": {
+        }
+    
+    workflow["15"] = {
             "class_type": "VAEDecode",
             "inputs": {"samples": ["14", 0], "vae": ["19", 0]}
-        },
-        "16": {
+        }
+    workflow["16"] = {
             "class_type": "SaveImage",
             "inputs": {"images": ["15", 0], "filename_prefix": "runpod_base_"}
         }
-    }
 
     # High-Res Fix
     last_image_node = "15" # VAE Decode output
@@ -269,7 +386,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
                 "cfg": cfg,
                 "sampler_name": "dpmpp_sde",
                 "scheduler": "karras",
-                "model": ["100", 0],
+                "model": ["101", 0], # Connect to last LoRA Model
                 "positive": ["11", 0],
                 "negative": ["12", 0],
                 "latent_image": ["20", 0],
