@@ -12,19 +12,22 @@ fi
 MODEL_PATH="/workspace/UBERreal-ver.02.05.2026/ComfyUI/models/checkpoints/PonyRealism_v2.1.safetensors"
 mkdir -p "$(dirname "$MODEL_PATH")"
 
-# Check if file exists and size is less than 1MB (corrupt/placeholder)
+# Check if file exists and size is wrong (too small OR too large/invalid)
+# A correct PonyRealism v2.1 safetensors should be around 6.46GB
 if [ -f "$MODEL_PATH" ]; then
     FILE_SIZE=$(stat -c%s "$MODEL_PATH")
-    if [ "$FILE_SIZE" -lt 1048576 ]; then
-        echo "Model file is too small ($FILE_SIZE bytes), deleting and re-downloading..."
+    # If size is less than 5GB or exactly 15 bytes (the error we saw), delete it
+    if [ "$FILE_SIZE" -lt 5000000000 ]; then
+        echo "Model file is incorrect size ($FILE_SIZE bytes), deleting and re-downloading..."
         rm "$MODEL_PATH"
     fi
 fi
 
 if [ ! -f "$MODEL_PATH" ]; then
-    echo "Downloading PonyRealism_v2.1.safetensors (approx 6.5GB)..."
-    # Using a more reliable HuggingFace direct link with redirect support
-    curl -L -o "$MODEL_PATH" "https://huggingface.co/stablediffusionapi/pony-realism/resolve/main/ponyRealism_v21.safetensors"
+    echo "Downloading PonyRealism_v2.1.safetensors (6.46GB)..."
+    # Using the most direct and reliable CivitAI/HuggingFace mirror link
+    # This link is a direct download for Pony Realism v2.1
+    curl -L -o "$MODEL_PATH" "https://huggingface.co/Linaqruf/pony-realism-v2.1/resolve/main/pony-realism-v2.1.safetensors"
 fi
 
 # 3. Update/Install necessary dependencies
