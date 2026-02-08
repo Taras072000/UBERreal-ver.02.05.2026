@@ -67,7 +67,7 @@ accelerate launch --num_cpu_threads_per_process=2 sdxl_train_network.py \
     --unet_lr=1e-4 \
     --no_metadata \
     --gradient_checkpointing \
-    --xformers \
+    --sdpa \
     --cache_latents
 
 echo "=== Training Complete! ==="
