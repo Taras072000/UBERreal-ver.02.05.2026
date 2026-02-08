@@ -299,8 +299,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     """
     # Базовые ноды
     # Detailer prompts
-    # CLEANER PROMPT: Removing "hyperdetailed" which causes skin artifacts. Adding lighting.
-    detail_prompt = ", (soft studio lighting, rim light, volumetric fog:1.2), (natural skin texture, flush, goosebumps:0.8), (raw photo, dslr, 8k uhd:1.2)"
+    # CLEANER PROMPT: Added POV/Wide Angle to match the reference style
+    detail_prompt = ", (POV:1.2), (wide angle lens:1.2), (soft studio lighting, rim light:1.1), (natural skin texture, flush:0.8), (raw photo, dslr, 8k uhd:1.2)"
     
     # Save Pose Image if present
     pose_filename = "pose.png"
@@ -339,9 +339,9 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "LoraLoader",
             "inputs": {
                 "lora_name": os.path.basename(LORA_DETAIL),
-                # REDUCED STRENGTH: 1.5 -> 0.6 to avoid artifacts/spots on skin
-                "strength_model": 0.6,
-                "strength_clip": 0.6,
+                # REDUCED STRENGTH: 0.6 -> 0.35 for cleaner skin and fuller body
+                "strength_model": 0.35,
+                "strength_clip": 0.35,
                 "model": current_model,
                 "clip": current_clip
             }
@@ -516,6 +516,10 @@ def clear_output_dir():
         except Exception as e:
             log(f"Failed to clear output dir: {e}")
 
+import random
+
+# ... (imports)
+
 def handler(job):
     """
     Основная функция-обработчик RunPod Serverless.
@@ -530,11 +534,17 @@ def handler(job):
         width = int(job_input.get("width", 1024))
         height = int(job_input.get("height", 1024))
         steps = int(job_input.get("steps", 25))
-        # LOWER CFG FOR REALISM: 7.0 -> 4.5
-        cfg = float(job_input.get("cfg", 4.5))
-        sampler_name = job_input.get("sampler_name", "dpmpp_2m")
-        scheduler = job_input.get("scheduler", "karras")
+        # Tweaked CFG for better prompt adherence but keeping realism
+        cfg = float(job_input.get("cfg", 5.0))
+        # Better sampler for skin texture
+        sampler_name = job_input.get("sampler_name", "dpmpp_3m_sde") 
+        scheduler = job_input.get("scheduler", "exponential")
+        
+        # RANDOMIZE SEED if 0 or missing
         seed = int(job_input.get("seed", 0))
+        if seed == 0:
+            seed = random.randint(1, 18446744073709551615)
+        
         negative_prompt = job_input.get("negative_prompt", "text, watermark, blur, deformed, painting, cartoon, low quality, ugly")
         
         enable_highres = job_input.get("highres_fix", True)
