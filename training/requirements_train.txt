@@ -1,0 +1,14 @@
+accelerate>=0.25.0
+transformers>=4.36.0
+diffusers>=0.25.0
+ftfy
+albu
+einops
+pytorch-lightning
+voluptuous
+toml
+huggingface_hub
+onnxruntime-gpu
+Pillow
+numpy
+tqdm
