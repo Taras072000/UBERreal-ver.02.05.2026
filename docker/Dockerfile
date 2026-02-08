@@ -1,5 +1,5 @@
-# Switch to official PyTorch 2.4.0 image to support new ComfyUI requirements
-FROM pytorch/pytorch:2.4.0-cuda12.1-cudnn9-devel
+# Use a more common and stable RunPod base image
+FROM runpod/pytorch:2.2.1-py3.10-cuda12.1.1-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1

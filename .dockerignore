@@ -11,6 +11,7 @@ training/sd-scripts
 data/
 docker/
 .trae/
+docs/
 *.md
 ПЛАН
 ТЗ
