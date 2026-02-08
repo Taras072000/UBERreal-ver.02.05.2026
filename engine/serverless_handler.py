@@ -13,7 +13,7 @@ import sys
 COMFY_URL = "http://127.0.0.1:8188"
 OUTPUT_DIR = "/app/ComfyUI/output"
 MODELS_DIR = "/app/ComfyUI/models/checkpoints"
-CHECKPOINT_FILE = f"{MODELS_DIR}/RealVisXL_V4.0.safetensors"
+CHECKPOINT_FILE = f"{MODELS_DIR}/PonyRealism_v2.1.safetensors"
 VAE_DIR = "/app/ComfyUI/models/vae"
 VAE_FILE = f"{VAE_DIR}/sdxl_vae.safetensors"
 LORA_DIR = "/app/ComfyUI/models/loras"
@@ -67,10 +67,10 @@ def ensure_models():
         if not os.path.exists(CHECKPOINT_FILE):
             log(f"Model not found at {CHECKPOINT_FILE}. Downloading...")
             
-            # RealVisXL V4.0 (Lightning / Turbo или обычный - берем обычный для качества)
+            # Pony Realism v2.1 Main
             urls = [
-                "https://civitai.com/api/download/models/361593?type=Model&format=SafeTensor&size=pruned&fp=fp16", # RealVisXL V4.0
-                "https://huggingface.co/SG161222/RealVisXL_V4.0/resolve/main/RealVisXL_V4.0.safetensors" # HF Mirror
+                "https://civitai.com/api/download/models/534642?type=Model&format=SafeTensor", 
+                "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors"
             ]
             
             # Hugging Face Token from Environment Variable
@@ -325,13 +325,21 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "class_type": "EmptyLatentImage",
             "inputs": {"width": width, "height": height, "batch_size": 1}
         },
+        # Clip Skip 2 for Pony
+        "18": {
+            "class_type": "CLIPSetLastLayer",
+            "inputs": {
+                "stop_at_clip_layer": -2,
+                "clip": ["10", 1]
+            }
+        },
     }
 
     # Dynamic LoRA Chain
     # We build a chain of models and clips: Checkpoint -> LoRA1 -> LoRA2 -> ... -> TextEncode
     
     current_model = ["10", 0]
-    current_clip = ["10", 1]
+    current_clip = ["18", 0]
     
         # 1. Detail Slider
     if os.path.exists(LORA_DETAIL):
@@ -380,17 +388,21 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         current_clip = ["102", 1]
 
     # Prompts connected to the last CLIP in the chain
+    # Pony specific prefixes and negatives
+    pony_prefix = "score_9, score_8_up, score_7_up, BREAK, "
+    pony_negative = "score_4, score_5, score_6, source_pony, source_furry, text, watermark, blur, deformed, painting, cartoon, low quality, ugly, multiple views, multiple girls, clone, twin, anorexic, skinny, bad anatomy"
+
     workflow["11"] = {
         "class_type": "CLIPTextEncode",
         "inputs": {
-            "text": (prompt_text or "beautiful woman") + detail_prompt,
+            "text": pony_prefix + (prompt_text or "beautiful woman") + detail_prompt,
             "clip": current_clip 
         }
     }
     workflow["12"] = {
         "class_type": "CLIPTextEncode",
         "inputs": {
-            "text": negative_prompt,
+            "text": pony_negative,
             "clip": current_clip
         }
     }
