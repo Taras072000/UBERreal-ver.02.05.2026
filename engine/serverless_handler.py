@@ -526,7 +526,13 @@ def setup_volume_links():
         
         # Всегда проверяем зависимости при отсутствии Volume, так как это чистый контейнер
         log("Checking/Installing ComfyUI dependencies...")
-        subprocess.run([sys.executable, "-m", "pip", "install", "sqlalchemy", "aiohttp", "requests", "pyyaml", "Pillow", "scipy", "tqdm", "psutil"], check=True)
+        # Принудительно ставим numpy<2, так как 2.x ломает совместимость
+        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2"], check=True)
+        # Ставим alembic и sqlalchemy (нужны для БД ComfyUI)
+        subprocess.run([sys.executable, "-m", "pip", "install", "sqlalchemy", "alembic"], check=True)
+        # Ставим остальные зависимости из requirements.txt
+        if os.path.exists(os.path.join(COMFY_PATH, "requirements.txt")):
+            subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
         return sys.executable
 
     # 1. Проверяем и устанавливаем PyTorch и зависимости на диск
