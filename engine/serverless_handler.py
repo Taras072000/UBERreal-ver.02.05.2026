@@ -537,12 +537,53 @@ import random
 
 # ... (imports)
 
+# Настройки путей на сетевом томе
+VOLUME_PATH = "/runpod-volume"
+COMFY_PATH = "/app/ComfyUI" # В контейнере ComfyUI лежит тут
+MODELS_ON_VOLUME = f"{VOLUME_PATH}/models"
+
+def setup_volume_links():
+    """Создает симлинки на сетевой том для моделей"""
+    if not os.path.exists(VOLUME_PATH):
+        log("Warning: Network Volume not found at /runpod-volume. Using local storage.")
+        return
+
+    # Создаем структуру папок на диске, если её нет
+    os.makedirs(f"{MODELS_ON_VOLUME}/checkpoints", exist_ok=True)
+    os.makedirs(f"{MODELS_ON_VOLUME}/loras", exist_ok=True)
+    os.makedirs(f"{MODELS_ON_VOLUME}/vae", exist_ok=True)
+    os.makedirs(f"{MODELS_ON_VOLUME}/controlnet", exist_ok=True)
+
+    # Список папок, которые мы хотим вынести на диск
+    targets = {
+        f"{COMFY_PATH}/models/checkpoints": f"{MODELS_ON_VOLUME}/checkpoints",
+        f"{COMFY_PATH}/models/loras": f"{MODELS_ON_VOLUME}/loras",
+        f"{COMFY_PATH}/models/vae": f"{MODELS_ON_VOLUME}/vae",
+        f"{COMFY_PATH}/models/controlnet": f"{MODELS_ON_VOLUME}/controlnet",
+    }
+
+    for local_path, vol_path in targets.items():
+        if os.path.exists(local_path) and not os.path.islink(local_path):
+            log(f"Moving {local_path} to volume and creating symlink...")
+            if os.path.isdir(local_path):
+                # Если в локальной папке уже есть файлы, переносим их (кроме пустых)
+                for item in os.listdir(local_path):
+                    shutil.move(os.path.join(local_path, item), vol_path)
+                os.rmdir(local_path)
+            os.symlink(vol_path, local_path)
+        elif not os.path.exists(local_path):
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            os.symlink(vol_path, local_path)
+
 def handler(job):
     """
     Основная функция-обработчик RunPod Serverless.
     """
     try:
         log(f"Received job: {job}")
+        
+        # Настраиваем связи с сетевым томом
+        setup_volume_links()
         
         # Очищаем старые картинки перед запуском
         clear_output_dir()
