@@ -105,25 +105,38 @@ def ensure_models(custom_loras=None):
         # 2. Загрузка VAE
         if not os.path.exists(VAE_DIR):
             os.makedirs(VAE_DIR, exist_ok=True)
-        if not os.path.exists(VAE_FILE):
+        # Стандартное имя для SDXL VAE
+        VAE_FILE_ALT = os.path.join(VAE_DIR, "sdxl_vae.safetensors")
+        if not os.path.exists(VAE_FILE_ALT):
             log(f"Downloading VAE...")
             vae_url = "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors"
-            download_file(vae_url, VAE_FILE, hf_headers)
+            download_file(vae_url, VAE_FILE_ALT, hf_headers)
 
         # 3. Загрузка кастомных LoRA (для персонажей)
+        actual_loras = []
         if custom_loras:
             if not os.path.exists(LORA_DIR): os.makedirs(LORA_DIR, exist_ok=True)
             for lora in custom_loras:
                 name = lora.get("name")
                 url = lora.get("url")
                 if name and url:
-                    # Чистим URL от возможных пробелов или кавычек
                     url = url.strip().strip("'").strip("`").strip()
                     path = os.path.join(LORA_DIR, name)
                     if not os.path.exists(path):
                         log(f"Downloading custom LoRA: {name}...")
                         headers = hf_headers if "huggingface.co" in url else civitai_headers
-                        download_file(url, path, headers)
+                        if download_file(url, path, headers):
+                            actual_loras.append(lora)
+                    else:
+                        actual_loras.append(lora)
+        
+        # Заставляем ComfyUI обновить список файлов
+        try:
+            requests.post(f"{COMFY_URL}/object_info", timeout=2)
+        except:
+            pass
+            
+        return actual_loras
 
         # 4. Базовые LoRA (Hinata, Cum, Detail, Expressions)
         # Отключаем пока они не нужны или битые ссылки
@@ -595,7 +608,7 @@ def handler(job):
         custom_loras = job_input.get("loras", []) # List of {"name": "...", "url": "...", "strength_model": 1.0}
 
         # 2. Проверка моделей (включая кастомные LoRA)
-        ensure_models(custom_loras=custom_loras)
+        custom_loras = ensure_models(custom_loras=custom_loras)
 
         # 3. Формируем API prompt (Workflow)
         prompt = build_workflow(
