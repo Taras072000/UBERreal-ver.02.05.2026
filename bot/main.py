@@ -111,13 +111,15 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     }
 
     if char_version in char_loras:
-        prefix, filename = char_loras[char_version]
-        char_prefix = prefix
-        loras.append({
-            "name": filename,
-            "url": f"https://huggingface.co/Taras082498/{filename}/resolve/main/{filename}",
-            "strength_model": 1.0, "strength_clip": 1.0
-        })
+         prefix, filename = char_loras[char_version]
+         char_prefix = prefix
+         # Clean repo name (remove .safetensors from repo name part)
+         repo_name = filename.replace(".safetensors", "")
+         loras.append({
+             "name": filename,
+             "url": f"https://huggingface.co/Taras082498/{repo_name}/resolve/main/{filename}",
+             "strength_model": 1.0, "strength_clip": 1.0
+         })
 
     # Modify prompt based on style
     final_prompt = char_prefix + prompt

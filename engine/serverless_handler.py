@@ -82,6 +82,10 @@ def ensure_models(custom_loras=None):
         if not os.path.exists(MODELS_DIR):
             os.makedirs(MODELS_DIR, exist_ok=True)
         
+        hf_token = os.environ.get("HF_TOKEN")
+        hf_headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
+        civitai_headers = {"User-Agent": "Mozilla/5.0"}
+
         # 1. Загрузка основного чекпоинта
         if not os.path.exists(CHECKPOINT_FILE) or os.path.getsize(CHECKPOINT_FILE) < 100 * 1024 * 1024:
             if os.path.exists(CHECKPOINT_FILE):
@@ -92,53 +96,38 @@ def ensure_models(custom_loras=None):
                 "https://huggingface.co/LyliaEngine/ponyRealism_v21MainVAE/resolve/main/ponyRealism_v21MainVAE.safetensors", 
                 "https://civitai.com/api/download/models/534642?type=Model&format=SafeTensor"
             ]
-            hf_token = os.environ.get("HF_TOKEN")
-            hf_headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
-            civitai_headers = {"User-Agent": "Mozilla/5.0"}
             
             for url in urls:
                 headers = hf_headers if "huggingface.co" in url else civitai_headers
                 if download_file(url, CHECKPOINT_FILE, headers):
                     break
 
-        # 2. Загрузка кастомных LoRA (для персонажей)
+        # 2. Загрузка VAE
+        if not os.path.exists(VAE_DIR):
+            os.makedirs(VAE_DIR, exist_ok=True)
+        if not os.path.exists(VAE_FILE):
+            log(f"Downloading VAE...")
+            vae_url = "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors"
+            download_file(vae_url, VAE_FILE, hf_headers)
+
+        # 3. Загрузка кастомных LoRA (для персонажей)
         if custom_loras:
             if not os.path.exists(LORA_DIR): os.makedirs(LORA_DIR, exist_ok=True)
             for lora in custom_loras:
                 name = lora.get("name")
                 url = lora.get("url")
                 if name and url:
+                    # Чистим URL от возможных пробелов или кавычек
+                    url = url.strip().strip("'").strip("`").strip()
                     path = os.path.join(LORA_DIR, name)
                     if not os.path.exists(path):
                         log(f"Downloading custom LoRA: {name}...")
-                        download_file(url, path)
+                        headers = hf_headers if "huggingface.co" in url else civitai_headers
+                        download_file(url, path, headers)
 
-        # 3. Базовые LoRA (Hinata, Cum, Detail, Expressions) - оставим Hinata как пример
-        if not os.path.exists(LORA_HINATA):
-            download_file("https://civitai.com/api/download/models/287086?type=Model&format=SafeTensor", LORA_HINATA, {"User-Agent": "Mozilla/5.0"})
-
-        # 4. Модели для FaceSwap
-        if not os.path.exists(INSIGHTFACE_DIR): os.makedirs(INSIGHTFACE_DIR, exist_ok=True)
-        # ... (остальной код загрузки InsightFace и SAM остается)
-
-        # Download VAE
-        if not os.path.exists(VAE_DIR):
-            os.makedirs(VAE_DIR, exist_ok=True)
-        if not os.path.exists(VAE_FILE):
-            log(f"Downloading VAE to {VAE_FILE}...")
-            # Using HuggingFace mirror for stability
-            vae_url = "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors"
-            try:
-                r = requests.get(vae_url, stream=True, timeout=600)
-                if r.status_code == 200:
-                    with open(VAE_FILE, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=1024*1024):
-                            if chunk: f.write(chunk)
-                    log("VAE downloaded.")
-                else:
-                    log(f"VAE download failed with status {r.status_code}")
-            except Exception as e:
-                log(f"VAE download failed: {e}")
+        # 4. Базовые LoRA (Hinata, Cum, Detail, Expressions)
+        # Отключаем пока они не нужны или битые ссылки
+        # ...
 
 
         # Download LoRA (Hinata)
@@ -527,10 +516,8 @@ def setup_volume_links():
         # Всегда проверяем зависимости при отсутствии Volume, так как это чистый контейнер
         log("Checking/Installing ComfyUI dependencies...")
         # Принудительно ставим numpy<2, так как 2.x ломает совместимость
-        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2"], check=True)
-        # Ставим alembic и sqlalchemy (нужны для БД ComfyUI)
-        subprocess.run([sys.executable, "-m", "pip", "install", "sqlalchemy", "alembic"], check=True)
-        # Ставим остальные зависимости из requirements.txt
+        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2", "sqlalchemy", "alembic", "requests", "aiohttp", "pyyaml", "Pillow", "scipy", "tqdm", "psutil"], check=True)
+        
         if os.path.exists(os.path.join(COMFY_PATH, "requirements.txt")):
             subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
         return sys.executable
