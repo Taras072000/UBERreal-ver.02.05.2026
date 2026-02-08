@@ -88,7 +88,15 @@ def ensure_models():
                         break
                     else:
                         log(f"Failed with status {r.status_code}")
-                    # Download VAE
+                except Exception as e:
+                    log(f"Download failed: {e}")
+            
+            if not success:
+                log("ALL DOWNLOAD MIRRORS FAILED. Check internet or URLs.")
+        else:
+            log("Model exists.")
+
+        # Download VAE
         if not os.path.exists(VAE_DIR):
             os.makedirs(VAE_DIR, exist_ok=True)
         if not os.path.exists(VAE_FILE):
@@ -123,14 +131,6 @@ def ensure_models():
                     log("LoRA downloaded.")
             except Exception as e:
                 log(f"LoRA download failed: {e}")
-
-    except Exception as e:
-                    log(f"Download failed: {e}")
-            
-            if not success:
-                log("ALL DOWNLOAD MIRRORS FAILED. Check internet or URLs.")
-        else:
-            log("Model exists.")
             
         # Ensure InsightFace models exist (if directory is empty, download them)
         # This part will be enabled once we add insightface lib
