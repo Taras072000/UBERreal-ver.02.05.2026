@@ -8,12 +8,23 @@ if [ -n "$CUDNN_PATH" ]; then
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(dirname $CUDNN_PATH)
 fi
 
-# 2. Ensure model directory exists and download Pony Realism if missing
+# 2. Ensure model directory exists and download Pony Realism if missing or corrupt
 MODEL_PATH="/workspace/UBERreal-ver.02.05.2026/ComfyUI/models/checkpoints/PonyRealism_v2.1.safetensors"
 mkdir -p "$(dirname "$MODEL_PATH")"
+
+# Check if file exists and size is less than 1MB (corrupt/placeholder)
+if [ -f "$MODEL_PATH" ]; then
+    FILE_SIZE=$(stat -c%s "$MODEL_PATH")
+    if [ "$FILE_SIZE" -lt 1048576 ]; then
+        echo "Model file is too small ($FILE_SIZE bytes), deleting and re-downloading..."
+        rm "$MODEL_PATH"
+    fi
+fi
+
 if [ ! -f "$MODEL_PATH" ]; then
-    echo "Downloading PonyRealism_v2.1.safetensors..."
-    wget -O "$MODEL_PATH" "https://huggingface.co/stablediffusionapi/pony-realism/resolve/main/ponyRealism_v21.safetensors"
+    echo "Downloading PonyRealism_v2.1.safetensors (approx 6.5GB)..."
+    # Using a more reliable HuggingFace direct link with redirect support
+    curl -L -o "$MODEL_PATH" "https://huggingface.co/stablediffusionapi/pony-realism/resolve/main/ponyRealism_v21.safetensors"
 fi
 
 # 3. Update/Install necessary dependencies
