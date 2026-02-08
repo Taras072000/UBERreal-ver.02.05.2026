@@ -47,9 +47,13 @@ RUN pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url h
 
 # Install ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /app/ComfyUI
-# SKIP installing ComfyUI requirements again to prevent conflicts/hangs. 
-# We already installed necessary packages (torch, numpy, etc) in previous steps.
-# RUN cd /app/ComfyUI && pip install -r requirements.txt
+
+# SMART INSTALL: Remove heavy deps (torch, numpy) from ComfyUI requirements 
+# to use our pre-installed versions, but install everything else (alembic, etc).
+RUN sed -i '/torch/d' /app/ComfyUI/requirements.txt && \
+    sed -i '/numpy/d' /app/ComfyUI/requirements.txt && \
+    sed -i '/Pillow/d' /app/ComfyUI/requirements.txt && \
+    pip install -r /app/ComfyUI/requirements.txt
 
 # Copy project files
 COPY . /app
