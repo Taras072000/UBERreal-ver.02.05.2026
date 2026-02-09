@@ -249,17 +249,38 @@ def setup_env():
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
         subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
     
-    # Check for Impact Pack (FaceDetailer)
+    # Check for Impact Pack (FaceDetailer) - USING ZIP TO AVOID GIT AUTH ISSUES
     impact_path = os.path.join(COMFY_PATH, "custom_nodes", "ComfyUI-Impact-Pack")
     if not os.path.exists(impact_path):
-        log("Installing Impact Pack...")
-        subprocess.run(["git", "clone", "https://github.com/ltdrdata/ComfyUI-Impact-Pack.git", impact_path], check=True)
+        log("Installing Impact Pack via ZIP...")
+        zip_url = "https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/Main.zip"
+        try:
+            r = requests.get(zip_url)
+            import zipfile
+            from io import BytesIO
+            with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
+                zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
+            # Rename extracted folder to standard name
+            extracted = os.path.join(COMFY_PATH, "custom_nodes", "ComfyUI-Impact-Pack-Main")
+            if os.path.exists(extracted):
+                os.rename(extracted, impact_path)
+        except Exception as e: log(f"Impact Pack install failed: {e}")
 
-    # Check for Essentials (LoadImageBase64)
+    # Check for Essentials (LoadImageBase64) - USING ZIP TO AVOID GIT AUTH ISSUES
     essentials_path = os.path.join(COMFY_PATH, "custom_nodes", "comfyui-essentials")
     if not os.path.exists(essentials_path):
-        log("Installing ComfyUI-Essentials...")
-        subprocess.run(["git", "clone", "https://github.com/cubiq/comfyui-essentials.git", essentials_path], check=True)
+        log("Installing ComfyUI-Essentials via ZIP...")
+        zip_url = "https://github.com/cubiq/comfyui-essentials/archive/refs/heads/main.zip"
+        try:
+            r = requests.get(zip_url)
+            import zipfile
+            from io import BytesIO
+            with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
+                zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
+            extracted = os.path.join(COMFY_PATH, "custom_nodes", "comfyui-essentials-main")
+            if os.path.exists(extracted):
+                os.rename(extracted, essentials_path)
+        except Exception as e: log(f"Essentials install failed: {e}")
 
 def handler(job):
     try:
