@@ -56,9 +56,27 @@ def get_dimensions(aspect_ratio):
 def main_menu_keyboard():
     kb = [
         [KeyboardButton(text="📐 Формат (9:16)"), KeyboardButton(text="🎨 Стиль (Realistic)")],
-        [KeyboardButton(text="👩 Персонаж (Insta Girl)"), KeyboardButton(text="ℹ️ Статус сервера")]
+        [KeyboardButton(text="👩 Персонаж (Insta Girl)"), KeyboardButton(text="ℹ️ Статус сервера")],
+        [KeyboardButton(text="🧘‍♀️ Управление позой (ControlNet)")]
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+@dp.message(F.text.contains("Управление позой"))
+async def menu_controlnet_info(message: types.Message):
+    settings = get_settings(message.from_user.id)
+    has_pose = "✅ Установлена" if "controlnet_image" in settings else "❌ Не установлена"
+    
+    text = (
+        f"🧘‍♀️ <b>Управление позой (ControlNet)</b>\n\n"
+        f"Текущий статус: {has_pose}\n\n"
+        f"<b>Как это работает?</b>\n"
+        f"1. Просто пришли боту любое фото человека.\n"
+        f"2. Выбери вариант 'Использовать как позу'.\n"
+        f"3. Бот 'считает' положение тела и объем с этого фото и применит их к следующей генерации.\n\n"
+        f"Это гарантирует, что у персонажа не будет лишних рук/ног, а фигура будет соответствовать оригиналу.\n\n"
+        f"Чтобы сбросить позу, нажми /reset_pose."
+    )
+    await message.answer(text, parse_mode="HTML")
 
 def character_keyboard():
     kb = [
@@ -114,22 +132,27 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     if char_version in char_loras:
         prefix, hf_filename, local_filename = char_loras[char_version]
         char_prefix = prefix
-        # repo_name must be insta_girl_v1.safetensors
+        # Репозиторий на HF: Taras082498/insta_girl_vX.safetensors
         repo_name = char_version.replace("insta_", "insta_girl_") + ".safetensors"
+        
+        lora_url = f"https://huggingface.co/Taras082498/{repo_name}/resolve/main/{hf_filename}"
+        
         loras.append({
             "name": local_filename,
-            "url": f"https://huggingface.co/Taras082498/{repo_name}/resolve/main/{hf_filename}",
-            "strength_model": 1.0, "strength_clip": 1.0
+            "url": lora_url,
+            "strength_model": 1.2, # Увеличили силу до 1.2 для лучшего сходства
+            "strength_clip": 1.0
         })
+        logger.info(f"Adding LoRA: {local_filename} (Strength: 1.2) from {lora_url}")
 
     # Modify prompt based on style
     final_prompt = char_prefix + prompt
     if settings["style"] == "Realistic":
-        final_prompt += ", (hyperrealism, 8k, extremely detailed, photo, dslr:1.2)"
+        final_prompt += ", (photorealistic:1.3), 8k, raw photo, (high sharp:1.2)"
     elif settings["style"] == "Cinematic":
-        final_prompt += ", (cinematic lighting, movie scene, dramatic atmosphere, color grading)"
+        final_prompt += ", cinematic lighting, dramatic atmosphere, color grading"
     elif settings["style"] == "Amateur":
-        final_prompt += ", (amateur photo, homemade, raw photo, shot on iphone, flash photo, hard lighting, selfie, mirror selfie, low quality, noise, grain, POV:1.2)"
+        final_prompt += ", (amateur photo, homemade:1.2), raw photo, shot on iphone, noise, grain"
     elif settings["style"] == "PornStar":
         final_prompt += ", (studio lighting, professional makeup, perfect skin, airbrushed, glamour shot, 4k)"
     elif settings["style"] == "Anime":
@@ -143,21 +166,20 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
             # Clear pose after one use? Or keep it? Let's keep it until user clears it or sets new one.
             # But maybe notify user.
             
-        # Input payload for the worker
+        # Input payload for the worker (ПО ТВОЕМУ СПИСКУ)
         input_payload = {
             "input": {
                 "prompt": final_prompt,
                 "width": width,
                 "height": height,
-                "steps": 25, # More steps for quality
-                "cfg": 7,
+                "steps": 35, # SDXL Base steps
+                "cfg": 5.0, # Золотой CFG для анатомии
                 "sampler_name": "dpmpp_2m",
                 "scheduler": "karras",
-                "seed": 0, # Random seed will be handled by Comfy if 0, but usually we want random in python. 
-                           # Let's keep 0 and let worker handle randomization if needed or send random here.
-                "negative_prompt": "text, watermark, blur, deformed, painting, cartoon, low quality, ugly",
-                "highres_fix": True, # Always ON for quality
-                "controlnet_image": controlnet_image,
+                "seed": 0,
+                "negative_prompt": "headwear, helmet, goggles, weird object on head, (worst quality, low quality:1.4), text, watermark, blur, deformed, painting, cartoon, ugly, bad anatomy, deformed hands, extra fingers",
+                "highres_fix": True,
+                "face_image": controlnet_image, # Используем для ControlNet
                 "loras": loras
             }
         }
@@ -175,29 +197,43 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
             await bot.send_message(chat_id, "❌ Ошибка: RunPod вернул пустой ответ.")
             return
 
-        # Polling
+        # Polling with 10 minute timeout (600s) as requested for heavy model downloads
         output = None
         try:
-            output = await asyncio.to_thread(run_request.output, timeout=900)
+            # We use a long timeout because the first run downloads ~20GB of models
+            output = await asyncio.to_thread(run_request.output, timeout=600) 
+            logger.info(f"RunPod raw output: {output}")
         except Exception as poll_err:
             logger.error(f"RunPod Poll Error: {poll_err}")
-            await bot.send_message(chat_id, f"⚠️ Таймаут ожидания или ошибка сети:\n{str(poll_err)}")
+            await bot.send_message(chat_id, f"⚠️ Превышено время ожидания (10 мин).\nСервер всё еще может скачивать модели. Попробуйте через пару минут.")
+            return
         
         if not output:
-            await bot.send_message(chat_id, "❌ Воркер не вернул результат (возможно, упал).")
+            await bot.send_message(chat_id, "❌ Воркер не вернул результат (возможно, упал или пустой ответ).")
             return
 
-        if isinstance(output, dict) and "error" in output:
-            await bot.send_message(chat_id, f"❌ Ошибка генерации: {output.get('error')}")
-            # Send debug json if available
-            dbg = output.get("debug_prompt")
-            if dbg:
-                try:
-                    data = json.dumps(dbg, ensure_ascii=False, indent=2).encode("utf-8")
-                    await bot.send_document(chat_id, BufferedInputFile(data, filename="last_prompt.json"))
-                except Exception:
-                    pass
-            return
+        # Improved Error Handling
+        if isinstance(output, dict):
+            # Check for error in various possible formats
+            error_msg = output.get("error") or output.get("message")
+            if error_msg and not output.get("image_base64"):
+                # If error is a dict/json, format it
+                if isinstance(error_msg, dict):
+                    error_msg = json.dumps(error_msg, indent=2, ensure_ascii=False)
+                
+                await bot.send_message(chat_id, f"❌ <b>Ошибка воркера:</b>\n<pre>{error_msg}</pre>", parse_mode="HTML")
+                
+                # Send debug json if available
+                dbg = output.get("debug_prompt")
+                if dbg:
+                    try:
+                        data = json.dumps(dbg, ensure_ascii=False, indent=2).encode("utf-8")
+                        await bot.send_document(chat_id, BufferedInputFile(data, filename="debug_workflow.json"))
+                    except Exception: pass
+                return
+        elif isinstance(output, str) and len(output) < 500: # It's probably an error string
+             await bot.send_message(chat_id, f"❌ Ошибка (строка): {output}")
+             return
 
         image_b64 = None
         if isinstance(output, dict):

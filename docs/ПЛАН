@@ -70,3 +70,4 @@
 
 
 bash -lc 'source .venv/bin/activate && python -m bot.main'
+bash -lc 'source .venv/bin/activate && python -m bot.main'

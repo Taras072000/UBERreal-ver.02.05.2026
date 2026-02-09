@@ -1,0 +1,108 @@
+1. Базовая модель (ядро реализма тела)
+🔹 SDXL Base
+Модель:
+sd_xl_base_1.0.safetensors
+Вес: ~6.46 GB
+Почему:
+лучшая геометрия тела
+меньше «ломаных» суставов
+лучше работает с ControlNet
+🔹 SDXL Refiner (обязательно)
+Модель:
+sd_xl_refiner_1.0.safetensors
+Вес: ~6.08 GB
+Использование:
+denoise: 0.2 – 0.35
+применяется только после base
+именно он даёт фотореализм кожи
+2. VAE (критично для кожи)
+VAE:
+sdxl_vae_fp16_fix.safetensors
+Вес: ~335 MB
+Без него:
+«пластик»
+грязные тени
+плохой skin tone
+3. ControlNet — контроль тела (must-have)
+🔹 OpenPose (тело + руки + лицо)
+Модель:
+controlnet-openpose-sdxl-1.0.safetensors
+Вес: ~2.6 GB
+Настройки:
+weight: 1.0 – 1.2
+start/end: 0.0 / 0.9
+🔹 Depth (объём тела)
+Модель:
+controlnet-depth-sdxl-1.0.safetensors
+Вес: ~2.5 GB
+Настройки:
+weight: 0.6 – 0.8
+усиливает объём груди, бёдер, плеч
+🔹 (Опционально) Normal Map
+Если будешь идти в топ-реализм:
+controlnet-normal-sdxl-1.0
+weight: 0.4 – 0.6
+4. LoRA под тело (ключевой слой)
+🔹 Анатомия тела
+human_body_realism_sdxl_lora.safetensors
+weight: 0.6 – 0.8
+Назначение:
+пропорции
+суставы
+отсутствие «резиновых» рук/ног
+🔹 Кожа (самое важное)
+realistic_skin_texture_sdxl_lora.safetensors
+weight: 0.4 – 0.6
+Даёт:
+поры
+микро-дефекты
+натуральный блеск кожи
+🔹 Тип телосложения (по задаче)
+Примеры:
+athletic_body_sdxl_lora → 0.3 – 0.5
+slim_body_sdxl_lora → 0.3 – 0.5
+curvy_body_sdxl_lora → 0.3 – 0.5
+⚠️ Никогда не суммируй LoRA > 1.4
+5. Настройки генерации (золото)
+Sampler:
+DPM++ 2M Karras
+Steps:
+30–40 (base)
+15–20 (refiner)
+CFG:
+4.0 – 5.5
+(больше = хуже тело)
+Resolution:
+старт: 1024×1024
+HR fix: 1.5–2x
+denoise HR: 0.25 – 0.35
+6. Видео (после идеального кадра)
+🔹 AnimateDiff (SDXL)
+Модель:
+animatediff_sdxl_motion_module.safetensors
+Вес: ~1.8 GB
+Настройки:
+frames: 16–24
+fps: 8–12
+motion scale: 0.6 – 0.8
+🔹 Pose sequence (обязательно)
+OpenPose на каждый кадр
+иначе тело «плывёт»
+7. Upscale (финал)
+Модель:
+4x-UltraSharp
+или
+RealESRGAN_x4plus
+8. Минимальный VRAM
+24 GB — комфортно
+16 GB — только без normal map
+9. Итоговый стек (коротко)
+SDXL Base
++ VAE fix
++ ControlNet OpenPose
++ ControlNet Depth
++ Body LoRA
++ Skin LoRA
+→ SDXL Refiner
+→ AnimateDiff (для видео)
+→ Upscale
