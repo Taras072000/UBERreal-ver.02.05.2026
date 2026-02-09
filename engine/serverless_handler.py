@@ -247,40 +247,44 @@ def setup_env():
     if not os.path.exists(COMFY_PATH):
         log("Cloning ComfyUI...")
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+        # Force compatible versions to avoid Numpy 2.0 conflicts
+        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
     
-    # Check for Impact Pack (FaceDetailer) - USING ZIP TO AVOID GIT AUTH ISSUES
-    impact_path = os.path.join(COMFY_PATH, "custom_nodes", "ComfyUI-Impact-Pack")
-    if not os.path.exists(impact_path):
-        log("Installing Impact Pack via ZIP...")
-        zip_url = "https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/Main.zip"
+    def download_zip(url, target_dir, folder_name):
+        if os.path.exists(target_dir): return
+        log(f"Installing {folder_name} via ZIP...")
         try:
-            r = requests.get(zip_url)
-            import zipfile
-            from io import BytesIO
-            with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
-                zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
-            # Rename extracted folder to standard name
-            extracted = os.path.join(COMFY_PATH, "custom_nodes", "ComfyUI-Impact-Pack-Main")
-            if os.path.exists(extracted):
-                os.rename(extracted, impact_path)
-        except Exception as e: log(f"Impact Pack install failed: {e}")
+            r = requests.get(url, timeout=30)
+            if r.status_code != 200:
+                # Try master if main fails
+                r = requests.get(url.replace("/main.zip", "/master.zip"), timeout=30)
+            
+            if r.status_code == 200:
+                import zipfile
+                from io import BytesIO
+                with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
+                    zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
+                
+                # Find the extracted folder (it usually has -main or -master suffix)
+                extracted_folders = [d for d in os.listdir(os.path.join(COMFY_PATH, "custom_nodes")) if d.startswith(folder_name)]
+                for folder in extracted_folders:
+                    if folder != folder_name:
+                        old_path = os.path.join(COMFY_PATH, "custom_nodes", folder)
+                        new_path = os.path.join(COMFY_PATH, "custom_nodes", folder_name)
+                        if not os.path.exists(new_path):
+                            os.rename(old_path, new_path)
+                            log(f"Successfully installed {folder_name}")
+            else:
+                log(f"Failed to download ZIP for {folder_name}: Status {r.status_code}")
+        except Exception as e:
+            log(f"Error installing {folder_name}: {e}")
 
-    # Check for Essentials (LoadImageBase64) - USING ZIP TO AVOID GIT AUTH ISSUES
-    essentials_path = os.path.join(COMFY_PATH, "custom_nodes", "comfyui-essentials")
-    if not os.path.exists(essentials_path):
-        log("Installing ComfyUI-Essentials via ZIP...")
-        zip_url = "https://github.com/cubiq/comfyui-essentials/archive/refs/heads/main.zip"
-        try:
-            r = requests.get(zip_url)
-            import zipfile
-            from io import BytesIO
-            with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
-                zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
-            extracted = os.path.join(COMFY_PATH, "custom_nodes", "comfyui-essentials-main")
-            if os.path.exists(extracted):
-                os.rename(extracted, essentials_path)
-        except Exception as e: log(f"Essentials install failed: {e}")
+    # Install nodes via ZIP
+    download_zip("https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/Main.zip", 
+                 os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Impact-Pack"), "ComfyUI-Impact-Pack")
+    
+    download_zip("https://github.com/cubiq/comfyui-essentials/archive/refs/heads/main.zip", 
+                 os.path.join(COMFY_PATH, "custom_nodes/comfyui-essentials"), "comfyui-essentials")
 
 def handler(job):
     try:
