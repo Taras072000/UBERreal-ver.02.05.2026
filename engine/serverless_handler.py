@@ -249,7 +249,10 @@ def setup_env():
         log("Clean installing ComfyUI...")
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        # Force compatible versions and install missing Comfy-Org dependencies
+        # 1. Install official ComfyUI requirements first (Critical for frontend)
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+        
+        # 2. Force compatible versions and install missing system dependencies
         subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
