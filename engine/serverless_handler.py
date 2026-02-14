@@ -162,10 +162,11 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     current_clip = ["18", 0]
 
     # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
+    # NOTE: Ebony Skin disabled temporarily to debug tensor mismatch (mat1/mat2 error)
     quality_loras = [
         {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
         {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
-        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Plan: 0.7 - 0.9
+        # {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} 
     ]
     for i, ql in enumerate(quality_loras):
         node_id = f"ql_{i}"
