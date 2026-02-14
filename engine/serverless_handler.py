@@ -112,7 +112,7 @@ def ensure_models(custom_loras=None):
     download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors"))
     
     # VAE (Public HF) - Renaming to match workflow expectation
-    download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", os.path.join(VAE_DIR, "sdxl_vae_fp16_fix.safetensors"))
+    download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", os.path.join(VAE_DIR, "sdxl_vae.safetensors"))
 
     # Upscaler (Public HF)
     download_file("https://huggingface.co/uwg/upscaler/resolve/main/ESRGAN/4x-UltraSharp.pth", os.path.join(UPSCALE_DIR, "4x-UltraSharp.pth"))
