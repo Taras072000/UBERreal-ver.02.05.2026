@@ -111,7 +111,7 @@ def ensure_models(custom_loras=None):
     # SDXL Refiner (Public HF)
     download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors"))
     
-    # VAE (Public HF)
+    # VAE (Public HF) - Renaming to match workflow expectation
     download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", os.path.join(VAE_DIR, "sdxl_vae_fp16_fix.safetensors"))
 
     # Upscaler (Public HF)
@@ -121,13 +121,13 @@ def ensure_models(custom_loras=None):
     download_file("https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/resolve/main/diffusion_pytorch_model.safetensors", os.path.join(CONTROLNET_DIR, "controlnet-depth-sdxl-1.0.safetensors"))
     download_file("https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors", os.path.join(CONTROLNET_DIR, "OpenPoseXL2.safetensors"))
 
-    # 2. LoRAs (Идеальное тело) - Public Links
+    # 2. LoRAs (Идеальное тело) - Public Links & Fixed Names
     # Anatomy
     download_file("https://civitai.com/api/download/models/135867", os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors"))
-    # Skin
-    download_file("https://civitai.com/api/download/models/328678", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
-    # Ebony Skin (Style)
-    download_file("https://civitai.com/api/download/models/175336", os.path.join(LORA_DIR, "ebony_skin_sdxl.safetensors"))
+    # Skin (Using reliable alternative link)
+    download_file("https://civitai.com/api/download/models/122359", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
+    # Ebony Skin (Style) - Renaming to match workflow
+    download_file("https://civitai.com/api/download/models/175336", os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
@@ -163,9 +163,9 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     quality_loras = [
-        {"name": os.path.basename(LORA_BODY), "str": 0.7}, # Plan: 0.6 - 0.8
-        {"name": os.path.basename(LORA_SKIN), "str": 0.6}, # Plan: 0.5 - 0.7
-        {"name": os.path.basename(LORA_EBONY), "str": 0.8} # Plan: 0.7 - 0.9
+        {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
+        {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
+        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Plan: 0.7 - 0.9
     ]
     for i, ql in enumerate(quality_loras):
         node_id = f"ql_{i}"
@@ -274,7 +274,7 @@ def setup_env():
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
     
     # 3. Force compatible versions and install missing system dependencies
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     def download_zip(url, target_dir, folder_name):
