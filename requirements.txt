@@ -1,7 +1,6 @@
-# Core AI & Torch (Use pre-installed from Docker base image)
-# torch>=2.2.0
-# torchvision>=0.17.0
-# torchaudio>=2.2.0
+# Core AI & Torch
+numpy<2.0.0
+comfy-aimdo>=0.1.7
 
 # Install xformers only if compatible (Disabled to prevent PyTorch downgrade)
 # xformers==0.0.23; platform_system == "Linux"

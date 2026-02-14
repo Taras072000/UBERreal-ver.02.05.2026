@@ -6,9 +6,10 @@ import time
 import requests
 import glob
 import subprocess
-import sys
 import shutil
+import sys
 import random
+import zipfile
 from io import BytesIO
 
 # --- CONFIGURATION & PATHS ---
@@ -248,8 +249,8 @@ def setup_env():
         log("Clean installing ComfyUI...")
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        # Force compatible versions and fix paths
-        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+        # Force compatible versions and install missing Comfy-Org dependencies
+        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
         subprocess.run([sys.executable, "-m", "pip", "install", "-e", "."], cwd=COMFY_PATH, check=True)
     
     def download_zip(url, target_dir, folder_name):
@@ -282,7 +283,7 @@ def setup_env():
     download_zip("https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/main.zip", 
                  os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Impact-Pack"), "ComfyUI-Impact-Pack")
     
-    download_zip("https://github.com/cubiq/comfyui-essentials/archive/refs/heads/main.zip", 
+    download_zip("https://github.com/cubiq/ComfyUI_Essentials/archive/refs/heads/main.zip", 
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-essentials"), "comfyui-essentials")
 
 def handler(job):
@@ -294,6 +295,9 @@ def handler(job):
 
         setup_env()
 
+        # Add ComfyUI to path to ensure modules are findable
+        if COMFY_PATH not in sys.path: sys.path.insert(0, COMFY_PATH)
+        
         # Start ComfyUI if not running
         if not check_comfy_status():
             log("Launching ComfyUI...")
