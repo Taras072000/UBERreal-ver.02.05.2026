@@ -21,29 +21,22 @@
         - [x] Expressions (эмоции)
     - [x] Интеграция ComfyUI Impact Pack (библиотеки)
 
-## 🚧 ЭТАП 3: HARDCORE CONTENT & DIVERSITY (В РАБОТЕ - v2.3)
-[ ] 3.1. Deep Anatomy Customization (LoRA & Embeddings):
-    - [ ] ГРУДЬ (Breasts):
-        - Типы: Natural (натуральная), Silicone (силикон), Saggy (обвисшая), Perky (подтянутая), Tubiform
-        - Размеры: Small (A-B), Medium (C-D), Large (E-F), Huge/Gigantic (огромная), Asymmetrical
-        - Соски (Nipples): Puffy (пухлые), Inverted (втянутые), Long (длинные), Hard/Erect (стоячие), Large/Small Areola
-    - [ ] ЖЕНСКИЕ ГЕНИТАЛИИ (Pussy):
-        - Виды: Puffy (пухлая/верблюжья лапка), Innie (аккуратная), Outie (выступающая), Hairy (волосатая), Shaved (бритая)
-        - Анатомия: Tight/Narrow (узкая), Gaping/Wide (широкая/зияющая), Deep (глубокая), Wet (влажная)
-    - [ ] МУЖСКИЕ ГЕНИТАЛИИ (Penis):
-        - Типы: Circumcised (обрезанный), Uncircumcised (необрезанный)
-        - Размеры: Micro, Average, Large, Monster/Huge (гигантский), Thick/Girthy (толстый)
-        - Детали: Veiny (венозный), Curved (изогнутый)
-    - [ ] ТЕЛОСЛОЖЕНИЕ (Body Shapes):
-        - Бедра (Hips): Wide (широкие), Narrow (узкие), Violin Hips
-        - Талия (Waist): Hourglass (песочные часы), Slim, Chubby (полноватая), Toned
-        - Кожа и Текстуры: Goosebumps (мурашки), Sweat (пот), Veins (вены), Stretch marks (растяжки), Cellulite
-[ ] 3.2. Система разнообразия (Diversity):
-    - [ ] Меню выбора национальности/кожи в боте (Asian, Ebony, Latina, Pale, Slavic)
-    - [ ] Рандомизатор "виртуальной модели" (сохранение параметров)
-[ ] 3.3. Расширенная работа с позами:
-    - [ ] Поддержка Multi-Subject ControlNet (позы для пар/секса)
-    - [ ] Catalog of Sex Acts (позиции)
+## 🚧 ЭТАП 3: TRAINING "IDEAL BODY" (В РАБОТЕ)
+
+### 3.1. Подготовка датасетов (Анатомия, Кожа, 18+):
+- **Сбор референсов:** 100+ фото в 4K с идеальным освещением.
+- **Тегирование (Captions):** Использование триггер-вордов для каждой зоны (pussy, breasts, skin texture).
+- **Очистка:** Удаление артефактов, блюра и лишних объектов.
+
+### 3.2. Тренировка LoRA (Kohya_ss / OneTrainer):
+- **UBERreal_Anatomy_v1:** Фокус на коленях, локтях, кистях и стопах. (3000+ steps).
+- **UBERreal_Skin_v1:** Обучение на макро-снимках кожи. (2000+ steps).
+- **UBERreal_Genitals_v1:** Специализированная модель по ТЗ (размеры, типы, влажность).
+
+### 3.3. Тестирование и Балансировка:
+- Нахождение идеальных весов (обычно 0.4 - 0.7 для каждой LoRA).
+- Проверка совместимости с PonyRealism v2.1.
+- Устранение переобучения (overfitting).
 
 ## 🚧 ЭТАП 4: ПРОДВИНУТЫЕ ФУНКЦИИ (ОЧЕРЕДЬ)
 [ ] 4.1. Face Detailer (ADetailer/Impact Pack):
@@ -69,5 +62,4 @@
 [ ] 7.2. Стресс-тесты
 
 
-bash -lc 'source .venv/bin/activate && python -m bot.main'
 bash -lc 'source .venv/bin/activate && python -m bot.main'

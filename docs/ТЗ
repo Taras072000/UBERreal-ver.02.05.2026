@@ -35,16 +35,18 @@
 
 ### 3.1. Ядро генерации
 - **ComfyUI:** Используется в headless-режиме (API) для построения графов генерации.
-- **Модель:** SDXL 1.0 (Checkpoint: RealVisXL V4.0).
+- **Модель:** SDXL 1.0 (Checkpoint: PonyRealism_v2.1 или RealVisXL V4.0).
+- **Пайплайн:** Двухпроходный (Base + Refiner) для максимальной детализации кожи.
 
-### 3.2. Модули улучшения (v2.1+)
-- **High-Res Fix:** Двухпроходная генерация (Latent Upscale x1.5) для достижения разрешения 1080x1920.
-- **ControlNet:** OpenPose SDXL для управления позой персонажа.
-- **LoRA System:**
-  - `Detail Slider`: Улучшение текстуры кожи и микродеталей.
-  - `Cum Shot`: Генерация специфического 18+ контента (жидкости).
-  - `Expressions`: Управление эмоциями лица.
-- **Face Detailer (В планах):** ComfyUI Impact Pack + SAM/YOLO для авто-коррекции лиц.
+### 3.2. Модули улучшения (v2.3+)
+- **High-Res Fix:** Двухпроходная генерация (Latent Upscale x1.5-2.0).
+- **ControlNet:** OpenPose + Depth (обязательно) для удержания анатомии и объема.
+- **Специализированная система LoRA (Текущий фокус):**
+  - `Anatomy Master LoRA`: Глобальные пропорции, суставы, коррекция копыт/пальцев.
+  - `Skin Texture LoRA`: Микро-детали, поры, родинки, мурашки, пот.
+  - `Genital Focus LoRA`: Ультра-детализация (Pussy, Anal, Penis) по категориям из датасета.
+  - `Body Type LoRA`: Специфические формы (Curvy, Slim, Athletic).
+- **Face Detailer:** ComfyUI Impact Pack (BBOX/SAM) для 4K-лиц.
 
 ### 3.3. API-интерфейс
 - Python-скрипт (`serverless_handler.py`), принимающий JSON-запросы от бота и управляющий ComfyUI.
@@ -89,24 +91,19 @@
 
 ---
 
-## 7. Текущий статус реализации (на 08.02.2026)
+## 7. Текущий статус реализации (на 09.02.2026)
 
-### ✅ Реализовано (Backend v2.1)
-- [x] Базовая генерация SDXL (RealVisXL).
-- [x] High-Res Fix (FHD качество).
-- [x] ControlNet OpenPose (прием поз).
-- [x] LoRA: Detail Slider, Cum Shot, Expressions.
-- [x] Интеграция ComfyUI Impact Pack (библиотеки установлены).
+### ✅ Реализовано (Backend v2.2)
+- [x] Профессиональный пайплайн SDXL Base + Refiner.
+- [x] Dual ControlNet (OpenPose + Depth).
+- [x] Upscale 4x-UltraSharp.
+- [x] Интеграция LoRA (Insta Girl v1-v3).
 
-### ✅ Реализовано (Bot v2.0)
-- [x] Меню настроек и стилей.
-- [x] Админ-панель.
-- [x] Загрузка референсов поз.
-
-### 🚧 В работе (Next Steps)
-- [ ] Активация FaceDetailer в Workflow.
-- [ ] Каталог встроенных поз в боте.
-- [ ] Сборка Docker с поддержкой InsightFace (Deepfake).
+### 🚧 В работе (ЭТАП: ИДЕАЛЬНОЕ ТЕЛО)
+- [ ] Обучение `UBERreal_Anatomy_v1`: фикс суставов и пропорций.
+- [ ] Обучение `UBERreal_Skin_v1`: текстура, поры, реакция на свет.
+- [ ] Обучение `UBERreal_Genitals_v1`: детальная проработка 18+ зон.
+- [ ] Интеграция всех LoRA в единый Workflow с весами.
 
 ---
 

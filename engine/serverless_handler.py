@@ -244,43 +244,42 @@ def get_latest_image(job_id):
 
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""
-    if not os.path.exists(COMFY_PATH):
-        log("Cloning ComfyUI...")
+    if not os.path.exists(COMFY_PATH) or not os.path.exists(os.path.join(COMFY_PATH, "main.py")):
+        log("Clean installing ComfyUI...")
+        if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        # Force compatible versions to avoid Numpy 2.0 conflicts
+        # Force compatible versions and fix paths
         subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", "-e", "."], cwd=COMFY_PATH, check=True)
     
     def download_zip(url, target_dir, folder_name):
         if os.path.exists(target_dir): return
         log(f"Installing {folder_name} via ZIP...")
         try:
-            r = requests.get(url, timeout=30)
-            if r.status_code != 200:
-                # Try master if main fails
-                r = requests.get(url.replace("/main.zip", "/master.zip"), timeout=30)
-            
-            if r.status_code == 200:
-                import zipfile
-                from io import BytesIO
-                with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
-                    zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
-                
-                # Find the extracted folder (it usually has -main or -master suffix)
-                extracted_folders = [d for d in os.listdir(os.path.join(COMFY_PATH, "custom_nodes")) if d.startswith(folder_name)]
-                for folder in extracted_folders:
-                    if folder != folder_name:
+            # Try different possible branch names for ZIP
+            for branch in ["main", "master", "Main", "Master"]:
+                test_url = url.replace("heads/main.zip", f"heads/{branch}.zip")
+                r = requests.get(test_url, timeout=30)
+                if r.status_code == 200:
+                    import zipfile
+                    from io import BytesIO
+                    with zipfile.ZipFile(BytesIO(r.content)) as zip_ref:
+                        zip_ref.extractall(os.path.join(COMFY_PATH, "custom_nodes"))
+                    
+                    extracted_folders = [d for d in os.listdir(os.path.join(COMFY_PATH, "custom_nodes")) if d.lower().startswith(folder_name.lower())]
+                    for folder in extracted_folders:
                         old_path = os.path.join(COMFY_PATH, "custom_nodes", folder)
                         new_path = os.path.join(COMFY_PATH, "custom_nodes", folder_name)
                         if not os.path.exists(new_path):
                             os.rename(old_path, new_path)
                             log(f"Successfully installed {folder_name}")
-            else:
-                log(f"Failed to download ZIP for {folder_name}: Status {r.status_code}")
+                    return
+            log(f"Failed to download ZIP for {folder_name} after trying all branches.")
         except Exception as e:
             log(f"Error installing {folder_name}: {e}")
 
     # Install nodes via ZIP
-    download_zip("https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/Main.zip", 
+    download_zip("https://github.com/ltdrdata/ComfyUI-Impact-Pack/archive/refs/heads/main.zip", 
                  os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Impact-Pack"), "ComfyUI-Impact-Pack")
     
     download_zip("https://github.com/cubiq/comfyui-essentials/archive/refs/heads/main.zip", 
