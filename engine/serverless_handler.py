@@ -12,6 +12,22 @@ import random
 import zipfile
 from io import BytesIO
 
+def check_comfy_status():
+    """Wait for ComfyUI to be ready"""
+    try:
+        response = requests.get(f"{COMFY_URL}/system_stats", timeout=2)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+def force_refresh():
+    """Force ComfyUI to reload model lists"""
+    try:
+        requests.post(f"{COMFY_URL}/extra_model_paths", timeout=2)
+        requests.post(f"{COMFY_URL}/refresh_checkpoints", timeout=2)
+        requests.get(f"{COMFY_URL}/object_info", timeout=5)
+    except: pass
+
 # --- CONFIGURATION & PATHS ---
 VERSION = "2.0-PRO-PIPELINE"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -48,20 +64,18 @@ ULTRASHARP_FILE = os.path.join(UPSCALERS_DIR, "4x-UltraSharp.pth")
 def log(message):
     print(f"[Handler] {message}", flush=True)
 
-def check_comfy_status():
-    """Wait for ComfyUI to be ready"""
-    try:
-        response = requests.get(f"{COMFY_URL}/system_stats", timeout=2)
-        return response.status_code == 200
-    except Exception:
-        return False
-
 def download_file(url, path, headers=None):
-    """Download with progress logging"""
+    """Download with progress logging and smart auth"""
     if os.path.exists(path):
         return True
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        
+        # Add auth headers if needed
+        if "huggingface.co" in url and not headers:
+            token = os.environ.get("HF_TOKEN")
+            if token: headers = {"Authorization": f"Bearer {token}"}
+            
         r = requests.get(url, stream=True, timeout=600, headers=headers)
         if r.status_code == 200:
             total_size = int(r.headers.get('content-length', 0))
@@ -81,36 +95,39 @@ def download_file(url, path, headers=None):
         log(f"Download error: {e}")
         return False
 
-def force_refresh():
-    """Force ComfyUI to reload model lists"""
-    try:
-        requests.post(f"{COMFY_URL}/extra_model_paths", timeout=2)
-        requests.post(f"{COMFY_URL}/refresh_checkpoints", timeout=2)
-        requests.get(f"{COMFY_URL}/object_info", timeout=5)
-    except: pass
-
 def ensure_models(custom_loras=None):
     """Ensure all core and custom models are present"""
-    hf_token = os.environ.get("HF_TOKEN")
-    hf_headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
-    civit_headers = {"User-Agent": "ComfyUI-Serverless"}
+    # Пути к моделям
+    LORA_DIR = os.path.join(COMFY_PATH, "models/loras")
+    CHECKPOINTS_DIR = os.path.join(COMFY_PATH, "models/checkpoints")
+    UPSCALE_DIR = os.path.join(COMFY_PATH, "models/upscale_models")
+    VAE_DIR = os.path.join(COMFY_PATH, "models/vae")
+    CONTROLNET_DIR = os.path.join(COMFY_PATH, "models/controlnet") # Correct path for controlnet
 
-    # 1. Core Models
-    download_file("https://huggingface.co/Taras082498/PonyRealism/resolve/main/PonyRealism_v2.1.safetensors", BASE_MODEL, hf_headers)
-    download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors", REFINER_MODEL, hf_headers)
-    download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", VAE_FILE, hf_headers)
+    # 1. Основные модели (Public Mirrors - Reliable)
+    # Pony V6 (SDXL Base) - using reliable public link
+    download_file("https://civitai.com/api/download/models/290640", os.path.join(CHECKPOINTS_DIR, "PonyRealism_v2.1.safetensors"))
+    
+    # SDXL Refiner (Public HF)
+    download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors"))
+    
+    # VAE (Public HF)
+    download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", os.path.join(VAE_DIR, "sdxl_vae_fp16_fix.safetensors"))
 
-    # 2. ControlNet
-    download_file("https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/resolve/main/diffusion_pytorch_model.safetensors", CONTROL_DEPTH)
-    download_file("https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors", CONTROL_POSE)
+    # Upscaler (Public HF)
+    download_file("https://huggingface.co/uwg/upscaler/resolve/main/ESRGAN/4x-UltraSharp.pth", os.path.join(UPSCALE_DIR, "4x-UltraSharp.pth"))
+    
+    # ControlNet (Public HF)
+    download_file("https://huggingface.co/diffusers/controlnet-depth-sdxl-1.0/resolve/main/diffusion_pytorch_model.safetensors", os.path.join(CONTROLNET_DIR, "controlnet-depth-sdxl-1.0.safetensors"))
+    download_file("https://huggingface.co/thibaud/controlnet-openpose-sdxl-1.0/resolve/main/OpenPoseXL2.safetensors", os.path.join(CONTROLNET_DIR, "OpenPoseXL2.safetensors"))
 
-    # 3. Quality LoRAs
-    download_file("https://civitai.com/api/download/models/215501", LORA_BODY, civit_headers)
-    download_file("https://civitai.com/api/download/models/145823", LORA_SKIN, civit_headers)
-    download_file("https://civitai.com/api/download/models/258213", LORA_EBONY, civit_headers)
-
-    # 4. Upscaler
-    download_file("https://huggingface.co/datasets/G1612/upscale_models/resolve/main/4x-UltraSharp.pth", ULTRASHARP_FILE)
+    # 2. LoRAs (Идеальное тело) - Public Links
+    # Anatomy
+    download_file("https://civitai.com/api/download/models/135867", os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors"))
+    # Skin
+    download_file("https://civitai.com/api/download/models/328678", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
+    # Ebony Skin (Style)
+    download_file("https://civitai.com/api/download/models/175336", os.path.join(LORA_DIR, "ebony_skin_sdxl.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
@@ -120,7 +137,7 @@ def ensure_models(custom_loras=None):
             url = lora.get("url")
             if name and url:
                 local_path = os.path.join(LORA_DIR, name)
-                if download_file(url, local_path, hf_headers):
+                if download_file(url, local_path):
                     actual_loras.append({
                         "name": name,
                         "strength_model": lora.get("strength_model", 1.0),
@@ -250,9 +267,12 @@ def setup_env():
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
         # 1. Install official ComfyUI requirements first (Critical for frontend)
-        subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
-        
-        # 2. Force compatible versions and install missing system dependencies
+    subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+    
+    # 2. Force install comfy-ui-client-frontend to fix missing metadata error
+    subprocess.run([sys.executable, "-m", "pip", "install", "comfy-ui-client"], check=True)
+    
+    # 3. Force compatible versions and install missing system dependencies
         subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
