@@ -267,13 +267,14 @@ def setup_env():
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
         # 1. Install official ComfyUI requirements first (Critical for frontend)
-    subprocess.run([sys.executable, "-m", "pip", "install", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+    # Using --no-cache-dir to prevent OOM on small containers
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
     
     # 2. Force install comfy-ui-client-frontend to fix missing metadata error
-    subprocess.run([sys.executable, "-m", "pip", "install", "comfy-ui-client"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
     
     # 3. Force compatible versions and install missing system dependencies
-        subprocess.run([sys.executable, "-m", "pip", "install", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     def download_zip(url, target_dir, folder_name):
@@ -325,9 +326,15 @@ def handler(job):
         if not check_comfy_status():
             log("Launching ComfyUI...")
             subprocess.Popen([sys.executable, os.path.join(COMFY_PATH, "main.py"), "--listen", "0.0.0.0", "--port", "8188"])
-            for _ in range(30):
-                if check_comfy_status(): break
-                time.sleep(2)
+            # Wait for ComfyUI to start (up to 10 minutes for cold start)
+            for _ in range(600): # 600 * 1s = 10 mins
+                if check_comfy_status():
+                    log("ComfyUI is ready!")
+                    break
+                time.sleep(1)
+            else:
+                log("ComfyUI failed to start in time")
+                sys.exit(1)
 
         # Download Models
         active_loras = ensure_models(custom_loras=job_input.get("loras", []))
