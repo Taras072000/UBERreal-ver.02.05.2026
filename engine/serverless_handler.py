@@ -144,11 +144,11 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     current_model = ["10", 0]
     current_clip = ["18", 0]
 
-    # Apply Quality LoRAs
+    # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     quality_loras = [
-        {"name": os.path.basename(LORA_BODY), "str": 0.6},
-        {"name": os.path.basename(LORA_SKIN), "str": 0.4},
-        {"name": os.path.basename(LORA_EBONY), "str": 0.7}
+        {"name": os.path.basename(LORA_BODY), "str": 0.7}, # Plan: 0.6 - 0.8
+        {"name": os.path.basename(LORA_SKIN), "str": 0.6}, # Plan: 0.5 - 0.7
+        {"name": os.path.basename(LORA_EBONY), "str": 0.8} # Plan: 0.7 - 0.9
     ]
     for i, ql in enumerate(quality_loras):
         node_id = f"ql_{i}"
@@ -220,7 +220,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "seed": seed, "steps": 20, "cfg": cfg,
             "sampler_name": sampler_name, "scheduler": scheduler,
             "model": ["refiner", 0], "positive": ["11", 0], "negative": ["12", 0],
-            "latent_image": ["14", 0], "denoise": 0.3
+            "latent_image": ["14", 0], "denoise": 0.25 # Plan: 0.2 - 0.35
         }
     }
 
