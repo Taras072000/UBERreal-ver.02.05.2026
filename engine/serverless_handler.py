@@ -45,7 +45,7 @@ UPSCALERS_DIR = os.path.join(MODELS_DIR, "upscale_models")
 OUTPUT_DIR = os.path.join(COMFY_PATH, "output")
 
 # Core Model Files
-BASE_MODEL = os.path.join(CHECKPOINTS_DIR, "PonyRealism_v2.1.safetensors")
+BASE_MODEL = os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors")
 REFINER_MODEL = os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors")
 VAE_FILE = os.path.join(VAE_DIR, "sdxl_vae.safetensors")
 
@@ -105,11 +105,10 @@ def ensure_models(custom_loras=None):
     CONTROLNET_DIR = os.path.join(COMFY_PATH, "models/controlnet") # Correct path for controlnet
 
     # 1. Основные модели (Public Mirrors - Reliable)
-    # Pony V6 (SDXL Base) - using reliable public link
-    download_file("https://civitai.com/api/download/models/290640", os.path.join(CHECKPOINTS_DIR, "PonyRealism_v2.1.safetensors"))
+    # SDXL Base 1.0 (Public HF) - Standard SDXL model for testing
+    download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors"))
     
-    # SDXL Refiner (Public HF)
-    download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors"))
+    # SDXL Refiner removed for compatibility
     
     # VAE (Public HF) - Renaming to match workflow expectation
     download_file("https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl_vae.safetensors", os.path.join(VAE_DIR, "sdxl_vae.safetensors"))
@@ -126,11 +125,25 @@ def ensure_models(custom_loras=None):
     download_file("https://civitai.com/api/download/models/135867", os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors"))
     # Skin (Using reliable alternative link)
     download_file("https://civitai.com/api/download/models/122359", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
-    # Ebony Skin (Style) - Renaming to match workflow
-    download_file("https://civitai.com/api/download/models/175336", os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors"))
+    # Ebony Skin (PonyXL/SDXL compatible) - Requires Civitai Token or Manual Download
+    # download_file("https://civitai.com/api/download/models/1106176", os.path.join(LORA_DIR, "StS_Skin_Tone_Slider.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
+    # Add Quality LoRAs (Matching "Идеальное тело" Plan)
+    quality_loras = [
+        {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
+        {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
+        # {"name": "StS_Skin_Tone_Slider.safetensors", "str": 0.8} # Temporarily disabled due to download auth
+    ]
+    
+    for ql in quality_loras:
+        actual_loras.append({
+            "name": ql["name"],
+            "strength_model": ql["str"],
+            "strength_clip": ql["str"]
+        })
+
     if custom_loras:
         for lora in custom_loras:
             name = lora.get("name")
@@ -148,10 +161,10 @@ def ensure_models(custom_loras=None):
     return actual_loras
 
 def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, face_image=None, loras=None, job_id="uber"):
-    """Professional SDXL Pipeline: Base -> Refiner -> Upscale"""
+    """Professional SDXL Pipeline: Base 1.0 -> Upscale (Standard SDXL for compatibility testing)"""
     workflow = {
         "10": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": os.path.basename(BASE_MODEL)}},
-        "refiner": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": os.path.basename(REFINER_MODEL)}},
+        # Refiner removed
         "19": {"class_type": "VAELoader", "inputs": {"vae_name": os.path.basename(VAE_FILE)}},
         "13": {"class_type": "EmptyLatentImage", "inputs": {"width": width, "height": height, "batch_size": 1}},
         "18": {"class_type": "CLIPSetLastLayer", "inputs": {"stop_at_clip_layer": -2, "clip": ["10", 1]}},
@@ -161,24 +174,27 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     current_model = ["10", 0]
     current_clip = ["18", 0]
 
-    # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
-    # NOTE: Ebony Skin disabled temporarily to debug tensor mismatch (mat1/mat2 error)
+    # Apply Quality LoRAs (Matching "Идеальное тело" Plan) - TEMPORARILY DISABLED FOR TESTING
+    # NOTE: Ebony Skin re-enabled (Refiner was the issue, not LoRA)
     quality_loras = [
         {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
         {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
-        # {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} 
+        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Plan: 0.7 - 0.9
     ]
-    for i, ql in enumerate(quality_loras):
-        node_id = f"ql_{i}"
-        workflow[node_id] = {
-            "class_type": "LoraLoader",
-            "inputs": {
-                "lora_name": ql["name"], "strength_model": ql["str"], "strength_clip": ql["str"],
-                "model": current_model, "clip": current_clip
-            }
-        }
-        current_model = [node_id, 0]
-        current_clip = [node_id, 1]
+    # for i, ql in enumerate(quality_loras):
+    #     node_id = f"ql_{i}"
+    #     workflow[node_id] = {
+    #         "class_type": "LoraLoader",
+    #         "inputs": {
+    #             "lora_name": ql["name"],
+    #             "strength_model": ql["str"],
+    #             "strength_clip": ql["str"],
+    #             "model": current_model,
+    #             "clip": ["18", 0] # Base CLIP
+    #         }
+    #     }
+    #     current_model = [node_id, 0]
+    #     # current_clip = [node_id, 1]
 
     # Apply Custom LoRAs
     if loras:
@@ -187,12 +203,15 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             workflow[node_id] = {
                 "class_type": "LoraLoader",
                 "inputs": {
-                    "lora_name": cl["name"], "strength_model": cl["strength_model"], "strength_clip": cl["strength_clip"],
-                    "model": current_model, "clip": current_clip
+                    "lora_name": cl["name"],
+                    "strength_model": cl["strength_model"],
+                    "strength_clip": cl["strength_clip"],
+                    "model": current_model,
+                    "clip": ["18", 0] # Base CLIP
                 }
             }
             current_model = [node_id, 0]
-            current_clip = [node_id, 1]
+            # current_clip = [node_id, 1]
 
     # Text Encoding
     workflow["11"] = {"class_type": "CLIPTextEncode", "inputs": {"text": prompt_text, "clip": current_clip}}
@@ -200,25 +219,25 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     last_pos = ["11", 0]
 
-    # ControlNet (Pose & Depth)
-    if face_image:
-        workflow["input_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_image}}
+    # ControlNet (Pose & Depth) - TEMPORARILY DISABLED FOR TESTING
+    # if face_image:
+    #     workflow["input_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_image}}
         
-        # 1. OpenPose (Скелет)
-        workflow["cn_pose"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_POSE)}}
-        workflow["apply_pose"] = {
-            "class_type": "ControlNetApply",
-            "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_img", 0]}
-        }
-        last_pos = ["apply_pose", 0]
+    #     # 1. OpenPose (Скелет)
+    #     workflow["cn_pose"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_POSE)}}
+    #     workflow["apply_pose"] = {
+    #         "class_type": "ControlNetApply",
+    #         "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_img", 0]}
+    #     }
+    #     last_pos = ["apply_pose", 0]
 
-        # 2. Depth (Объем и формы)
-        workflow["cn_depth"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_DEPTH)}}
-        workflow["apply_depth"] = {
-            "class_type": "ControlNetApply",
-            "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_img", 0]}
-        }
-        last_pos = ["apply_depth", 0]
+    #     # 2. Depth (Объем и формы)
+    #     workflow["cn_depth"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_DEPTH)}}
+    #     workflow["apply_depth"] = {
+    #         "class_type": "ControlNetApply",
+    #         "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_img", 0]}
+    #     }
+    #     last_pos = ["apply_depth", 0]
 
     # KSampler (Base)
     workflow["14"] = {
@@ -231,19 +250,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         }
     }
 
-    # KSampler (Refiner)
-    workflow["21"] = {
-        "class_type": "KSampler",
-        "inputs": {
-            "seed": seed, "steps": 20, "cfg": cfg,
-            "sampler_name": sampler_name, "scheduler": scheduler,
-            "model": ["refiner", 0], "positive": ["11", 0], "negative": ["12", 0],
-            "latent_image": ["14", 0], "denoise": 0.25 # Plan: 0.2 - 0.35
-        }
-    }
-
-    # Decode & Upscale
-    workflow["decode"] = {"class_type": "VAEDecode", "inputs": {"samples": ["21", 0], "vae": ["19", 0]}}
+    # Decode & Upscale (Directly from Base KSampler 14)
+    workflow["decode"] = {"class_type": "VAEDecode", "inputs": {"samples": ["14", 0], "vae": ["19", 0]}}
     workflow["upscale"] = {
         "class_type": "ImageUpscaleWithModel",
         "inputs": {"upscale_model": ["upscale_model", 0], "image": ["decode", 0]}
@@ -346,7 +354,7 @@ def handler(job):
             negative_prompt=job_input.get("negative_prompt", ""),
             width=job_input.get("width", 1024),
             height=job_input.get("height", 1024),
-            seed=job_input.get("seed", random.randint(1, 1e15)),
+            seed=job_input.get("seed", random.randint(1, int(1e15))),
             steps=job_input.get("steps", 35),
             cfg=job_input.get("cfg", 5.0),
             sampler_name=job_input.get("sampler_name", "dpmpp_2m"),
@@ -374,4 +382,5 @@ def handler(job):
         import traceback
         return {"error": f"{str(e)}\n{traceback.format_exc()}"}
 
-runpod.serverless.start({"handler": handler})
+if __name__ == "__main__":
+    runpod.serverless.start({"handler": handler})
