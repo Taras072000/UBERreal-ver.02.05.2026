@@ -59,6 +59,8 @@ LORA_DEEPTHROAT = os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors")
 LORA_AMATEUR = os.path.join(LORA_DIR, "PonyAmateur_v2.safetensors")
 LORA_PERFECT_FACIAL = os.path.join(LORA_DIR, "PerfectFacial_Pony_v1.safetensors")
 LORA_BETTERNUDES = os.path.join(LORA_DIR, "PhotoRealBetterNudes_v3.safetensors")
+LORA_FUTA = os.path.join(LORA_DIR, "RealisticFutaTrans_v1.safetensors")
+LORA_BUTTPLUG = os.path.join(LORA_DIR, "ButtPlugUnderThong_v075.safetensors")
 LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
 
 # ControlNet Files
@@ -164,6 +166,12 @@ def ensure_models(custom_loras=None):
 
     # PhotoReal BetterNudes / NSFW - v3.0 (ID: 2474435)
     download_file("https://civitai.com/api/download/models/2474435", os.path.join(LORA_DIR, "PhotoRealBetterNudes_v3.safetensors"))
+
+    # Realistic Futa/Trans Dick Pic - v1.0 (ID: 1496391)
+    download_file("https://civitai.com/api/download/models/1496391", os.path.join(LORA_DIR, "RealisticFutaTrans_v1.safetensors"))
+
+    # Butt Plug Under Thong v0.75 (ID: 893303)
+    download_file("https://civitai.com/api/download/models/893303", os.path.join(LORA_DIR, "ButtPlugUnderThong_v075.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []

@@ -102,7 +102,9 @@ def style_keyboard():
         [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")],
         [InlineKeyboardButton(text="📸 Amateur (18+)", callback_data="style_amateur")],
         [InlineKeyboardButton(text="💦 Facial (Pony)", callback_data="style_facial")],
-        [InlineKeyboardButton(text="👙 BetterNudes", callback_data="style_betternudes")]
+        [InlineKeyboardButton(text="👙 BetterNudes", callback_data="style_betternudes")],
+        [InlineKeyboardButton(text="🍆 Futa/Trans (Pony)", callback_data="style_futa")],
+        [InlineKeyboardButton(text="🍑 Butt Plug", callback_data="style_buttplug")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -203,6 +205,26 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         # Add LoRA to request
         loras.append({
             "name": "PhotoRealBetterNudes_v3.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_futa":
+        # Realistic Futa/Trans Trigger Words
+        final_prompt += ", shemself, intersex, futanari, futa, 1girl, penis, erection"
+        # Add LoRA to request
+        loras.append({
+            "name": "RealisticFutaTrans_v1.safetensors",
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_buttplug":
+        # Butt Plug Under Thong Trigger Words
+        final_prompt += ", butt plug under thong, butt plug next to thong, from behind, ass, thong"
+        # Add LoRA to request
+        loras.append({
+            "name": "ButtPlugUnderThong_v075.safetensors",
             "strength_model": 0.8,
             "strength_clip": 1.0
         })
@@ -451,6 +473,18 @@ async def process_style_betternudes(callback: types.CallbackQuery):
     get_settings(callback.from_user.id)["style"] = "style_betternudes"
     await callback.answer("👙 Стиль BetterNudes выбран!")
     await callback.message.answer("✅ Выбран стиль: 👙 BetterNudes. Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_futa")
+async def process_style_futa(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_futa"
+    await callback.answer("🍆 Стиль Futa/Trans выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍆 Futa/Trans (Pony). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_buttplug")
+async def process_style_buttplug(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_buttplug"
+    await callback.answer("🍑 Стиль Butt Plug выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍑 Butt Plug. Отправьте промпт.")
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):
