@@ -83,6 +83,7 @@ def character_keyboard():
         [InlineKeyboardButton(text="👩 Insta Girl (LoRA v1 - 930 steps)", callback_data="char_insta_v1")],
         [InlineKeyboardButton(text="👩 Insta Girl (LoRA v2 - 1860 steps)", callback_data="char_insta_v2")],
         [InlineKeyboardButton(text="👩 Insta Girl (LoRA v3 - 2790 steps)", callback_data="char_insta_v3")],
+        [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="char_lustify")],
         [InlineKeyboardButton(text="❌ Без персонажа", callback_data="char_none")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
@@ -126,7 +127,8 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     char_loras = {
         "insta_v1": ("insta_girl_v1, ", "UBERreal_Anatomy_v1-000001.safetensors", "insta_girl_v1.safetensors"),
         "insta_v2": ("insta_girl_v2, ", "UBERreal_Anatomy_v1-000002.safetensors", "insta_girl_v2.safetensors"),
-        "insta_v3": ("insta_girl_v3, ", "UBERreal_Anatomy_v1-000003.safetensors", "insta_girl_v3.safetensors")
+        "insta_v3": ("insta_girl_v3, ", "UBERreal_Anatomy_v1-000003.safetensors", "insta_girl_v3.safetensors"),
+        "lustify": ("lustify, ", "LUSTIFY_v1.safetensors", "LUSTIFY_SDXL_v1.safetensors")
     }
     
     char_version = settings.get("character")
@@ -366,6 +368,9 @@ async def callback_character(callback: types.CallbackQuery):
     elif callback.data == "char_insta_v3":
         get_settings(callback.from_user.id)["character"] = "insta_v3"
         await callback.message.answer("✅ Персонаж установлен: Insta Girl (v3)")
+    elif callback.data == "char_lustify":
+        get_settings(callback.from_user.id)["character"] = "lustify"
+        await callback.message.answer("✅ Персонаж установлен: LUSTIFY (18+)")
     elif callback.data == "char_none":
         get_settings(callback.from_user.id)["character"] = None
         await callback.message.answer("✅ Персонаж отключен")
