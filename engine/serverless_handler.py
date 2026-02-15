@@ -45,7 +45,8 @@ UPSCALERS_DIR = os.path.join(MODELS_DIR, "upscale_models")
 OUTPUT_DIR = os.path.join(COMFY_PATH, "output")
 
 # Core Model Files
-BASE_MODEL = os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors")
+# BASE_MODEL = os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors")
+BASE_MODEL = os.path.join(CHECKPOINTS_DIR, "URPMPonyXL-HybridV1.safetensors") # Switched to URPM PonyXL
 REFINER_MODEL = os.path.join(CHECKPOINTS_DIR, "sd_xl_refiner_1.0.safetensors")
 VAE_FILE = os.path.join(VAE_DIR, "sdxl_vae.safetensors")
 
@@ -53,6 +54,7 @@ VAE_FILE = os.path.join(VAE_DIR, "sdxl_vae.safetensors")
 LORA_BODY = os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors")
 LORA_SKIN = os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors")
 LORA_EBONY = os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors")
+LORA_LUSTIFY = os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors")
 
 # ControlNet Files
 CONTROL_POSE = os.path.join(CONTROLNET_DIR, "controlnet-openpose-sdxl-1.0.safetensors")
@@ -74,6 +76,10 @@ def download_file(url, path, headers=None):
         # Add auth headers if needed
         if "huggingface.co" in url and not headers:
             token = os.environ.get("HF_TOKEN")
+            if token: headers = {"Authorization": f"Bearer {token}"}
+            
+        if "civitai.com" in url and not headers:
+            token = os.environ.get("CIVITAI_API_TOKEN")
             if token: headers = {"Authorization": f"Bearer {token}"}
             
         r = requests.get(url, stream=True, timeout=600, headers=headers)
@@ -105,9 +111,12 @@ def ensure_models(custom_loras=None):
     CONTROLNET_DIR = os.path.join(COMFY_PATH, "models/controlnet") # Correct path for controlnet
 
     # 1. Основные модели (Public Mirrors - Reliable)
-    # SDXL Base 1.0 (Public HF) - Standard SDXL model for testing
+    # SDXL Base 1.0 (Public HF) - Standard SDXL for testing
     download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors"))
     
+    # URPM PonyXL-Hybrid (Requested by User)
+    download_file("https://huggingface.co/TheImposterImposters/URPMPonyXL-HybridV1/resolve/main/URPMPonyXL-HybridV1.safetensors", os.path.join(CHECKPOINTS_DIR, "URPMPonyXL-HybridV1.safetensors"))
+
     # SDXL Refiner removed for compatibility
     
     # VAE (Public HF) - Renaming to match workflow expectation
@@ -129,24 +138,23 @@ def ensure_models(custom_loras=None):
     # Ebony Skin (PonyXL/SDXL compatible) - Requires Civitai Token or Manual Download
     # download_file("https://civitai.com/api/download/models/1106176", os.path.join(LORA_DIR, "StS_Skin_Tone_Slider.safetensors"))
 
+    # LUSTIFY LoRA (Requested by User) - Requires Civitai Token
+    download_file("https://civitai.com/api/download/models/1627770", os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors"))
+
     # 5. Custom LoRAs from Request
     actual_loras = []
-    # Add Quality LoRAs (Matching "Идеальное тело" Plan)
-    quality_loras = [
-        {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
-        {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
-        # {"name": "StS_Skin_Tone_Slider.safetensors", "str": 0.8} # Temporarily disabled due to download auth
+    
+    # Ensure Quality LoRAs exist (but don't add to custom list to avoid duplication)
+    quality_loras_check = [
+        {"name": "human_body_realism_sdxl_lora.safetensors"},
+        {"name": "realistic_skin_texture_sdxl_lora.safetensors"},
+        {"name": "Ebony_Skin_Slider.safetensors"},
+        {"name": "LUSTIFY_SDXL_v1.safetensors"}
     ]
     
-    for ql in quality_loras:
-        if os.path.exists(os.path.join(LORA_DIR, ql["name"])):
-            actual_loras.append({
-                "name": ql["name"],
-                "strength_model": ql["str"],
-                "strength_clip": ql["str"]
-            })
-        else:
-            log(f"Skipping missing Quality LoRA: {ql['name']}")
+    for ql in quality_loras_check:
+        if not os.path.exists(os.path.join(LORA_DIR, ql["name"])):
+            log(f"Warning: Quality LoRA missing: {ql['name']}")
 
     if custom_loras:
         for lora in custom_loras:
@@ -178,27 +186,32 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     current_model = ["10", 0]
     current_clip = ["18", 0]
 
-    # Apply Quality LoRAs (Matching "Идеальное тело" Plan) - TEMPORARILY DISABLED FOR TESTING
+    # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     # NOTE: Ebony Skin re-enabled (Refiner was the issue, not LoRA)
     quality_loras = [
         {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
         {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
-        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Plan: 0.7 - 0.9
+        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Re-enabled (File exists)
     ]
-    # for i, ql in enumerate(quality_loras):
-    #     node_id = f"ql_{i}"
-    #     workflow[node_id] = {
-    #         "class_type": "LoraLoader",
-    #         "inputs": {
-    #             "lora_name": ql["name"],
-    #             "strength_model": ql["str"],
-    #             "strength_clip": ql["str"],
-    #             "model": current_model,
-    #             "clip": ["18", 0] # Base CLIP
-    #         }
-    #     }
-    #     current_model = [node_id, 0]
-    #     # current_clip = [node_id, 1]
+    
+    for i, ql in enumerate(quality_loras):
+        # Skip if file missing
+        if not os.path.exists(os.path.join(LORA_DIR, ql["name"])):
+            continue
+            
+        node_id = f"ql_{i}"
+        workflow[node_id] = {
+            "class_type": "LoraLoader",
+            "inputs": {
+                "lora_name": ql["name"],
+                "strength_model": ql["str"],
+                "strength_clip": ql["str"],
+                "model": current_model,
+                "clip": ["18", 0] # Base CLIP
+            }
+        }
+        current_model = [node_id, 0]
+        # current_clip = [node_id, 1]
 
     # Apply Custom LoRAs
     if loras:
@@ -223,25 +236,31 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     last_pos = ["11", 0]
 
-    # ControlNet (Pose & Depth) - TEMPORARILY DISABLED FOR TESTING
-    # if face_image:
-    #     workflow["input_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_image}}
+    # ControlNet (Pose & Depth)
+    if face_image:
+        workflow["input_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_image}}
         
-    #     # 1. OpenPose (Скелет)
-    #     workflow["cn_pose"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_POSE)}}
-    #     workflow["apply_pose"] = {
-    #         "class_type": "ControlNetApply",
-    #         "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_img", 0]}
-    #     }
-    #     last_pos = ["apply_pose", 0]
+        # 1. OpenPose (Скелет)
+        if os.path.exists(CONTROL_POSE):
+            workflow["cn_pose"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_POSE)}}
+            workflow["apply_pose"] = {
+                "class_type": "ControlNetApply",
+                "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_img", 0]}
+            }
+            last_pos = ["apply_pose", 0]
+        else:
+            log(f"ControlNet Pose missing: {CONTROL_POSE}")
 
-    #     # 2. Depth (Объем и формы)
-    #     workflow["cn_depth"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_DEPTH)}}
-    #     workflow["apply_depth"] = {
-    #         "class_type": "ControlNetApply",
-    #         "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_img", 0]}
-    #     }
-    #     last_pos = ["apply_depth", 0]
+        # 2. Depth (Объем и формы)
+        if os.path.exists(CONTROL_DEPTH):
+            workflow["cn_depth"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_DEPTH)}}
+            workflow["apply_depth"] = {
+                "class_type": "ControlNetApply",
+                "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_img", 0]}
+            }
+            last_pos = ["apply_depth", 0]
+        else:
+            log(f"ControlNet Depth missing: {CONTROL_DEPTH}")
 
     # KSampler (Base)
     workflow["14"] = {
@@ -267,8 +286,8 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     return workflow
 
-def get_latest_image(job_id):
-    """Find the output image, compress to JPEG, and return base64"""
+def get_latest_image(job_id, min_timestamp=0):
+    """Find the output image created AFTER min_timestamp"""
     import io
     from PIL import Image
 
@@ -295,14 +314,17 @@ def get_latest_image(job_id):
     pattern = os.path.join(OUTPUT_DIR, f"result_{job_id}_*.png")
     files = sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True)
     if files:
-        return process_image(files[0])
+        # Check if file is new enough
+        if os.path.getmtime(files[0]) > min_timestamp:
+            return process_image(files[0])
     
     # 2. Try simple wildcard search (fallback)
     pattern_all = os.path.join(OUTPUT_DIR, "*.png")
     files_all = sorted(glob.glob(pattern_all), key=os.path.getmtime, reverse=True)
     if files_all:
-         # Only pick if recent (last 30s)
-         if time.time() - os.path.getmtime(files_all[0]) < 30:
+         # Only pick if recent (last 30s) and newer than start time
+         mtime = os.path.getmtime(files_all[0])
+         if time.time() - mtime < 30 and mtime > min_timestamp:
              return process_image(files_all[0])
 
     return None
@@ -410,6 +432,7 @@ def handler(job):
         )
 
         # Queue Prompt
+        start_time = time.time()
         response = requests.post(f"{COMFY_URL}/prompt", json={"prompt": workflow, "client_id": job_id})
         if response.status_code != 200:
             return {"error": f"ComfyUI Error: {response.text}"}
@@ -417,7 +440,7 @@ def handler(job):
         # Wait for Result
         deadline = time.time() + 600
         while time.time() < deadline:
-            img = get_latest_image(job_id)
+            img = get_latest_image(job_id, min_timestamp=start_time)
             if img:
                 log(f"Found image for {job_id}. Size: {len(img)} chars")
                 return {"status": "success", "image_base64": img}

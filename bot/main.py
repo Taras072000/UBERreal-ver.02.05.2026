@@ -101,6 +101,7 @@ def style_keyboard():
         [InlineKeyboardButton(text="🎬 Cinematic (Movie)", callback_data="style_Cinematic")],
         [InlineKeyboardButton(text="🤳 Amateur (Homemade)", callback_data="style_Amateur")],
         [InlineKeyboardButton(text="💅 PornStar (Glamour)", callback_data="style_PornStar")],
+        [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="style_Lustify")],
         [InlineKeyboardButton(text="🎨 Anime (2.5D)", callback_data="style_Anime")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
@@ -155,6 +156,15 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         final_prompt += ", (amateur photo, homemade:1.2), raw photo, shot on iphone, noise, grain"
     elif settings["style"] == "PornStar":
         final_prompt += ", (studio lighting, professional makeup, perfect skin, airbrushed, glamour shot, 4k)"
+    elif settings["style"] == "Lustify":
+        # Add Trigger Words for LUSTIFY LoRA
+        final_prompt += ", (AMATEUR PHOTO, FILM GRAIN, TAKING A MIRROR SELFIE, LIGHT LEAK:1.2), raw photo, high quality"
+        # Add LoRA to request
+        loras.append({
+            "name": "LUSTIFY_SDXL_v1.safetensors",
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+        })
     elif settings["style"] == "Anime":
         final_prompt += ", (anime style, 2d, flat color, illustration)"
 
