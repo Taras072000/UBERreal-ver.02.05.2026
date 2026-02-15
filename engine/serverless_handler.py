@@ -256,17 +256,28 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         "class_type": "ImageUpscaleWithModel",
         "inputs": {"upscale_model": ["upscale_model", 0], "image": ["decode", 0]}
     }
-    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": ["upscale", 0], "filename_prefix": f"{job_id}_"}}
+    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": ["upscale", 0], "filename_prefix": f"result_{job_id}"}}
 
     return workflow
 
 def get_latest_image(job_id):
     """Find the output image for this specific job"""
-    pattern = os.path.join(OUTPUT_DIR, f"{job_id}_*.png")
+    # 1. Try filename_prefix pattern
+    pattern = os.path.join(OUTPUT_DIR, f"result_{job_id}_*.png")
     files = sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True)
     if files:
         with open(files[0], "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
+    
+    # 2. Try simple wildcard search (fallback)
+    pattern_all = os.path.join(OUTPUT_DIR, "*.png")
+    files_all = sorted(glob.glob(pattern_all), key=os.path.getmtime, reverse=True)
+    if files_all:
+         # Only pick if recent (last 30s)
+         if time.time() - os.path.getmtime(files_all[0]) < 30:
+             with open(files_all[0], "rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+
     return None
 
 def setup_env():
