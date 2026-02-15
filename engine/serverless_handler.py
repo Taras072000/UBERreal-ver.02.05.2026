@@ -250,24 +250,48 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         }
     }
 
-    # Decode & Upscale (Directly from Base KSampler 14)
+    # Decode (Directly from Base KSampler 14)
     workflow["decode"] = {"class_type": "VAEDecode", "inputs": {"samples": ["14", 0], "vae": ["19", 0]}}
-    workflow["upscale"] = {
-        "class_type": "ImageUpscaleWithModel",
-        "inputs": {"upscale_model": ["upscale_model", 0], "image": ["decode", 0]}
-    }
-    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": ["upscale", 0], "filename_prefix": f"result_{job_id}"}}
+    
+    # Upscale REMOVED for testing (Image too large for response)
+    # workflow["upscale"] = {
+    #     "class_type": "ImageUpscaleWithModel",
+    #     "inputs": {"upscale_model": ["upscale_model", 0], "image": ["decode", 0]}
+    # }
+    
+    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": ["decode", 0], "filename_prefix": f"result_{job_id}"}}
 
     return workflow
 
 def get_latest_image(job_id):
-    """Find the output image for this specific job"""
+    """Find the output image, compress to JPEG, and return base64"""
+    import io
+    from PIL import Image
+
+    # Helper to process image file
+    def process_image(path):
+        try:
+            with Image.open(path) as img:
+                # Convert to RGB (in case of RGBA)
+                if img.mode in ('RGBA', 'P'): img = img.convert('RGB')
+                
+                # Resize if too large (max 2048x2048)
+                if img.width > 2048 or img.height > 2048:
+                    img.thumbnail((2048, 2048))
+                
+                # Save as JPEG to memory
+                buffered = io.BytesIO()
+                img.save(buffered, format="JPEG", quality=85)
+                return base64.b64encode(buffered.getvalue()).decode("utf-8")
+        except Exception as e:
+            log(f"Error processing image {path}: {e}")
+            return None
+
     # 1. Try filename_prefix pattern
     pattern = os.path.join(OUTPUT_DIR, f"result_{job_id}_*.png")
     files = sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True)
     if files:
-        with open(files[0], "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
+        return process_image(files[0])
     
     # 2. Try simple wildcard search (fallback)
     pattern_all = os.path.join(OUTPUT_DIR, "*.png")
@@ -275,8 +299,7 @@ def get_latest_image(job_id):
     if files_all:
          # Only pick if recent (last 30s)
          if time.time() - os.path.getmtime(files_all[0]) < 30:
-             with open(files_all[0], "rb") as f:
-                return base64.b64encode(f.read()).decode("utf-8")
+             return process_image(files_all[0])
 
     return None
 
