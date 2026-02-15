@@ -55,6 +55,7 @@ LORA_BODY = os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors")
 LORA_SKIN = os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors")
 LORA_EBONY = os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors")
 LORA_LUSTIFY = os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors")
+LORA_DEEPTHROAT = os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors")
 
 # ControlNet Files
 CONTROL_POSE = os.path.join(CONTROLNET_DIR, "controlnet-openpose-sdxl-1.0.safetensors")
@@ -144,6 +145,9 @@ def ensure_models(custom_loras=None):
 
     # LUSTIFY LoRA (Requested by User) - Requires Civitai Token
     download_file("https://civitai.com/api/download/models/1627770", os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors"))
+
+    # DeepThroat LoRA
+    download_file("https://civitai.com/api/download/models/309802", os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
