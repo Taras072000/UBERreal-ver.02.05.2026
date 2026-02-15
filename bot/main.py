@@ -99,7 +99,8 @@ def aspect_ratio_keyboard():
 def style_keyboard():
     kb = [
         [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="style_lustify")],
-        [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")]
+        [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")],
+        [InlineKeyboardButton(text="📸 Amateur (18+)", callback_data="style_amateur")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -164,13 +165,23 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
                 "strength_model": 1.0,
                 "strength_clip": 1.0
             })
-    elif settings["style"] == "deepthroat":
+    elif settings["style"] == "style_deepthroat":
         # Deep Throat XL Trigger Words
         final_prompt += ", GIVING A DEEP THROAT BLOWJOB, saliva, messy face, detailed mouth, high quality, 8k"
         # Add LoRA to request
         loras.append({
             "name": "DeepThroatXL_v1.safetensors",
             "strength_model": 0.6,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_amateur":
+        # Pony Amateur V2 Trigger Words
+        final_prompt += ", photo, grainy, amateur, lowres, 2000s nostalgia, webcam photo, flash"
+        # Add LoRA to request
+        loras.append({
+            "name": "PonyAmateur_v2.safetensors",
+            "strength_model": 0.8,
             "strength_clip": 1.0
         })
     elif settings["style"] == "Anime":
@@ -389,24 +400,23 @@ async def callback_aspect(callback: types.CallbackQuery):
     await callback.message.answer(f"✅ Установлен формат: {ar}")
     await callback.answer()
 
-@dp.callback_query(lambda c: c.data.startswith("style_"))
-async def process_style(callback: types.CallbackQuery):
-    style_code = callback.data.split("_")[1]
-    
-    settings = get_settings(callback.from_user.id)
-    settings["style"] = style_code
-    
-    style_names = {
-        "photorealism": "📸 Photorealism",
-        "anime": "🎌 Anime",
-        "bw": "⚫ B&W",
-        "lustify": "🔥 LUSTIFY (18+)",
-        "deepthroat": "👅 Deep Throat (18+)"
-    }
-    
-    name = style_names.get(style_code, style_code)
-    await callback.message.answer(f"✅ Стиль установлен: {name}")
-    await callback.answer()
+@dp.callback_query(F.data == "style_lustify")
+async def process_style_lustify(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_lustify"
+    await callback.answer("🔥 Стиль LUSTIFY выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🔥 LUSTIFY (18+). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_deepthroat")
+async def process_style_deepthroat(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_deepthroat"
+    await callback.answer("👅 Стиль Deep Throat выбран!")
+    await callback.message.answer("✅ Выбран стиль: 👅 Deep Throat (18+). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_amateur")
+async def process_style_amateur(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_amateur"
+    await callback.answer("📸 Стиль Amateur выбран!")
+    await callback.message.answer("✅ Выбран стиль: 📸 Amateur (18+). Отправьте промпт.")
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):

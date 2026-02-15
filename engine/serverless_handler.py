@@ -56,6 +56,7 @@ LORA_SKIN = os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors
 LORA_EBONY = os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors")
 LORA_LUSTIFY = os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors")
 LORA_DEEPTHROAT = os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors")
+LORA_AMATEUR = os.path.join(LORA_DIR, "PonyAmateur_v2.safetensors")
 LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
 
 # ControlNet Files
@@ -152,6 +153,9 @@ def ensure_models(custom_loras=None):
 
     # Realism Yogi LoRA
     download_file("https://civitai.com/api/download/models/1098033", os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors"))
+
+    # Amateur LoRA
+    download_file("https://civitai.com/api/download/models/717403", os.path.join(LORA_DIR, "PonyAmateur_v2.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
