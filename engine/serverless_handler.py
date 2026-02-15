@@ -56,6 +56,7 @@ LORA_SKIN = os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors
 LORA_EBONY = os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors")
 LORA_LUSTIFY = os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors")
 LORA_DEEPTHROAT = os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors")
+LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
 
 # ControlNet Files
 CONTROL_POSE = os.path.join(CONTROLNET_DIR, "controlnet-openpose-sdxl-1.0.safetensors")
@@ -149,6 +150,9 @@ def ensure_models(custom_loras=None):
     # DeepThroat LoRA
     download_file("https://civitai.com/api/download/models/309802", os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors"))
 
+    # Realism Yogi LoRA
+    download_file("https://civitai.com/api/download/models/1098033", os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors"))
+
     # 5. Custom LoRAs from Request
     actual_loras = []
     
@@ -197,6 +201,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     # NOTE: Ebony Skin re-enabled (Refiner was the issue, not LoRA)
     quality_loras = [
+        {"name": "RealismLora_v3_lite.safetensors", "str": 1.0}, # Stable Yogi Realism
         {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
         {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
         {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Re-enabled (File exists)
