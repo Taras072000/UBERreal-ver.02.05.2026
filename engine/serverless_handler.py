@@ -80,6 +80,9 @@ def download_file(url, path, headers=None):
             
         if "civitai.com" in url and not headers:
             token = os.environ.get("CIVITAI_API_TOKEN")
+            if not token:
+                # Fallback to the provided key if env var is missing
+                token = "f92a9d20b490944390a3f6908fc43f35"
             if token: headers = {"Authorization": f"Bearer {token}"}
             
         r = requests.get(url, stream=True, timeout=600, headers=headers)
