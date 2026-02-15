@@ -114,8 +114,9 @@ def ensure_models(custom_loras=None):
     # SDXL Base 1.0 (Public HF) - Standard SDXL for testing
     download_file("https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors", os.path.join(CHECKPOINTS_DIR, "sd_xl_base_1.0.safetensors"))
     
-    # URPM PonyXL-Hybrid (Requested by User)
-    download_file("https://huggingface.co/TheImposterImposters/URPMPonyXL-HybridV1/resolve/main/URPMPonyXL-HybridV1.safetensors", os.path.join(CHECKPOINTS_DIR, "URPMPonyXL-HybridV1.safetensors"))
+    # URPM PonyXL-Hybrid (Requested by User) - Using Civitai API to ensure correct version
+    # Model ID: 790652, Version ID: 923681
+    download_file("https://civitai.com/api/download/models/923681", os.path.join(CHECKPOINTS_DIR, "URPMPonyXL-HybridV1.safetensors"))
 
     # SDXL Refiner removed for compatibility
     
