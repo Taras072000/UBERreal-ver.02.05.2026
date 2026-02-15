@@ -123,8 +123,9 @@ def ensure_models(custom_loras=None):
     # 2. LoRAs (Идеальное тело) - Public Links & Fixed Names
     # Anatomy
     download_file("https://civitai.com/api/download/models/135867", os.path.join(LORA_DIR, "human_body_realism_sdxl_lora.safetensors"))
-    # Skin (Using reliable alternative link)
-    download_file("https://civitai.com/api/download/models/122359", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
+    # Skin (Using reliable alternative link from HF Mirror)
+    # Old broken link: https://civitai.com/api/download/models/122359
+    download_file("https://huggingface.co/AiWise/epiCPhoto-XL-LoRA-Derp2/resolve/main/LoRA-RealisticSkinTextureStyle-SDXL_v4.safetensors", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
     # Ebony Skin (PonyXL/SDXL compatible) - Requires Civitai Token or Manual Download
     # download_file("https://civitai.com/api/download/models/1106176", os.path.join(LORA_DIR, "StS_Skin_Tone_Slider.safetensors"))
 
@@ -138,11 +139,14 @@ def ensure_models(custom_loras=None):
     ]
     
     for ql in quality_loras:
-        actual_loras.append({
-            "name": ql["name"],
-            "strength_model": ql["str"],
-            "strength_clip": ql["str"]
-        })
+        if os.path.exists(os.path.join(LORA_DIR, ql["name"])):
+            actual_loras.append({
+                "name": ql["name"],
+                "strength_model": ql["str"],
+                "strength_clip": ql["str"]
+            })
+        else:
+            log(f"Skipping missing Quality LoRA: {ql['name']}")
 
     if custom_loras:
         for lora in custom_loras:
