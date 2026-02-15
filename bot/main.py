@@ -100,7 +100,9 @@ def style_keyboard():
     kb = [
         [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="style_lustify")],
         [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")],
-        [InlineKeyboardButton(text="📸 Amateur (18+)", callback_data="style_amateur")]
+        [InlineKeyboardButton(text="📸 Amateur (18+)", callback_data="style_amateur")],
+        [InlineKeyboardButton(text="💦 Facial (Pony)", callback_data="style_facial")],
+        [InlineKeyboardButton(text="👙 BetterNudes", callback_data="style_betternudes")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -181,6 +183,26 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         # Add LoRA to request
         loras.append({
             "name": "PonyAmateur_v2.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_facial":
+        # Perfect Facial - Pony Trigger Words
+        final_prompt += ", small / medium / big facial, small / medium / big cumshot, small / medium / big cum"
+        # Add LoRA to request
+        loras.append({
+            "name": "PerfectFacial_Pony_v1.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_betternudes":
+        # PhotoReal BetterNudes Trigger Words
+        final_prompt += ", nsfw, nude, naked, photographic"
+        # Add LoRA to request
+        loras.append({
+            "name": "PhotoRealBetterNudes_v3.safetensors",
             "strength_model": 0.8,
             "strength_clip": 1.0
         })
@@ -417,6 +439,18 @@ async def process_style_amateur(callback: types.CallbackQuery):
     get_settings(callback.from_user.id)["style"] = "style_amateur"
     await callback.answer("📸 Стиль Amateur выбран!")
     await callback.message.answer("✅ Выбран стиль: 📸 Amateur (18+). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_facial")
+async def process_style_facial(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_facial"
+    await callback.answer("💦 Стиль Facial выбран!")
+    await callback.message.answer("✅ Выбран стиль: 💦 Facial (Pony). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_betternudes")
+async def process_style_betternudes(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_betternudes"
+    await callback.answer("👙 Стиль BetterNudes выбран!")
+    await callback.message.answer("✅ Выбран стиль: 👙 BetterNudes. Отправьте промпт.")
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):

@@ -57,6 +57,8 @@ LORA_EBONY = os.path.join(LORA_DIR, "Ebony_Skin_Slider.safetensors")
 LORA_LUSTIFY = os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors")
 LORA_DEEPTHROAT = os.path.join(LORA_DIR, "DeepThroatXL_v1.safetensors")
 LORA_AMATEUR = os.path.join(LORA_DIR, "PonyAmateur_v2.safetensors")
+LORA_PERFECT_FACIAL = os.path.join(LORA_DIR, "PerfectFacial_Pony_v1.safetensors")
+LORA_BETTERNUDES = os.path.join(LORA_DIR, "PhotoRealBetterNudes_v3.safetensors")
 LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
 
 # ControlNet Files
@@ -156,6 +158,12 @@ def ensure_models(custom_loras=None):
 
     # Amateur LoRA
     download_file("https://civitai.com/api/download/models/717403", os.path.join(LORA_DIR, "PonyAmateur_v2.safetensors"))
+
+    # Perfect Facial - Pony - V1 (ID: 1044499)
+    download_file("https://civitai.com/api/download/models/1044499", os.path.join(LORA_DIR, "PerfectFacial_Pony_v1.safetensors"))
+
+    # PhotoReal BetterNudes / NSFW - v3.0 (ID: 2474435)
+    download_file("https://civitai.com/api/download/models/2474435", os.path.join(LORA_DIR, "PhotoRealBetterNudes_v3.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []
