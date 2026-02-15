@@ -98,9 +98,6 @@ def aspect_ratio_keyboard():
 
 def style_keyboard():
     kb = [
-        [InlineKeyboardButton(text="📸 Photorealism", callback_data="style_photorealism")],
-        [InlineKeyboardButton(text="🎌 Anime", callback_data="style_anime")],
-        [InlineKeyboardButton(text="⚫ B&W", callback_data="style_bw")],
         [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="style_lustify")],
         [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")]
     ]
