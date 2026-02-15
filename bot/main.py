@@ -161,12 +161,13 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     elif settings["style"] == "Lustify":
         # Add Trigger Words for LUSTIFY LoRA
         final_prompt += ", (AMATEUR PHOTO, FILM GRAIN, TAKING A MIRROR SELFIE, LIGHT LEAK:1.2), raw photo, high quality"
-        # Add LoRA to request
-        loras.append({
-            "name": "LUSTIFY_SDXL_v1.safetensors",
-            "strength_model": 1.0,
-            "strength_clip": 1.0
-        })
+        # Add LoRA to request if not already added
+        if not any(l["name"] == "LUSTIFY_SDXL_v1.safetensors" for l in loras):
+            loras.append({
+                "name": "LUSTIFY_SDXL_v1.safetensors",
+                "strength_model": 1.0,
+                "strength_clip": 1.0
+            })
     elif settings["style"] == "Anime":
         final_prompt += ", (anime style, 2d, flat color, illustration)"
 
