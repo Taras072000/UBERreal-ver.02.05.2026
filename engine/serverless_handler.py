@@ -325,6 +325,13 @@ def handler(job):
         job_input = job.get("input", {})
         log(f"--- STARTING JOB {job_id} ---")
         log(f"--- PIPELINE VERSION: {VERSION} ---")
+        
+        # Debug: Check output dir
+        if not os.path.exists(OUTPUT_DIR):
+            os.makedirs(OUTPUT_DIR, exist_ok=True)
+            log(f"Created OUTPUT_DIR: {OUTPUT_DIR}")
+        else:
+            log(f"OUTPUT_DIR exists: {OUTPUT_DIR}")
 
         setup_env()
 
@@ -373,9 +380,19 @@ def handler(job):
         deadline = time.time() + 600
         while time.time() < deadline:
             img = get_latest_image(job_id)
-            if img: return {"status": "success", "image_base64": img}
+            if img:
+                log(f"Found image for {job_id}. Size: {len(img)} chars")
+                return {"status": "success", "image_base64": img}
+            
+            # Debug: List files
+            files = os.listdir(OUTPUT_DIR)
+            log(f"Waiting for {job_id}_*.png. Files in output: {len(files)}")
+            if len(files) > 0:
+                log(f"Sample files: {files[:3]}")
+                
             time.sleep(2)
 
+        log("Timeout waiting for image")
         return {"error": "Generation timeout"}
 
     except Exception as e:
