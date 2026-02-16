@@ -557,10 +557,73 @@ def setup_env():
         # Using huggingface mirror which is more reliable than facefusion assets (often 404)
         download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
 
+def upload_file_robust(file_path, file_name):
+    """Upload file to multiple services with fallback"""
+    import requests
+    
+    # 1. Try transfer.sh
+    try:
+        log(f"Uploading {file_name} to transfer.sh...")
+        with open(file_path, 'rb') as f:
+            r = requests.put(f"https://transfer.sh/{file_name}", data=f, timeout=120)
+            if r.status_code == 200:
+                url = r.text.strip()
+                if url.startswith("http"): return url
+    except Exception as e:
+        log(f"transfer.sh failed: {e}")
+
+    # 2. Try tmpfiles.org
+    try:
+        log(f"Uploading {file_name} to tmpfiles.org...")
+        with open(file_path, 'rb') as f:
+            files = {'file': (file_name, f)}
+            r = requests.post('https://tmpfiles.org/api/v1/upload', files=files, timeout=120)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("status") == "success":
+                    url = data["data"]["url"]
+                    return url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
+    except Exception as e:
+        log(f"tmpfiles.org failed: {e}")
+        
+    # 3. Try file.io (expires after 1 download, good for secure transfer)
+    try:
+        log(f"Uploading {file_name} to file.io...")
+        with open(file_path, 'rb') as f:
+            files = {'file': (file_name, f)}
+            r = requests.post('https://file.io', files=files, timeout=120)
+            if r.status_code == 200:
+                data = r.json()
+                if data.get("success"): return data.get("link")
+    except Exception as e:
+        log(f"file.io failed: {e}")
+        
+    return ""
+
+def log_system_stats():
+    """Log disk and memory usage"""
+    try:
+        total, used, free = shutil.disk_usage("/")
+        log(f"Disk Usage: Total={total//(2**30)}GB, Used={used//(2**30)}GB, Free={free//(2**30)}GB")
+        
+        # Memory
+        with open('/proc/meminfo', 'r') as f:
+            meminfo = f.read()
+            for line in meminfo.splitlines():
+                if "MemTotal" in line or "MemAvailable" in line:
+                    log(line)
+    except: pass
+
 def handle_training(job_input, job_id):
     """Handle LoRA training request"""
     try:
         log(f"Starting Training Job: {job_id}")
+        log_system_stats()
+        
+        # Set HF Cache to local dir to avoid filling up root if it's small
+        os.environ["HF_HOME"] = os.path.join(COMFY_PATH, "hf_cache")
+        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1" # Speed up downloads
+        os.makedirs(os.environ["HF_HOME"], exist_ok=True)
         
         lora_name = job_input.get("lora_name", f"lora_{job_id}")
         dataset_zip_b64 = job_input.get("dataset_zip_base64")
@@ -600,6 +663,7 @@ def handle_training(job_input, job_id):
              return {"error": "Training script not found"}
              
         # Params for SDXL LoRA (Fast & Low VRAM)
+        # Reduced max_train_steps to 400 to speed up and avoid timeouts
         cmd = [
             "accelerate", "launch", 
             "--mixed_precision=fp16",
@@ -617,7 +681,7 @@ def handle_training(job_input, job_id):
             "--learning_rate", "1e-4",
             "--lr_scheduler", "constant",
             "--lr_warmup_steps", "0",
-            "--max_train_steps", "500", # ~10-15 mins
+            "--max_train_steps", "400", # Reduced from 500 to save time
             "--checkpointing_steps", "1000", # Don't save intermediate
             "--seed", "0",
             "--mixed_precision", "fp16",
@@ -625,13 +689,14 @@ def handle_training(job_input, job_id):
             "--gradient_checkpointing"
         ]
         
-        # Note: BASE_MODEL was a local path but Diffusers script expects HF ID or Diffusers folder.
-        # We use HF ID "stabilityai/stable-diffusion-xl-base-1.0" to let it download/cache.
-        
         log(f"Running training command: {' '.join(cmd)}")
+        start_time = time.time()
         
         # Run Training
         process = subprocess.run(cmd, capture_output=True, text=True)
+        
+        duration = time.time() - start_time
+        log(f"Training completed in {duration:.1f}s")
         
         if process.returncode != 0:
             log(f"Training failed: {process.stderr}")
@@ -650,20 +715,16 @@ def handle_training(job_input, job_id):
         shutil.copy(lora_file, final_lora_path)
         log(f"Saved LoRA to Session Cache: {final_lora_path}")
 
-        # 6. Upload to Transfer.sh (Cloud Storage)
-        # Required for Serverless to persist the file between sessions
-        lora_url = ""
-        try:
-            with open(lora_file, 'rb') as f:
-                upload_response = requests.put(
-                    f"https://transfer.sh/{lora_name}.safetensors", 
-                    data=f
-                )
-                if upload_response.status_code == 200:
-                    lora_url = upload_response.text.strip()
-                    log(f"Uploaded LoRA to: {lora_url}")
-        except Exception as e:
-            log(f"Upload to transfer.sh failed (non-critical): {e}")
+        # 6. Upload to Cloud Storage (Robust)
+        lora_url = upload_file_robust(lora_file, f"{lora_name}.safetensors")
+        
+        if not lora_url:
+            log("All upload services failed.")
+            # We return success but with empty URL, bot should handle this?
+            # Actually better to return error if we can't deliver the file
+            return {"error": "Failed to upload result file to transfer services."}
+
+        log(f"Uploaded LoRA to: {lora_url}")
             
         # Clean up
         shutil.rmtree(train_dir, ignore_errors=True)
