@@ -100,17 +100,17 @@ def aspect_ratio_keyboard():
 def style_keyboard():
     kb = [
         [InlineKeyboardButton(text="🔥 Lustify", callback_data="style_lustify")],
-        [InlineKeyboardButton(text="👅 Deep Throat", callback_data="style_deepthroat")],
-        [InlineKeyboardButton(text="📸 Amateur", callback_data="style_amateur")],
-        [InlineKeyboardButton(text="💦 Facial", callback_data="style_facial")],
-        [InlineKeyboardButton(text="👙 Better Nudes", callback_data="style_betternudes")],
-        [InlineKeyboardButton(text="🍆 Futa", callback_data="style_futa")],
-        [InlineKeyboardButton(text="🍑 Butt Plug", callback_data="style_buttplug")],
-        [InlineKeyboardButton(text="🍑 Anal Missionary", callback_data="style_anal_missionary")],
-        [InlineKeyboardButton(text="🍑 Anal Abuse", callback_data="style_anal_abuse")],
-        [InlineKeyboardButton(text="🍑 Perfect Anal", callback_data="style_perfect_anal")],
-        [InlineKeyboardButton(text="🍒 Perfect Breasts", callback_data="style_perfect_breasts")],
-        [InlineKeyboardButton(text="🍒 Skin Details", callback_data="style_ultrareal_breasts")]
+        [InlineKeyboardButton(text="👅 Deep Throat Глубокая глотка", callback_data="style_deepthroat")],
+        [InlineKeyboardButton(text="📸 Amateur Любительское", callback_data="style_amateur")],
+        [InlineKeyboardButton(text="💦 Facial Сперма на лице", callback_data="style_facial")],
+        [InlineKeyboardButton(text="👙 Better Nudes Реалистичное ню", callback_data="style_betternudes")],
+        [InlineKeyboardButton(text="🍆 Futa Футанари", callback_data="style_futa")],
+        [InlineKeyboardButton(text="🍑 Butt Plug Анальная пробка", callback_data="style_buttplug")],
+        [InlineKeyboardButton(text="🍑 Anal Missionary Анал Миссионерская", callback_data="style_anal_missionary")],
+        [InlineKeyboardButton(text="🍑 Anal Abuse Грубый Анал", callback_data="style_anal_abuse")],
+        [InlineKeyboardButton(text="🍑 Perfect Anal Идеальный Анал", callback_data="style_perfect_anal")],
+        [InlineKeyboardButton(text="🍒 Perfect Breasts Идеальная Грудь", callback_data="style_perfect_breasts")],
+        [InlineKeyboardButton(text="🍒 Skin Details Детали Кожи", callback_data="style_ultrareal_breasts")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
