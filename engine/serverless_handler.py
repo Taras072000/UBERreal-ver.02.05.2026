@@ -505,7 +505,8 @@ def setup_env():
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
     
     # 3. Force compatible versions and install missing system dependencies
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers", "accelerate", "peft", "bitsandbytes"], check=True)
+    # NOTE: Installing diffusers from source to match the latest training script requirements
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "git+https://github.com/huggingface/diffusers.git", "accelerate", "peft", "bitsandbytes"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     # 4. Download Training Script (Diffusers SDXL)
@@ -551,7 +552,8 @@ def setup_env():
                  
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
-        download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
+        # Using facefusion mirror which is more reliable than eziorry
+        download_file("https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx", INSWAPPER_FILE)
 
 def handle_training(job_input, job_id):
     """Handle LoRA training request"""
