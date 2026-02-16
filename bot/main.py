@@ -179,7 +179,7 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         final_prompt += ", (amateur photo, homemade:1.2), raw photo, shot on iphone, noise, grain"
     elif settings["style"] == "PornStar":
         final_prompt += ", (studio lighting, professional makeup, perfect skin, airbrushed, glamour shot, 4k)"
-    elif settings["style"] == "Lustify":
+    elif settings["style"] == "style_lustify":
         # Add Trigger Words for LUSTIFY LoRA
         final_prompt += ", (AMATEUR PHOTO, FILM GRAIN, TAKING A MIRROR SELFIE, LIGHT LEAK:1.2), raw photo, high quality"
         # Add LoRA to request if not already added
