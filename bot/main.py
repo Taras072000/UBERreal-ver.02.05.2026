@@ -611,56 +611,80 @@ async def process_train_name(message: types.Message, state: FSMContext):
         parse_mode="HTML"
     )
 
-@dp.message(TrainFace.waiting_for_photos, F.photo)
-async def process_train_photo(message: types.Message, state: FSMContext):
+@dp.message(TrainFace.waiting_for_photos)
+async def process_train_photo_handler(message: types.Message, state: FSMContext):
     data = await state.get_data()
     photos = data.get("photos", [])
     
-    # Get the largest photo
-    photo = message.photo[-1]
-    photos.append({"file_id": photo.file_id, "type": "photo"})
-    
+    if message.photo:
+        # Get the largest photo
+        photo = message.photo[-1]
+        photos.append({"file_id": photo.file_id, "type": "photo"})
+        msg_text = f"📥 Загружено фото: {len(photos)}"
+    elif message.document:
+        doc = message.document
+        mime = doc.mime_type or ""
+        if "image" in mime:
+            photos.append({"file_id": doc.file_id, "type": "doc_image"})
+            msg_text = f"📥 Документ (фото) принят. Всего: {len(photos)}"
+        elif "zip" in mime or doc.file_name.endswith(".zip"):
+            photos.append({"file_id": doc.file_id, "type": "zip"})
+            msg_text = f"📦 ZIP-архив принят. Всего файлов: {len(photos)}"
+        else:
+            await message.reply("❌ Пожалуйста, присылайте только фото (JPG/PNG) или ZIP-архив.")
+            return
+    else:
+         return
+
     await state.update_data(photos=photos)
     
-    # Confirmation every 5 photos or when ready
-    if len(photos) % 5 == 0 or len(photos) >= 15:
-        kb = [[InlineKeyboardButton(text=f"🚀 Начать ({len(photos)} фото)", callback_data="train_start")]]
-        await message.answer(f"📥 Загружено фото: {len(photos)}", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb))
-
-@dp.message(TrainFace.waiting_for_photos, F.document)
-async def process_train_document(message: types.Message, state: FSMContext):
-    # Check if it's an image or zip
-    doc = message.document
-    mime = doc.mime_type or ""
+    # Update status
+    kb = []
+    if len(photos) >= 15:
+        kb.append([InlineKeyboardButton(text=f"🚀 Начать ({len(photos)} фото)", callback_data="train_check_requirements")])
     
+    await message.answer(msg_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=kb) if kb else None)
+
+@dp.callback_query(F.data == "train_check_requirements")
+async def process_check_requirements(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     photos = data.get("photos", [])
-
-    if "image" in mime:
-        photos.append({"file_id": doc.file_id, "type": "doc_image"})
-        await state.update_data(photos=photos)
-        msg_text = f"📥 Документ (фото) принят. Всего: {len(photos)}"
-    elif "zip" in mime or doc.file_name.endswith(".zip"):
-        photos.append({"file_id": doc.file_id, "type": "zip"})
-        await state.update_data(photos=photos)
-        msg_text = f"📦 ZIP-архив принят. Всего файлов: {len(photos)}"
-    else:
-        await message.reply("❌ Пожалуйста, присылайте только фото (JPG/PNG) или ZIP-архив.")
+    
+    if len(photos) < 15:
+        await callback.answer(f"❌ Нужно минимум 15 фото! Сейчас: {len(photos)}", show_alert=True)
         return
 
-    kb = [[InlineKeyboardButton(text=f"🚀 Начать ({len(photos)} фото)", callback_data="train_start")]]
-    await message.reply(msg_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=kb))
+    # Ask for confirmation of requirements
+    kb = [
+        [InlineKeyboardButton(text="✅ Да, все есть", callback_data="train_start_confirmed")],
+        [InlineKeyboardButton(text="❌ Нет, добавить еще", callback_data="train_add_more")]
+    ]
+    
+    await callback.message.edit_text(
+        "🛑 <b>Проверка качества данных</b>\n\n"
+        "Для хорошего результата убедитесь, что в ваших фото есть:\n"
+        "1. 👤 <b>Анфас</b> (лицо прямо) - 5-7 шт.\n"
+        "2. 🔄 <b>Полуоборот</b> (слева/справа) - 5-7 шт.\n"
+        "3. 👤 <b>Профиль</b> - 3-5 шт.\n"
+        "4. 😄 <b>Эмоции</b> (улыбка, серьезное, смех)\n"
+        "5. 💡 <b>Разное освещение</b>\n\n"
+        "<i>Если будет только 1 ракурс - нейросеть не сможет поворачивать голову!</i>\n\n"
+        "Подтверждаете, что dataset разнообразный?",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=kb),
+        parse_mode="HTML"
+    )
 
-@dp.callback_query(F.data == "train_start")
+@dp.callback_query(F.data == "train_add_more")
+async def process_add_more(callback: types.CallbackQuery):
+    await callback.message.delete()
+    await callback.answer("Ок, жду еще фото...")
+
+@dp.callback_query(F.data == "train_start_confirmed")
 async def process_start_training(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     name = data.get("name")
     photos = data.get("photos", [])
     
-    if not photos:
-        await callback.answer("❌ Вы не загрузили ни одного фото!", show_alert=True)
-        return
-        
     await callback.message.edit_text(
         f"⏳ <b>Подготовка к обучению...</b>\n"
         f"Персонаж: {name}\n"
