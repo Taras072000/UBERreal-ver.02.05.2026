@@ -505,15 +505,16 @@ def setup_env():
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
     
     # 3. Force compatible versions and install missing system dependencies
-    # NOTE: Using standard diffusers (0.36.0+) from PyPI is safer/faster than git source
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.36.0", "accelerate", "peft", "bitsandbytes"], check=True)
+    # NOTE: Using standard diffusers (0.29.0+) from PyPI is safer/faster than git source
+    # Downgrading to 0.29.0 to ensure compatibility with older PyTorch versions in RunPod base images
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", "bitsandbytes"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     # 4. Download Training Script (Diffusers SDXL)
-    # Using v0.36.0 tag to match PyPI version and avoid "source install" requirements
+    # Using v0.29.0 tag to match PyPI version and avoid "source install" requirements
     TRAIN_SCRIPT_PATH = os.path.join(PROJECT_ROOT, "train_dreambooth_lora_sdxl.py")
     if not os.path.exists(TRAIN_SCRIPT_PATH):
-        download_file("https://raw.githubusercontent.com/huggingface/diffusers/v0.36.0/examples/dreambooth/train_dreambooth_lora_sdxl.py", TRAIN_SCRIPT_PATH)
+        download_file("https://raw.githubusercontent.com/huggingface/diffusers/v0.29.0/examples/dreambooth/train_dreambooth_lora_sdxl.py", TRAIN_SCRIPT_PATH)
     
     def download_zip(url, target_dir, folder_name):
         if os.path.exists(target_dir): return
