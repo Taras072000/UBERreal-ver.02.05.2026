@@ -4,6 +4,7 @@ import os
 import runpod
 import json
 import base64
+from deep_translator import GoogleTranslator
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.types import (
@@ -125,6 +126,20 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     settings = get_settings(user_id)
     width, height = get_dimensions(settings["aspect_ratio"])
     
+    # Translate prompt from Russian to English if needed
+    try:
+        # Detect is hard to rely on for short texts, but we can just force translation to 'en'
+        # GoogleTranslator handles 'auto' source well.
+        translated_prompt = GoogleTranslator(source='auto', target='en').translate(prompt)
+        if translated_prompt != prompt:
+             logger.info(f"Translated prompt: '{prompt}' -> '{translated_prompt}'")
+             await bot.send_message(chat_id, f"🇬🇧 Перевод: <i>{translated_prompt}</i>", parse_mode="HTML")
+             prompt = translated_prompt
+    except Exception as trans_err:
+        logger.error(f"Translation failed: {trans_err}")
+        # Continue with original prompt if translation fails
+        pass
+
     # Character LoRA Logic
     loras = []
     char_prefix = ""
