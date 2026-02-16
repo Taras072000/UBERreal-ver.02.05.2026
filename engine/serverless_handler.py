@@ -61,6 +61,11 @@ LORA_PERFECT_FACIAL = os.path.join(LORA_DIR, "PerfectFacial_Pony_v1.safetensors"
 LORA_BETTERNUDES = os.path.join(LORA_DIR, "PhotoRealBetterNudes_v3.safetensors")
 LORA_FUTA = os.path.join(LORA_DIR, "RealisticFutaTrans_v1.safetensors")
 LORA_BUTTPLUG = os.path.join(LORA_DIR, "ButtPlugUnderThong_v075.safetensors")
+LORA_ANAL_MISSIONARY = os.path.join(LORA_DIR, "AnalSideMissionary_Pony_v1.safetensors")
+LORA_ANAL_ABUSE = os.path.join(LORA_DIR, "AnalAbuse_v1.safetensors")
+LORA_PERFECT_ANAL = os.path.join(LORA_DIR, "PerfectAnal_Pony_v1.safetensors")
+LORA_PERFECT_BREASTS = os.path.join(LORA_DIR, "PerfectBreasts_v2.safetensors")
+LORA_ULTRAREAL_BREASTS = os.path.join(LORA_DIR, "UltraRealBreastDetailer_v2.safetensors")
 LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
 
 # ControlNet Files
@@ -172,6 +177,21 @@ def ensure_models(custom_loras=None):
 
     # Butt Plug Under Thong v0.75 (ID: 893303)
     download_file("https://civitai.com/api/download/models/893303", os.path.join(LORA_DIR, "ButtPlugUnderThong_v075.safetensors"))
+
+    # Anal Side Missionary (ID: 168340 -> Ver: 981838)
+    download_file("https://civitai.com/api/download/models/981838", os.path.join(LORA_DIR, "AnalSideMissionary_Pony_v1.safetensors"))
+
+    # Anal Abuse (ID: 709218 -> Ver: 793284)
+    download_file("https://civitai.com/api/download/models/793284", os.path.join(LORA_DIR, "AnalAbuse_v1.safetensors"))
+
+    # Perfect Anal Pony (ID: 639310 -> Ver: 715046)
+    download_file("https://civitai.com/api/download/models/715046", os.path.join(LORA_DIR, "PerfectAnal_Pony_v1.safetensors"))
+
+    # Perfect Breasts Pony (ID: 1621732 -> Ver: 1987668)
+    download_file("https://civitai.com/api/download/models/1987668", os.path.join(LORA_DIR, "PerfectBreasts_v2.safetensors"))
+
+    # UltraReal Breast & Nipple Detailer (ID: 1259365 -> Ver: 2429108)
+    download_file("https://civitai.com/api/download/models/2429108", os.path.join(LORA_DIR, "UltraRealBreastDetailer_v2.safetensors"))
 
     # 5. Custom LoRAs from Request
     actual_loras = []

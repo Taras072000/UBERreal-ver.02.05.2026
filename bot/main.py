@@ -104,7 +104,12 @@ def style_keyboard():
         [InlineKeyboardButton(text="💦 Facial (Pony)", callback_data="style_facial")],
         [InlineKeyboardButton(text="👙 BetterNudes", callback_data="style_betternudes")],
         [InlineKeyboardButton(text="🍆 Futa/Trans (Pony)", callback_data="style_futa")],
-        [InlineKeyboardButton(text="🍑 Butt Plug", callback_data="style_buttplug")]
+        [InlineKeyboardButton(text="🍑 Butt Plug", callback_data="style_buttplug")],
+        [InlineKeyboardButton(text="🍑 Anal Missionary", callback_data="style_anal_missionary")],
+        [InlineKeyboardButton(text="🍑 Anal Abuse (Rough)", callback_data="style_anal_abuse")],
+        [InlineKeyboardButton(text="🍑 Perfect Anal", callback_data="style_perfect_anal")],
+        [InlineKeyboardButton(text="🍒 Perfect Breasts", callback_data="style_perfect_breasts")],
+        [InlineKeyboardButton(text="🍒 UltraReal Details", callback_data="style_ultrareal_breasts")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -225,6 +230,46 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         # Add LoRA to request
         loras.append({
             "name": "ButtPlugUnderThong_v075.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_anal_missionary":
+        final_prompt += ", SIDEMISSIONAYANAL, SIDEMISSIONAYANALQUIRON, missionary, sex, anal sex, vaginal sex, penis in pussy, penis in ass"
+        loras.append({
+            "name": "AnalSideMissionary_Pony_v1.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_anal_abuse":
+        final_prompt += ", anal abuse, creampie, gaping, spreading ass, pain, moneyshot, rough sex"
+        loras.append({
+            "name": "AnalAbuse_v1.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_perfect_anal":
+        final_prompt += ", 4N4L, ANAL, PENIS IN ANAL, ass focus, from behind"
+        loras.append({
+            "name": "PerfectAnal_Pony_v1.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_perfect_breasts":
+        final_prompt += ", perfect breasts, round breasts, perky breasts, full breasts, cleavage"
+        loras.append({
+            "name": "PerfectBreasts_v2.safetensors",
+            "strength_model": 0.8,
+            "strength_clip": 1.0
+        })
+
+    elif settings["style"] == "style_ultrareal_breasts":
+        final_prompt += ", CLOSE UP, SKIN DETAIL, NIPPLE BUMPS, SAGGY BREASTS, high detailed skin"
+        loras.append({
+            "name": "UltraRealBreastDetailer_v2.safetensors",
             "strength_model": 0.8,
             "strength_clip": 1.0
         })
@@ -485,6 +530,36 @@ async def process_style_buttplug(callback: types.CallbackQuery):
     get_settings(callback.from_user.id)["style"] = "style_buttplug"
     await callback.answer("🍑 Стиль Butt Plug выбран!")
     await callback.message.answer("✅ Выбран стиль: 🍑 Butt Plug. Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_anal_missionary")
+async def process_style_anal_missionary(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_anal_missionary"
+    await callback.answer("🍑 Anal Missionary выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍑 Anal Missionary. Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_anal_abuse")
+async def process_style_anal_abuse(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_anal_abuse"
+    await callback.answer("🍑 Anal Abuse выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍑 Anal Abuse (Rough). Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_perfect_anal")
+async def process_style_perfect_anal(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_perfect_anal"
+    await callback.answer("🍑 Perfect Anal выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍑 Perfect Anal. Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_perfect_breasts")
+async def process_style_perfect_breasts(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_perfect_breasts"
+    await callback.answer("🍒 Perfect Breasts выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍒 Perfect Breasts. Отправьте промпт.")
+
+@dp.callback_query(F.data == "style_ultrareal_breasts")
+async def process_style_ultrareal_breasts(callback: types.CallbackQuery):
+    get_settings(callback.from_user.id)["style"] = "style_ultrareal_breasts"
+    await callback.answer("🍒 UltraReal Details выбран!")
+    await callback.message.answer("✅ Выбран стиль: 🍒 UltraReal Details. Отправьте промпт.")
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):
