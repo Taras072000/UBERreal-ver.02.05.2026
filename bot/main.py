@@ -99,18 +99,18 @@ def aspect_ratio_keyboard():
 
 def style_keyboard():
     kb = [
-        [InlineKeyboardButton(text="🔥 LUSTIFY (18+)", callback_data="style_lustify")],
-        [InlineKeyboardButton(text="👅 Deep Throat (18+)", callback_data="style_deepthroat")],
-        [InlineKeyboardButton(text="📸 Amateur (18+)", callback_data="style_amateur")],
-        [InlineKeyboardButton(text="💦 Facial (Pony)", callback_data="style_facial")],
-        [InlineKeyboardButton(text="👙 BetterNudes", callback_data="style_betternudes")],
-        [InlineKeyboardButton(text="🍆 Futa/Trans (Pony)", callback_data="style_futa")],
+        [InlineKeyboardButton(text="🔥 Lustify", callback_data="style_lustify")],
+        [InlineKeyboardButton(text="👅 Deep Throat", callback_data="style_deepthroat")],
+        [InlineKeyboardButton(text="📸 Amateur", callback_data="style_amateur")],
+        [InlineKeyboardButton(text="💦 Facial", callback_data="style_facial")],
+        [InlineKeyboardButton(text="👙 Better Nudes", callback_data="style_betternudes")],
+        [InlineKeyboardButton(text="🍆 Futa", callback_data="style_futa")],
         [InlineKeyboardButton(text="🍑 Butt Plug", callback_data="style_buttplug")],
         [InlineKeyboardButton(text="🍑 Anal Missionary", callback_data="style_anal_missionary")],
-        [InlineKeyboardButton(text="🍑 Anal Abuse (Rough)", callback_data="style_anal_abuse")],
+        [InlineKeyboardButton(text="🍑 Anal Abuse", callback_data="style_anal_abuse")],
         [InlineKeyboardButton(text="🍑 Perfect Anal", callback_data="style_perfect_anal")],
         [InlineKeyboardButton(text="🍒 Perfect Breasts", callback_data="style_perfect_breasts")],
-        [InlineKeyboardButton(text="🍒 UltraReal Details", callback_data="style_ultrareal_breasts")]
+        [InlineKeyboardButton(text="🍒 Skin Details", callback_data="style_ultrareal_breasts")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
