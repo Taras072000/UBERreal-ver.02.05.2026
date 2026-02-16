@@ -549,13 +549,13 @@ def setup_env():
     download_zip("https://github.com/cubiq/ComfyUI_Essentials/archive/refs/heads/main.zip", 
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-essentials"), "comfyui-essentials")
 
-    download_zip("https://github.com/Gourieff/comfyui-reactor-node/archive/refs/heads/main.zip",
+    download_zip("https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.zip",
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-reactor-node"), "comfyui-reactor-node")
                  
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
-        # Using facefusion mirror which is more reliable than eziorry
-        download_file("https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx", INSWAPPER_FILE)
+        # Using huggingface mirror which is more reliable than facefusion assets (often 404)
+        download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
 
 def handle_training(job_input, job_id):
     """Handle LoRA training request"""

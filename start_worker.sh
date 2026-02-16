@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Ensure we are in the script's directory
+cd "$(dirname "$0")"
+
 # UBERreal Worker Startup Script
 # Robust installation with retries for unstable networks
 

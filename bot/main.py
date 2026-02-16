@@ -1072,6 +1072,18 @@ async def handle_prompt(message: types.Message):
 
 async def main():
     logger.info("Starting UBERreal Telegram Bot...")
+    
+    # Set bot commands
+    commands = [
+        types.BotCommand(command="start", description="Начать работу"),
+        types.BotCommand(command="help", description="Инструкция"),
+        types.BotCommand(command="train_face", description="Обучить LoRA на лице"),
+        types.BotCommand(command="id", description="Показать ваш user id"),
+        types.BotCommand(command="reset_face", description="Сбросить лицо (Deepfake)"),
+        types.BotCommand(command="reset_pose", description="Сбросить позу")
+    ]
+    await bot.set_my_commands(commands)
+    
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
