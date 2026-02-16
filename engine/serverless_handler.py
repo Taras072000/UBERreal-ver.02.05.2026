@@ -67,6 +67,16 @@ LORA_PERFECT_ANAL = os.path.join(LORA_DIR, "PerfectAnal_Pony_v1.safetensors")
 LORA_PERFECT_BREASTS = os.path.join(LORA_DIR, "PerfectBreasts_v2.safetensors")
 LORA_ULTRAREAL_BREASTS = os.path.join(LORA_DIR, "UltraRealBreastDetailer_v2.safetensors")
 LORA_REALISM_YOGI = os.path.join(LORA_DIR, "RealismLora_v3_lite.safetensors")
+LORA_BETTER_CUM = os.path.join(LORA_DIR, "BetterCum_Pony_v1.safetensors")
+LORA_REALISTIC_SKIN_PONY = os.path.join(LORA_DIR, "Realistic_Skin_Pony_v0.1beta.safetensors")
+LORA_DETAILED_EYES = os.path.join(LORA_DIR, "DetailedEyes_XL_v3.safetensors")
+LORA_DYNAMIC_POSES = os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors")
+
+# IPAdapter & CLIP Vision
+IPADAPTER_DIR = os.path.join(MODELS_DIR, "ipadapter")
+CLIP_VISION_DIR = os.path.join(MODELS_DIR, "clip_vision")
+IPADAPTER_MODEL = os.path.join(IPADAPTER_DIR, "ip-adapter-plus-face_sdxl_vit-h.safetensors")
+CLIP_VISION_MODEL = os.path.join(CLIP_VISION_DIR, "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors")
 
 # ControlNet Files
 CONTROL_POSE = os.path.join(CONTROLNET_DIR, "controlnet-openpose-sdxl-1.0.safetensors")
@@ -74,6 +84,10 @@ CONTROL_DEPTH = os.path.join(CONTROLNET_DIR, "controlnet-depth-sdxl-1.0.safetens
 
 # Upscaler
 ULTRASHARP_FILE = os.path.join(UPSCALERS_DIR, "4x-UltraSharp.pth")
+
+# InsightFace (ReActor)
+INSIGHTFACE_DIR = os.path.join(MODELS_DIR, "insightface")
+INSWAPPER_FILE = os.path.join(INSIGHTFACE_DIR, "inswapper_128.onnx")
 
 def log(message):
     print(f"[Handler] {message}", flush=True)
@@ -193,6 +207,26 @@ def ensure_models(custom_loras=None):
     # UltraReal Breast & Nipple Detailer (ID: 1259365 -> Ver: 2429108)
     download_file("https://civitai.com/api/download/models/2429108", os.path.join(LORA_DIR, "UltraRealBreastDetailer_v2.safetensors"))
 
+    # Better Cum - Pony - v1.0 (ID: 559962)
+    download_file("https://civitai.com/api/download/models/559962", os.path.join(LORA_DIR, "BetterCum_Pony_v1.safetensors"))
+
+    # Realistic Skin for Pony - v0.1beta (ID: 638628)
+    download_file("https://civitai.com/api/download/models/638628", os.path.join(LORA_DIR, "Realistic_Skin_Pony_v0.1beta.safetensors"))
+
+    # Detailed Eyes XL - v3.0 (ID: 120723)
+    download_file("https://civitai.com/api/download/models/120723", os.path.join(LORA_DIR, "DetailedEyes_XL_v3.safetensors"))
+
+    # Dynamic Poses Slider PONYXL (ID: 438059 -> Version ID: 489439)
+    # Allows for more dynamic and extreme poses
+    download_file("https://civitai.com/api/download/models/489439", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
+
+    # --- IPAdapter & CLIP Vision ---
+    # IP-Adapter Plus Face SDXL (ViT-H) - Best for likeness
+    download_file("https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors", IPADAPTER_MODEL)
+    
+    # CLIP Vision (ViT-H) - Required for IPAdapter Plus
+    download_file("https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/sdxl_model.safetensors", CLIP_VISION_MODEL) # Note: Often named like this or CLIP-ViT-H-14... using standard HF path
+
     # 5. Custom LoRAs from Request
     actual_loras = []
     
@@ -212,8 +246,19 @@ def ensure_models(custom_loras=None):
         for lora in custom_loras:
             name = lora.get("name")
             url = lora.get("url")
+            local_path = os.path.join(LORA_DIR, name)
+            
+            # 1. Check if exists locally (Volume)
+            if os.path.exists(local_path):
+                 actual_loras.append({
+                        "name": name,
+                        "strength_model": lora.get("strength_model", 1.0),
+                        "strength_clip": lora.get("strength_clip", 1.0)
+                    })
+                 continue
+
+            # 2. Download if missing
             if name and url:
-                local_path = os.path.join(LORA_DIR, name)
                 if download_file(url, local_path):
                     actual_loras.append({
                         "name": name,
@@ -224,7 +269,7 @@ def ensure_models(custom_loras=None):
     force_refresh()
     return actual_loras
 
-def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, face_image=None, loras=None, job_id="uber"):
+def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, controlnet_image=None, face_swap_image=None, identity_strength=0.6, loras=None, job_id="uber"):
     """Professional SDXL Pipeline: Base 1.0 -> Upscale (Standard SDXL for compatibility testing)"""
     workflow = {
         "10": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": os.path.basename(BASE_MODEL)}},
@@ -241,9 +286,11 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     # NOTE: Ebony Skin re-enabled (Refiner was the issue, not LoRA)
     quality_loras = [
-        {"name": "RealismLora_v3_lite.safetensors", "str": 1.0}, # Stable Yogi Realism
-        {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.7}, # Plan: 0.6 - 0.8
-        {"name": "realistic_skin_texture_sdxl_lora.safetensors", "str": 0.6}, # Plan: 0.5 - 0.7
+        {"name": "RealismLora_v3_lite.safetensors", "str": 0.8}, # Reduced slightly to mix better
+        {"name": "Realistic_Skin_Pony_v0.1beta.safetensors", "str": 0.8}, # New Pony Skin
+        {"name": "DetailedEyes_XL_v3.safetensors", "str": 0.8}, # New Detailed Eyes
+        {"name": "DynamicPoses_PonyXL_v1.safetensors", "str": 1.0}, # New Dynamic Poses
+        {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.5}, # Reduced
         {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Re-enabled (File exists)
     ]
     
@@ -289,16 +336,52 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
 
     last_pos = ["11", 0]
 
+    # 3. IPAdapter (Identity Injection) - BEFORE KSampler
+    if face_swap_image:
+        # Load CLIP Vision
+        workflow["clip_vision"] = {
+            "class_type": "CLIPVisionLoader",
+            "inputs": {"clip_name": "sdxl_model.safetensors"} # Filename from download
+        }
+        
+        # Load IPAdapter Model
+        workflow["ipadapter_model"] = {
+            "class_type": "IPAdapterModelLoader",
+            "inputs": {"ipadapter_file": "ip-adapter-plus-face_sdxl_vit-h.safetensors"}
+        }
+        
+        # Load Image for IPAdapter
+        workflow["input_face_source"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_swap_image}}
+        
+        # Identity Strength (Default 0.5)
+        ip_weight = identity_strength
+
+        workflow["ipadapter_apply"] = {
+            "class_type": "IPAdapterApply",
+            "inputs": {
+                "ipadapter": ["ipadapter_model", 0],
+                "clip_vision": ["clip_vision", 0],
+                "image": ["input_face_source", 0],
+                "model": current_model,
+                "weight": ip_weight,
+                "noise": 0.0, 
+                "start_at": 0.0,
+                "end_at": 1.0,
+                "weight_type": "standard"
+            }
+        }
+        current_model = ["ipadapter_apply", 0]
+    
     # ControlNet (Pose & Depth)
-    if face_image:
-        workflow["input_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_image}}
+    if controlnet_image:
+        workflow["input_pose_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": controlnet_image}}
         
         # 1. OpenPose (Скелет)
         if os.path.exists(CONTROL_POSE):
             workflow["cn_pose"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_POSE)}}
             workflow["apply_pose"] = {
                 "class_type": "ControlNetApply",
-                "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_img", 0]}
+                "inputs": {"strength": 1.0, "conditioning": last_pos, "control_net": ["cn_pose", 0], "image": ["input_pose_img", 0]}
             }
             last_pos = ["apply_pose", 0]
         else:
@@ -309,7 +392,7 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             workflow["cn_depth"] = {"class_type": "ControlNetLoader", "inputs": {"control_net_name": os.path.basename(CONTROL_DEPTH)}}
             workflow["apply_depth"] = {
                 "class_type": "ControlNetApply",
-                "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_img", 0]}
+                "inputs": {"strength": 0.6, "conditioning": last_pos, "control_net": ["cn_depth", 0], "image": ["input_pose_img", 0]}
             }
             last_pos = ["apply_depth", 0]
         else:
@@ -329,13 +412,39 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Decode (Directly from Base KSampler 14)
     workflow["decode"] = {"class_type": "VAEDecode", "inputs": {"samples": ["14", 0], "vae": ["19", 0]}}
     
+    last_image_node = ["decode", 0]
+    
+    # ReActor Face Swap
+    if face_swap_image:
+        workflow["input_face_swap"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_swap_image}}
+        
+        workflow["reactor"] = {
+            "class_type": "ReActorFastFaceSwap",
+            "inputs": {
+                "enabled": True,
+                "swap_model": "inswapper_128.onnx",
+                "facedetection": "retinaface_resnet50",
+                "face_restore_model": "codeformer-v0.1.0.pth", # Optional: can be none if not installed, but usually comes with ReActor
+                "face_restore_visibility": 1.0,
+                "codeformer_weight": 0.7, # Reduced to 0.7 for better likeness (less plastic)
+                "detect_gender_input": "female", # Target only females (avoid swapping male/penis owners)
+                "detect_gender_source": "female", # Assume source is female
+                "input_faces_index": "0",
+                "source_faces_index": "0",
+                "console_log_level": 2,
+                "source_image": ["input_face_swap", 0],
+                "input_image": last_image_node
+            }
+        }
+        last_image_node = ["reactor", 0]
+    
     # Upscale REMOVED for testing (Image too large for response)
     # workflow["upscale"] = {
     #     "class_type": "ImageUpscaleWithModel",
     #     "inputs": {"upscale_model": ["upscale_model", 0], "image": ["decode", 0]}
     # }
     
-    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": ["decode", 0], "filename_prefix": f"result_{job_id}"}}
+    workflow["1000"] = {"class_type": "SaveImage", "inputs": {"images": last_image_node, "filename_prefix": f"result_{job_id}"}}
 
     return workflow
 
@@ -396,8 +505,13 @@ def setup_env():
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
     
     # 3. Force compatible versions and install missing system dependencies
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers", "accelerate", "peft", "bitsandbytes"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
+    
+    # 4. Download Training Script (Diffusers SDXL)
+    TRAIN_SCRIPT_PATH = os.path.join(PROJECT_ROOT, "train_dreambooth_lora_sdxl.py")
+    if not os.path.exists(TRAIN_SCRIPT_PATH):
+        download_file("https://raw.githubusercontent.com/huggingface/diffusers/main/examples/dreambooth/train_dreambooth_lora_sdxl.py", TRAIN_SCRIPT_PATH)
     
     def download_zip(url, target_dir, folder_name):
         if os.path.exists(target_dir): return
@@ -432,11 +546,150 @@ def setup_env():
     download_zip("https://github.com/cubiq/ComfyUI_Essentials/archive/refs/heads/main.zip", 
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-essentials"), "comfyui-essentials")
 
+    download_zip("https://github.com/Gourieff/comfyui-reactor-node/archive/refs/heads/main.zip",
+                 os.path.join(COMFY_PATH, "custom_nodes/comfyui-reactor-node"), "comfyui-reactor-node")
+                 
+    # Ensure InsightFace model exists
+    if not os.path.exists(INSWAPPER_FILE):
+        download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
+
+def handle_training(job_input, job_id):
+    """Handle LoRA training request"""
+    try:
+        log(f"Starting Training Job: {job_id}")
+        
+        lora_name = job_input.get("lora_name", f"lora_{job_id}")
+        dataset_zip_b64 = job_input.get("dataset_zip_base64")
+        dataset_url = job_input.get("dataset_url")
+        user_id = job_input.get("user_id")
+        
+        if not dataset_zip_b64 and not dataset_url:
+            return {"error": "No dataset provided"}
+            
+        # 1. Setup Directories
+        train_dir = os.path.join(PROJECT_ROOT, f"train_{job_id}")
+        dataset_dir = os.path.join(train_dir, "dataset")
+        output_dir = os.path.join(train_dir, "output")
+        os.makedirs(dataset_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 2. Extract Dataset
+        try:
+            if dataset_url:
+                 zip_path = os.path.join(train_dir, "dataset.zip")
+                 if not download_file(dataset_url, zip_path):
+                     return {"error": f"Failed to download dataset from {dataset_url}"}
+                 with zipfile.ZipFile(zip_path, 'r') as zf:
+                     zf.extractall(dataset_dir)
+            elif dataset_zip_b64:
+                zip_data = base64.b64decode(dataset_zip_b64)
+                with zipfile.ZipFile(BytesIO(zip_data)) as zf:
+                    zf.extractall(dataset_dir)
+            log(f"Dataset extracted to {dataset_dir}")
+        except Exception as e:
+            return {"error": f"Failed to extract dataset: {e}"}
+            
+        # 3. Configure Training Command
+        # Using Diffusers script
+        script_path = os.path.join(PROJECT_ROOT, "train_dreambooth_lora_sdxl.py")
+        if not os.path.exists(script_path):
+             return {"error": "Training script not found"}
+             
+        # Params for SDXL LoRA (Fast & Low VRAM)
+        cmd = [
+            "accelerate", "launch", 
+            "--mixed_precision=fp16",
+            "--num_processes=1",
+            "--num_machines=1",
+            "--dynamo_backend=no",
+            script_path,
+            "--pretrained_model_name_or_path", "stabilityai/stable-diffusion-xl-base-1.0", # Hardcoded HF ID
+            "--instance_data_dir", dataset_dir,
+            "--output_dir", output_dir,
+            "--instance_prompt", f"photo of {lora_name} person", # Trigger word
+            "--resolution", "1024",
+            "--train_batch_size", "1",
+            "--gradient_accumulation_steps", "4",
+            "--learning_rate", "1e-4",
+            "--lr_scheduler", "constant",
+            "--lr_warmup_steps", "0",
+            "--max_train_steps", "500", # ~10-15 mins
+            "--checkpointing_steps", "1000", # Don't save intermediate
+            "--seed", "0",
+            "--mixed_precision", "fp16",
+            "--use_8bit_adam",
+            "--gradient_checkpointing"
+        ]
+        
+        # Note: BASE_MODEL was a local path but Diffusers script expects HF ID or Diffusers folder.
+        # We use HF ID "stabilityai/stable-diffusion-xl-base-1.0" to let it download/cache.
+        
+        log(f"Running training command: {' '.join(cmd)}")
+        
+        # Run Training
+        process = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if process.returncode != 0:
+            log(f"Training failed: {process.stderr}")
+            return {"error": f"Training script failed: {process.stderr[:1000]}"}
+            
+        log("Training finished successfully")
+        
+        # 4. Find Output
+        lora_file = os.path.join(output_dir, "pytorch_lora_weights.safetensors")
+        if not os.path.exists(lora_file):
+             return {"error": "Output LoRA file not found"}
+        
+        # 5. Save to LORA_DIR (Session Cache)
+        # Even without a persistent volume, this speeds up subsequent generations in the same session
+        final_lora_path = os.path.join(LORA_DIR, f"{lora_name}.safetensors")
+        shutil.copy(lora_file, final_lora_path)
+        log(f"Saved LoRA to Session Cache: {final_lora_path}")
+
+        # 6. Upload to Transfer.sh (Cloud Storage)
+        # Required for Serverless to persist the file between sessions
+        lora_url = ""
+        try:
+            with open(lora_file, 'rb') as f:
+                upload_response = requests.put(
+                    f"https://transfer.sh/{lora_name}.safetensors", 
+                    data=f
+                )
+                if upload_response.status_code == 200:
+                    lora_url = upload_response.text.strip()
+                    log(f"Uploaded LoRA to: {lora_url}")
+        except Exception as e:
+            log(f"Upload to transfer.sh failed (non-critical): {e}")
+            
+        # Clean up
+        shutil.rmtree(train_dir, ignore_errors=True)
+        
+        return {
+            "status": "success",
+            "lora_path": final_lora_path,
+            "lora_url": lora_url,
+            "trigger_word": lora_name
+        }
+            
+    except Exception as e:
+        log(f"Training Handler Error: {e}")
+        import traceback
+        return {"error": f"{str(e)}\n{traceback.format_exc()}"}
+
 def handler(job):
     try:
         job_id = job.get("id", "uber")
         job_input = job.get("input", {})
         log(f"--- STARTING JOB {job_id} ---")
+        
+        # Dispatch based on operation
+        operation = job_input.get("operation", "generate")
+        
+        if operation == "train_lora":
+            setup_env() # Ensure deps are installed
+            return handle_training(job_input, job_id)
+            
+        # Default: Generation
         log(f"--- PIPELINE VERSION: {VERSION} ---")
         
         # Debug: Check output dir
@@ -479,7 +732,9 @@ def handler(job):
             cfg=job_input.get("cfg", 5.0),
             sampler_name=job_input.get("sampler_name", "dpmpp_2m"),
             scheduler=job_input.get("scheduler", "karras"),
-            face_image=job_input.get("face_image"),
+            controlnet_image=job_input.get("controlnet_image"), # Renamed from face_image
+            face_swap_image=job_input.get("face_swap_image"), # New field
+            identity_strength=job_input.get("identity_strength", 0.6),
             loras=active_loras,
             job_id=job_id
         )
