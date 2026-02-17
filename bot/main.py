@@ -558,15 +558,15 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
             await bot.send_message(chat_id, "❌ Ошибка: RunPod вернул пустой ответ.")
             return
 
-        # Polling with 10 minute timeout (600s) as requested for heavy model downloads
+        # Polling with 20 minute timeout (1200s) as requested for heavy model downloads
         output = None
         try:
-            # We use a long timeout because the first run downloads ~20GB of models
-            output = await asyncio.to_thread(run_request.output, timeout=600) 
+            # We use a long timeout because the first run downloads ~40GB of models
+            output = await asyncio.to_thread(run_request.output, timeout=1200) 
             logger.info(f"RunPod raw output: {output}")
         except Exception as poll_err:
             logger.error(f"RunPod Poll Error: {poll_err}")
-            await bot.send_message(chat_id, f"⚠️ Превышено время ожидания (10 мин).\nСервер всё еще может скачивать модели. Попробуйте через пару минут.")
+            await bot.send_message(chat_id, f"⚠️ Превышено время ожидания (20 мин).\nСервер всё еще может скачивать модели. Попробуйте через пару минут.")
             return
         
         if not output:

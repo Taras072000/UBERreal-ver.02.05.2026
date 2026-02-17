@@ -113,13 +113,12 @@ def download_file(url, path, headers=None):
         if "huggingface.co" in url and not headers:
             token = os.environ.get("HF_TOKEN")
             if token: headers = {"Authorization": f"Bearer {token}"}
+            else: log("Warning: HF_TOKEN not found in env, download might fail if repo is private.")
             
         if "civitai.com" in url and not headers:
             token = os.environ.get("CIVITAI_API_TOKEN")
-            if not token:
-                # Fallback to the provided key if env var is missing
-                token = "f92a9d20b490944390a3f6908fc43f35"
             if token: headers = {"Authorization": f"Bearer {token}"}
+            else: log("Warning: CIVITAI_API_TOKEN not found in env, download might fail.")
             
         r = requests.get(url, stream=True, timeout=600, headers=headers)
         if r.status_code == 200:
@@ -256,18 +255,19 @@ def ensure_models(custom_loras=None):
 
     download_file("https://huggingface.co/Taras082498/EbonyTest2/resolve/main/test2.safetensors", user_lora_path)
 
-    # New Ebony Versions (V10, V7, V5, V2) - Trying multiple potential filenames
+    # New Ebony Versions (V10, V7, V5, V2) - Specific filenames provided by user
     ebony_versions = [
-        ("Ebony650PicsV10", "Ebony_V10.safetensors"),
-        ("Ebony650PicsV7", "Ebony_V7.safetensors"),
-        ("Ebony650PicsV5", "Ebony_V5.safetensors"),
-        ("Ebony650PicsV2", "Ebony_V2.safetensors")
+        ("Ebony650PicsV10", "Ebony_V10.safetensors", "Test3_r1.safetensors"),
+        ("Ebony650PicsV7", "Ebony_V7.safetensors", "Test3-000007.safetensors"),
+        ("Ebony650PicsV5", "Ebony_V5.safetensors", "Test3-000005.safetensors"),
+        ("Ebony650PicsV2", "Ebony_V2.safetensors", "Test3-000002.safetensors")
     ]
     
-    for repo, filename in ebony_versions:
-        target_path = os.path.join(LORA_DIR, filename)
-        # Try common filenames
-        potential_files = ["pytorch_lora_weights.safetensors", "adapter_model.safetensors", "model.safetensors", f"{repo}.safetensors", "test2.safetensors", "Test3_r1.safetensors"]
+    for repo, local_filename, remote_filename in ebony_versions:
+        target_path = os.path.join(LORA_DIR, local_filename)
+        
+        # Try specific filename first, then fallbacks
+        potential_files = [remote_filename, "pytorch_lora_weights.safetensors", "adapter_model.safetensors", "model.safetensors", f"{repo}.safetensors"]
         
         for remote_file in potential_files:
             url = f"https://huggingface.co/Taras082498/{repo}/resolve/main/{remote_file}"
@@ -635,6 +635,78 @@ def get_latest_image(job_id, min_timestamp=0):
 
     return None
 
+def setup_volume_storage():
+    """Setup symlinks for models to RunPod Network Volume if available"""
+    if not os.path.exists(VOLUME_PATH):
+        log(f"Network Volume not found at {VOLUME_PATH}. Using local storage.")
+        # Debug: List root directory to see what's mounted
+        try:
+            log(f"Root dir contents: {os.listdir('/')}")
+            log(f"Mounts: {os.listdir('/runpod-volume') if os.path.exists('/runpod-volume') else 'path does not exist'}")
+        except Exception as e:
+            log(f"Debug listing failed: {e}")
+        return
+
+    log(f"Setting up Network Volume at {VOLUME_PATH}...")
+    
+    # Structure in volume
+    vol_comfy = os.path.join(VOLUME_PATH, "ComfyUI")
+    vol_models = os.path.join(vol_comfy, "models")
+    
+    # Ensure volume directories exist
+    os.makedirs(vol_models, exist_ok=True)
+    
+    # List of model directories to persist
+    dirs_to_link = [
+        "checkpoints", "loras", "vae", "controlnet", 
+        "upscale_models", "insightface", "facerestore_models",
+        "ipadapter", "clip_vision"
+    ]
+    
+    local_models_dir = os.path.join(COMFY_PATH, "models")
+    if not os.path.exists(local_models_dir):
+        os.makedirs(local_models_dir, exist_ok=True)
+
+    for d in dirs_to_link:
+        local_dir = os.path.join(local_models_dir, d)
+        vol_dir = os.path.join(vol_models, d)
+        
+        # 1. Create volume dir if missing
+        os.makedirs(vol_dir, exist_ok=True)
+        
+        # 2. Handle local directory
+        if os.path.exists(local_dir):
+            if os.path.islink(local_dir):
+                # Check if it points to the correct volume dir
+                try:
+                    if os.readlink(local_dir) == vol_dir:
+                        continue # Already linked correctly
+                    else:
+                        os.unlink(local_dir) # Remove incorrect link
+                except OSError:
+                    os.unlink(local_dir)
+            elif os.path.isdir(local_dir):
+                # It's a real directory. 
+                # If volume dir is empty and local has files, move them.
+                if not os.listdir(vol_dir) and os.listdir(local_dir):
+                    log(f"Moving local {d} to volume...")
+                    try:
+                        for f in os.listdir(local_dir):
+                            shutil.move(os.path.join(local_dir, f), os.path.join(vol_dir, f))
+                    except Exception as e:
+                        log(f"Error moving files: {e}")
+                
+                # Remove local directory
+                shutil.rmtree(local_dir)
+        
+        # 3. Create symlink
+        try:
+            if not os.path.exists(local_dir):
+                os.symlink(vol_dir, local_dir)
+                log(f"Linked {d} to volume.")
+        except Exception as e:
+            log(f"Failed to link {d}: {e}")
+
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""
     # 1. Ensure system dependencies (Critical for InsightFace/ReActor)
@@ -654,6 +726,9 @@ def setup_env():
         log("Clean installing ComfyUI...")
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
+
+    # Setup Volume Storage (Symlinks)
+    setup_volume_storage()
 
     # InsightFace Models (Critical for ReActor / Face Swap)
     # Ensure models/insightface exists
