@@ -244,7 +244,7 @@ def ensure_models(custom_loras=None):
     
     # CLIP Vision (ViT-H) - Required for IPAdapter Plus
     # Use standard CLIP ViT-H-14 link which is more reliable
-    download_file("https://huggingface.co/laion/CLIP-ViT-H-14-laion2B-s32B-b79K/resolve/main/open_clip_pytorch_model.safetensors", CLIP_VISION_MODEL)
+    download_file("https://huggingface.co/laion/CLIP-ViT-H-14-laion2B-s32B-b79K/resolve/main/open_clip_pytorch_model.bin", CLIP_VISION_MODEL)
 
     # 5. Custom LoRAs from Request
     actual_loras = []
@@ -571,6 +571,10 @@ def setup_env():
     # Install IPAdapter Plus (Critical for Smart Mode)
     download_zip("https://github.com/cubiq/ComfyUI_IPAdapter_plus/archive/refs/heads/main.zip",
                  os.path.join(COMFY_PATH, "custom_nodes/ComfyUI_IPAdapter_plus"), "ComfyUI_IPAdapter_plus")
+                 
+    # Install Easy Tools (Critical for Base64 Image Loading)
+    download_zip("https://github.com/Jordach/ComfyUI-Easy-Tools/archive/refs/heads/main.zip",
+                 os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Easy-Tools"), "ComfyUI-Easy-Tools")
 
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
