@@ -29,7 +29,7 @@ def force_refresh():
     except: pass
 
 # --- CONFIGURATION & PATHS ---
-VERSION = "2.0-PRO-PIPELINE"
+VERSION = "2.0-PRO-PIPELINE-FIXED-ETN"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COMFY_PATH = os.path.join(PROJECT_ROOT, "ComfyUI")
 VOLUME_PATH = "/runpod-volume"
@@ -175,8 +175,8 @@ def ensure_models(custom_loras=None):
     # Skin (Using reliable alternative link from HF Mirror)
     # Old broken link: https://civitai.com/api/download/models/122359
     download_file("https://huggingface.co/AiWise/epiCPhoto-XL-LoRA-Derp2/resolve/main/LoRA-RealisticSkinTextureStyle-SDXL_v4.safetensors", os.path.join(LORA_DIR, "realistic_skin_texture_sdxl_lora.safetensors"))
-    # Ebony Skin (PonyXL/SDXL compatible) - Requires Civitai Token or Manual Download
-    # download_file("https://civitai.com/api/download/models/1106176", os.path.join(LORA_DIR, "StS_Skin_Tone_Slider.safetensors"))
+    # 1. Skin Tone Slider (Pony/SDXL) - Fixed Link
+    download_file("https://civitai.com/api/download/models/1106176", os.path.join(LORA_DIR, "StS_Skin_Tone_Slider.safetensors"))
 
     # LUSTIFY LoRA (Requested by User) - Requires Civitai Token
     download_file("https://civitai.com/api/download/models/1627770", os.path.join(LORA_DIR, "LUSTIFY_SDXL_v1.safetensors"))
@@ -226,20 +226,29 @@ def ensure_models(custom_loras=None):
     # Detailed Eyes XL - v3.0 (ID: 120723)
     download_file("https://civitai.com/api/download/models/120723", os.path.join(LORA_DIR, "DetailedEyes_XL_v3.safetensors"))
 
-    # Ebony Skin Slider / Beauty Ebony Face (ID: 559675)
-    download_file("https://civitai.com/api/download/models/559675", LORA_EBONY)
+    # Ebony Skin Slider / Beauty Ebony Face (PonyXL compatible)
+    # Using Skin Tone Slider | PonyXL SDXL (ID: 421744, Version: 1106176)
+    download_file("https://civitai.com/api/download/models/1106176", LORA_EBONY)
 
-    # Dynamic Poses Slider PONYXL (ID: 438059 -> Version ID: 489439)
+    # Dynamic Poses Slider PONYXL (ID: 332248 -> Version ID: 372220)
     # Allows for more dynamic and extreme poses
-    # 404 Error on CivitAI, using alternative or skipping if failed
-    # download_file("https://civitai.com/api/download/models/489439", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
+    download_file("https://civitai.com/api/download/models/372220", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
 
     # User's Custom LoRA (ID: 2696202)
     # WARNING: Requires login? We try to download it. If fails, user needs token.
     # download_file("https://civitai.com/api/download/models/2696202?type=Model&format=SafeTensor", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
 
     # User's Custom LoRA (Hugging Face)
-    download_file("https://huggingface.co/Taras082498/EbonyTest2/resolve/main/test2.safetensors", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
+    # FORCE UPDATE: Always remove old file to ensure we get the latest version from HF
+    user_lora_path = os.path.join(LORA_DIR, "User_Specific_Girl.safetensors")
+    if os.path.exists(user_lora_path):
+        try:
+            os.remove(user_lora_path)
+            log(f"Removed existing User LoRA to force update: {user_lora_path}")
+        except Exception as e:
+            log(f"Failed to remove existing User LoRA: {e}")
+
+    download_file("https://huggingface.co/Taras082498/EbonyTest2/resolve/main/test2.safetensors", user_lora_path)
 
     # --- IPAdapter & CLIP Vision ---
     # IP-Adapter Plus Face SDXL (ViT-H) - Best for likeness
@@ -372,8 +381,35 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             "inputs": {"ipadapter_file": "ip-adapter-plus-face_sdxl_vit-h.safetensors"}
         }
         
-        # Load Image for IPAdapter
-        workflow["input_face_source"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_swap_image}}
+        # Decode base64 face image for IPAdapter
+        try:
+            input_dir = os.path.join(COMFY_PATH, "input")
+            if not os.path.exists(input_dir):
+                os.makedirs(input_dir)
+
+            if "," in face_swap_image:
+                face_swap_image_clean = face_swap_image.split(",")[1]
+            else:
+                face_swap_image_clean = face_swap_image
+                
+            face_img_data = base64.b64decode(face_swap_image_clean)
+            face_img_filename = f"face_ipadapter_{job_id}.png"
+            face_img_path = os.path.join(input_dir, face_img_filename)
+            
+            with open(face_img_path, "wb") as f:
+                f.write(face_img_data)
+                
+            workflow["input_face_source"] = {
+                "class_type": "LoadImage", 
+                "inputs": {"image": face_img_filename}
+            }
+        except Exception as e:
+            log(f"Error decoding IPAdapter face image: {e}")
+            # Fallback or handle error
+            workflow["input_face_source"] = {
+                "class_type": "LoadImage", 
+                "inputs": {"image": "fallback.png"}
+            }
         
         # Identity Strength (Default 0.5)
         ip_weight = identity_strength
@@ -396,7 +432,34 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     
     # ControlNet (Pose & Depth)
     if controlnet_image:
-        workflow["input_pose_img"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": controlnet_image}}
+        # Decode base64 pose image for ControlNet
+        try:
+            input_dir = os.path.join(COMFY_PATH, "input")
+            if not os.path.exists(input_dir):
+                os.makedirs(input_dir)
+                
+            if "," in controlnet_image:
+                controlnet_image_clean = controlnet_image.split(",")[1]
+            else:
+                controlnet_image_clean = controlnet_image
+
+            pose_img_data = base64.b64decode(controlnet_image_clean)
+            pose_img_filename = f"pose_{job_id}.png"
+            pose_img_path = os.path.join(input_dir, pose_img_filename)
+            
+            with open(pose_img_path, "wb") as f:
+                f.write(pose_img_data)
+                
+            workflow["input_pose_img"] = {
+                "class_type": "LoadImage", 
+                "inputs": {"image": pose_img_filename}
+            }
+        except Exception as e:
+            log(f"Error decoding Pose image: {e}")
+            workflow["input_pose_img"] = {
+                "class_type": "LoadImage", 
+                "inputs": {"image": "fallback.png"}
+            }
         
         # 1. OpenPose (Скелет)
         if os.path.exists(CONTROL_POSE):
@@ -440,7 +503,12 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     if face_swap_image:
         # Save base64 image to disk to avoid using custom nodes (ETN_LoadImageBase64) which are unreliable
         try:
-            face_img_data = base64.b64decode(face_swap_image)
+            if "," in face_swap_image:
+                face_swap_image_clean = face_swap_image.split(",")[1]
+            else:
+                face_swap_image_clean = face_swap_image
+
+            face_img_data = base64.b64decode(face_swap_image_clean)
             input_dir = os.path.join(COMFY_PATH, "input")
             if not os.path.exists(input_dir):
                 os.makedirs(input_dir)
@@ -535,21 +603,29 @@ def get_latest_image(job_id, min_timestamp=0):
 
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""
+    # 1. Ensure system dependencies (Critical for InsightFace/ReActor)
+    # Always run this to ensure environment is correct even if ComfyUI exists
+    try:
+        log("Checking/Installing critical Python dependencies...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", 
+            "numpy<2.0.0", "insightface>=0.7.3", "onnxruntime-gpu>=1.16.0", 
+            "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", 
+            "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", 
+            "bitsandbytes", "kornia", "spandrel", "segment_anything", "ultralytics"
+        ], check=True)
+    except Exception as e:
+        log(f"Dependency installation warning: {e}")
+
     if not os.path.exists(COMFY_PATH) or not os.path.exists(os.path.join(COMFY_PATH, "main.py")):
         log("Clean installing ComfyUI...")
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
-        # 1. Install official ComfyUI requirements first (Critical for frontend)
-    # Using --no-cache-dir to prevent OOM on small containers
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+        
+        # Install official ComfyUI requirements
+        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
     
-    # 2. Force install comfy-ui-client-frontend to fix missing metadata error
+    # 2. Force install comfy-ui-client-frontend
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
-    
-    # 3. Force compatible versions and install missing system dependencies
-    # NOTE: Using standard diffusers (0.29.0+) from PyPI is safer/faster than git source
-    # Downgrading to 0.29.0 to ensure compatibility with older PyTorch versions in RunPod base images
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", "bitsandbytes", "insightface", "onnxruntime-gpu"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     # 4. Training Script Download REMOVED per user request

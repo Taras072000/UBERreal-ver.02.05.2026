@@ -1,0 +1,1335 @@
+2026-02-17T10:01:12.472451910Z ==========
+2026-02-17T10:01:12.472463182Z == CUDA ==
+2026-02-17T10:01:12.472538486Z ==========
+2026-02-17T10:01:12.477653273Z CUDA Version 12.4.1
+2026-02-17T10:01:12.478304219Z Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+2026-02-17T10:01:12.478966427Z This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+2026-02-17T10:01:12.478975102Z By pulling and using the container, you accept the terms and conditions of this license:
+2026-02-17T10:01:12.478982859Z https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+2026-02-17T10:01:12.478997285Z A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+2026-02-17T10:01:12.492444809Z Cloning into '/app_code'...
+2026-02-17T10:01:12.803211285Z === UBERreal Worker Startup ===
+2026-02-17T10:01:13.275818659Z Requirement already satisfied: pip in /usr/local/lib/python3.11/dist-packages (24.2)
+2026-02-17T10:01:13.356537029Z Collecting pip
+2026-02-17T10:01:13.384580114Z   Downloading pip-26.0.1-py3-none-any.whl.metadata (4.7 kB)
+2026-02-17T10:01:13.391715953Z Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+2026-02-17T10:01:13.401415574Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 417.3 MB/s eta 0:00:00
+2026-02-17T10:01:13.586550146Z Installing collected packages: pip
+2026-02-17T10:01:13.586678908Z   Attempting uninstall: pip
+2026-02-17T10:01:13.589935916Z     Found existing installation: pip 24.2
+2026-02-17T10:01:13.625281554Z     Uninstalling pip-24.2:
+2026-02-17T10:01:13.806470262Z       Successfully uninstalled pip-24.2
+2026-02-17T10:01:14.630218424Z Successfully installed pip-26.0.1
+2026-02-17T10:01:14.630394429Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:01:14.841446702Z Installing critical package: runpod...
+2026-02-17T10:01:15.322117025Z Collecting runpod
+2026-02-17T10:01:15.400789165Z   Downloading runpod-1.8.1-py3-none-any.whl.metadata (9.9 kB)
+2026-02-17T10:01:15.963612645Z Collecting aiohttp>=3.9.3 (from aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:15.967125575Z   Downloading aiohttp-3.13.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.1 kB)
+2026-02-17T10:01:15.978407056Z Collecting aiohttp-retry>=2.8.3 (from runpod)
+2026-02-17T10:01:15.981819746Z   Downloading aiohttp_retry-2.9.1-py3-none-any.whl.metadata (8.8 kB)
+2026-02-17T10:01:15.991262959Z Collecting backoff>=2.2.1 (from runpod)
+2026-02-17T10:01:15.994158695Z   Downloading backoff-2.2.1-py3-none-any.whl.metadata (14 kB)
+2026-02-17T10:01:16.222781395Z Collecting boto3>=1.26.165 (from runpod)
+2026-02-17T10:01:16.225878530Z   Downloading boto3-1.42.50-py3-none-any.whl.metadata (6.8 kB)
+2026-02-17T10:01:16.237839047Z Collecting click>=8.1.7 (from runpod)
+2026-02-17T10:01:16.240672502Z   Downloading click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+2026-02-17T10:01:16.251371176Z Collecting colorama<0.4.7,>=0.2.5 (from runpod)
+2026-02-17T10:01:16.253895546Z   Downloading colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+2026-02-17T10:01:16.257173833Z Requirement already satisfied: cryptography<46.0.0 in /usr/lib/python3/dist-packages (from runpod) (3.4.8)
+2026-02-17T10:01:16.293641033Z Collecting fastapi>=0.94.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:16.296706432Z   Downloading fastapi-0.129.0-py3-none-any.whl.metadata (30 kB)
+2026-02-17T10:01:16.306970789Z Requirement already satisfied: filelock>=3.0.0 in /usr/local/lib/python3.11/dist-packages (from runpod) (3.13.1)
+2026-02-17T10:01:16.324114751Z Collecting paramiko>=3.3.1 (from runpod)
+2026-02-17T10:01:16.327493911Z   Downloading paramiko-4.0.0-py3-none-any.whl.metadata (3.9 kB)
+2026-02-17T10:01:16.337533665Z Collecting prettytable>=3.9.0 (from runpod)
+2026-02-17T10:01:16.339990111Z   Downloading prettytable-3.17.0-py3-none-any.whl.metadata (34 kB)
+2026-02-17T10:01:16.348748730Z Collecting py-cpuinfo>=9.0.0 (from runpod)
+2026-02-17T10:01:16.351841381Z   Downloading py_cpuinfo-9.0.0-py3-none-any.whl.metadata (794 bytes)
+2026-02-17T10:01:16.358410464Z Collecting inquirerpy==0.3.4 (from runpod)
+2026-02-17T10:01:16.361870491Z   Downloading InquirerPy-0.3.4-py3-none-any.whl.metadata (8.1 kB)
+2026-02-17T10:01:16.364537575Z Requirement already satisfied: requests>=2.31.0 in /usr/local/lib/python3.11/dist-packages (from runpod) (2.32.3)
+2026-02-17T10:01:16.377850960Z Collecting tomli>=2.0.1 (from runpod)
+2026-02-17T10:01:16.381391033Z   Downloading tomli-2.4.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+2026-02-17T10:01:16.393380909Z Collecting tomlkit>=0.12.2 (from runpod)
+2026-02-17T10:01:16.395997682Z   Downloading tomlkit-0.14.0-py3-none-any.whl.metadata (2.8 kB)
+2026-02-17T10:01:16.402259933Z Collecting tqdm-loggable>=0.1.4 (from runpod)
+2026-02-17T10:01:16.405335434Z   Downloading tqdm_loggable-0.3-py3-none-any.whl.metadata (9.4 kB)
+2026-02-17T10:01:16.407540870Z Requirement already satisfied: urllib3>=1.26.6 in /usr/local/lib/python3.11/dist-packages (from runpod) (2.2.3)
+2026-02-17T10:01:16.448049785Z Collecting watchdog>=3.0.0 (from runpod)
+2026-02-17T10:01:16.452268468Z   Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl.metadata (44 kB)
+2026-02-17T10:01:16.462523379Z Collecting pfzy<0.4.0,>=0.3.1 (from inquirerpy==0.3.4->runpod)
+2026-02-17T10:01:16.465666677Z   Downloading pfzy-0.3.4-py3-none-any.whl.metadata (4.9 kB)
+2026-02-17T10:01:16.467621840Z Requirement already satisfied: prompt-toolkit<4.0.0,>=3.0.1 in /usr/local/lib/python3.11/dist-packages (from inquirerpy==0.3.4->runpod) (3.0.47)
+2026-02-17T10:01:16.472333278Z Requirement already satisfied: wcwidth in /usr/local/lib/python3.11/dist-packages (from prompt-toolkit<4.0.0,>=3.0.1->inquirerpy==0.3.4->runpod) (0.2.13)
+2026-02-17T10:01:16.481113835Z Collecting aiohappyeyeballs>=2.5.0 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:16.483725060Z   Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata (5.9 kB)
+2026-02-17T10:01:16.490642924Z Collecting aiosignal>=1.4.0 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:16.493397377Z   Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+2026-02-17T10:01:16.495275141Z Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod) (24.2.0)
+2026-02-17T10:01:16.595561950Z Collecting frozenlist>=1.1.1 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:16.598880262Z   Downloading frozenlist-1.8.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+2026-02-17T10:01:16.838640113Z Collecting multidict<7.0,>=4.5 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:16.842097553Z   Downloading multidict-6.7.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+2026-02-17T10:01:16.895083387Z Collecting propcache>=0.2.0 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:16.898502119Z   Downloading propcache-0.4.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (13 kB)
+2026-02-17T10:01:17.202626858Z Collecting yarl<2.0,>=1.17.0 (from aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.206674429Z   Downloading yarl-1.22.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (75 kB)
+2026-02-17T10:01:17.216635669Z Requirement already satisfied: idna>=2.0 in /usr/local/lib/python3.11/dist-packages (from yarl<2.0,>=1.17.0->aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod) (3.10)
+2026-02-17T10:01:17.230539075Z Collecting aiodns>=3.3.0 (from aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.234612965Z   Downloading aiodns-4.0.0-py3-none-any.whl.metadata (7.7 kB)
+2026-02-17T10:01:17.265141983Z Collecting Brotli>=1.2 (from aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.269065176Z   Downloading brotli-1.2.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.1 kB)
+2026-02-17T10:01:17.316027123Z Collecting backports.zstd (from aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.319723104Z   Downloading backports_zstd-1.3.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (6.9 kB)
+2026-02-17T10:01:17.390961662Z Collecting pycares<6,>=5.0.0 (from aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.394739775Z   Downloading pycares-5.0.1-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (4.1 kB)
+2026-02-17T10:01:17.397877635Z Requirement already satisfied: cffi>=1.5.0 in /usr/local/lib/python3.11/dist-packages (from pycares<6,>=5.0.0->aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod) (1.17.1)
+2026-02-17T10:01:17.400479047Z Requirement already satisfied: typing-extensions>=4.2 in /usr/local/lib/python3.11/dist-packages (from aiosignal>=1.4.0->aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod) (4.9.0)
+2026-02-17T10:01:17.723920562Z Collecting botocore<1.43.0,>=1.42.50 (from boto3>=1.26.165->runpod)
+2026-02-17T10:01:17.726966952Z   Downloading botocore-1.42.50-py3-none-any.whl.metadata (5.9 kB)
+2026-02-17T10:01:17.735980342Z Collecting jmespath<2.0.0,>=0.7.1 (from boto3>=1.26.165->runpod)
+2026-02-17T10:01:17.738503179Z   Downloading jmespath-1.1.0-py3-none-any.whl.metadata (7.6 kB)
+2026-02-17T10:01:17.750161329Z Collecting s3transfer<0.17.0,>=0.16.0 (from boto3>=1.26.165->runpod)
+2026-02-17T10:01:17.752629826Z   Downloading s3transfer-0.16.0-py3-none-any.whl.metadata (1.7 kB)
+2026-02-17T10:01:17.755275451Z Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /usr/local/lib/python3.11/dist-packages (from botocore<1.43.0,>=1.42.50->boto3>=1.26.165->runpod) (2.9.0.post0)
+2026-02-17T10:01:17.757998534Z Requirement already satisfied: six>=1.5 in /usr/lib/python3/dist-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.43.0,>=1.42.50->boto3>=1.26.165->runpod) (1.16.0)
+2026-02-17T10:01:17.783263840Z Requirement already satisfied: pycparser in /usr/local/lib/python3.11/dist-packages (from cffi>=1.5.0->pycares<6,>=5.0.0->aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod) (2.22)
+2026-02-17T10:01:17.802845866Z Collecting starlette<1.0.0,>=0.40.0 (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.805557562Z   Downloading starlette-0.52.1-py3-none-any.whl.metadata (6.3 kB)
+2026-02-17T10:01:17.914984486Z Collecting pydantic>=2.7.0 (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.918018678Z   Downloading pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+2026-02-17T10:01:17.928313249Z Collecting typing-inspection>=0.4.2 (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.931025546Z   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+2026-02-17T10:01:17.937848871Z Collecting annotated-doc>=0.0.2 (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.940291017Z   Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+2026-02-17T10:01:17.943273662Z Requirement already satisfied: anyio<5,>=3.6.2 in /usr/local/lib/python3.11/dist-packages (from starlette<1.0.0,>=0.40.0->fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod) (4.6.0)
+2026-02-17T10:01:17.953612639Z Collecting typing-extensions>=4.2 (from aiosignal>=1.4.0->aiohttp>=3.9.3->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:17.956063122Z   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+2026-02-17T10:01:17.958955255Z Requirement already satisfied: sniffio>=1.1 in /usr/local/lib/python3.11/dist-packages (from anyio<5,>=3.6.2->starlette<1.0.0,>=0.40.0->fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod) (1.3.1)
+2026-02-17T10:01:17.968832183Z Collecting fastapi-cli>=0.0.8 (from fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.972503054Z   Downloading fastapi_cli-0.0.23-py3-none-any.whl.metadata (6.4 kB)
+2026-02-17T10:01:17.975761223Z Requirement already satisfied: httpx<1.0.0,>=0.23.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod) (0.27.2)
+2026-02-17T10:01:17.984952999Z Collecting jinja2>=3.1.5 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.987424089Z   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-02-17T10:01:17.995150084Z Collecting python-multipart>=0.0.18 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:17.999177354Z   Downloading python_multipart-0.0.22-py3-none-any.whl.metadata (1.8 kB)
+2026-02-17T10:01:18.006908590Z Collecting itsdangerous>=1.1.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.009387220Z   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-02-17T10:01:18.010965316Z Requirement already satisfied: pyyaml>=5.3.1 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod) (6.0.2)
+2026-02-17T10:01:18.065062062Z Collecting ujson>=5.8.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.068739948Z   Downloading ujson-5.11.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (9.4 kB)
+2026-02-17T10:01:18.438367134Z Collecting orjson>=3.9.3 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.441461850Z   Downloading orjson-3.11.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (41 kB)
+2026-02-17T10:01:18.454120678Z Collecting email-validator>=2.0.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.456614147Z   Downloading email_validator-2.3.0-py3-none-any.whl.metadata (26 kB)
+2026-02-17T10:01:18.478304115Z Collecting uvicorn>=0.12.0 (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.481122896Z   Downloading uvicorn-0.41.0-py3-none-any.whl.metadata (6.7 kB)
+2026-02-17T10:01:18.495035165Z Collecting pydantic-settings>=2.0.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.497678457Z   Downloading pydantic_settings-2.13.0-py3-none-any.whl.metadata (3.4 kB)
+2026-02-17T10:01:18.507459637Z Collecting pydantic-extra-types>=2.0.0 (from fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.511187224Z   Downloading pydantic_extra_types-2.11.0-py3-none-any.whl.metadata (4.0 kB)
+2026-02-17T10:01:18.516990104Z Requirement already satisfied: certifi in /usr/local/lib/python3.11/dist-packages (from httpx<1.0.0,>=0.23.0->fastapi[all]>=0.94.0->runpod) (2024.8.30)
+2026-02-17T10:01:18.517385031Z Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<1.0.0,>=0.23.0->fastapi[all]>=0.94.0->runpod) (1.0.5)
+2026-02-17T10:01:18.520071972Z Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx<1.0.0,>=0.23.0->fastapi[all]>=0.94.0->runpod) (0.14.0)
+2026-02-17T10:01:18.531040692Z Collecting dnspython>=2.0.0 (from email-validator>=2.0.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.534021108Z   Downloading dnspython-2.8.0-py3-none-any.whl.metadata (5.7 kB)
+2026-02-17T10:01:18.551646784Z Collecting typer>=0.16.0 (from fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.554106393Z   Downloading typer-0.24.0-py3-none-any.whl.metadata (16 kB)
+2026-02-17T10:01:18.571451566Z Collecting rich-toolkit>=0.14.8 (from fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.574523955Z   Downloading rich_toolkit-0.19.4-py3-none-any.whl.metadata (1.0 kB)
+2026-02-17T10:01:18.585625424Z Collecting fastapi-cloud-cli>=0.1.1 (from fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.588627891Z   Downloading fastapi_cloud_cli-0.13.0-py3-none-any.whl.metadata (3.3 kB)
+2026-02-17T10:01:18.705561959Z Collecting rignore>=0.5.1 (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.709180395Z   Downloading rignore-0.7.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.2 kB)
+2026-02-17T10:01:18.755049951Z Collecting sentry-sdk>=2.20.0 (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.758578546Z   Downloading sentry_sdk-2.53.0-py2.py3-none-any.whl.metadata (10 kB)
+2026-02-17T10:01:18.840614425Z Collecting fastar>=0.8.0 (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.844458043Z   Downloading fastar-0.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
+2026-02-17T10:01:18.853908553Z Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2>=3.1.5->fastapi[all]>=0.94.0->runpod) (2.1.5)
+2026-02-17T10:01:18.893213766Z Collecting bcrypt>=3.2 (from paramiko>=3.3.1->runpod)
+2026-02-17T10:01:18.896125533Z   Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+2026-02-17T10:01:18.912227630Z Collecting invoke>=2.0 (from paramiko>=3.3.1->runpod)
+2026-02-17T10:01:18.915555080Z   Downloading invoke-2.2.1-py3-none-any.whl.metadata (3.3 kB)
+2026-02-17T10:01:18.934474549Z Collecting pynacl>=1.5 (from paramiko>=3.3.1->runpod)
+2026-02-17T10:01:18.937368423Z   Downloading pynacl-1.6.2-cp38-abi3-manylinux_2_34_x86_64.whl.metadata (10.0 kB)
+2026-02-17T10:01:18.950816591Z Collecting annotated-types>=0.6.0 (from pydantic>=2.7.0->fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:18.953885730Z   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+2026-02-17T10:01:19.790546079Z Collecting pydantic-core==2.41.5 (from pydantic>=2.7.0->fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:19.797347653Z   Downloading pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+2026-02-17T10:01:19.819945547Z Collecting python-dotenv>=0.21.0 (from pydantic-settings>=2.0.0->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:19.822481270Z   Downloading python_dotenv-1.2.1-py3-none-any.whl.metadata (25 kB)
+2026-02-17T10:01:20.048731689Z Collecting cffi>=1.5.0 (from pycares<6,>=5.0.0->aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod)
+2026-02-17T10:01:20.051992078Z   Downloading cffi-2.0.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.6 kB)
+2026-02-17T10:01:20.061668014Z Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests>=2.31.0->runpod) (3.3.2)
+2026-02-17T10:01:20.098481879Z Collecting rich>=13.7.1 (from rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.101775007Z   Downloading rich-14.3.2-py3-none-any.whl.metadata (18 kB)
+2026-02-17T10:01:20.117142136Z Collecting markdown-it-py>=2.2.0 (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.119575019Z   Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+2026-02-17T10:01:20.124137687Z Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/dist-packages (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod) (2.18.0)
+2026-02-17T10:01:20.131982475Z Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.134425823Z   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+2026-02-17T10:01:20.166410440Z Collecting tqdm>4.64 (from tqdm-loggable>=0.1.4->runpod)
+2026-02-17T10:01:20.169092974Z   Downloading tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+2026-02-17T10:01:20.187811701Z Collecting shellingham>=1.3.0 (from typer>=0.16.0->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.190503641Z   Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+2026-02-17T10:01:20.239826210Z Collecting httptools>=0.6.3 (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.244368438Z   Downloading httptools-0.7.1-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+2026-02-17T10:01:20.293386985Z Collecting uvloop>=0.15.1 (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.297356697Z   Downloading uvloop-0.22.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (4.9 kB)
+2026-02-17T10:01:20.387654611Z Collecting watchfiles>=0.20 (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.392579033Z   Downloading watchfiles-1.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+2026-02-17T10:01:20.481450205Z Collecting websockets>=10.4 (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod)
+2026-02-17T10:01:20.484285584Z   Downloading websockets-16.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.8 kB)
+2026-02-17T10:01:20.503074263Z Downloading runpod-1.8.1-py3-none-any.whl (157 kB)
+2026-02-17T10:01:20.506018197Z Downloading InquirerPy-0.3.4-py3-none-any.whl (67 kB)
+2026-02-17T10:01:20.509297728Z Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+2026-02-17T10:01:20.511808488Z Downloading pfzy-0.3.4-py3-none-any.whl (8.5 kB)
+2026-02-17T10:01:20.514369448Z Downloading aiohttp-3.13.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.7 MB)
+2026-02-17T10:01:20.522717800Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 320.8 MB/s  0:00:00
+2026-02-17T10:01:20.525464644Z Downloading multidict-6.7.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (246 kB)
+2026-02-17T10:01:20.528908892Z Downloading yarl-1.22.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (365 kB)
+2026-02-17T10:01:20.532620411Z Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+2026-02-17T10:01:20.536286579Z Downloading aiohttp_retry-2.9.1-py3-none-any.whl (10.0 kB)
+2026-02-17T10:01:20.538952292Z Downloading aiodns-4.0.0-py3-none-any.whl (11 kB)
+2026-02-17T10:01:20.542134819Z Downloading pycares-5.0.1-cp311-cp311-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (222 kB)
+2026-02-17T10:01:20.545068466Z Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+2026-02-17T10:01:20.547555734Z Downloading backoff-2.2.1-py3-none-any.whl (15 kB)
+2026-02-17T10:01:20.550770383Z Downloading boto3-1.42.50-py3-none-any.whl (140 kB)
+2026-02-17T10:01:20.554655104Z Downloading botocore-1.42.50-py3-none-any.whl (14.6 MB)
+2026-02-17T10:01:20.594113180Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 394.2 MB/s  0:00:00
+2026-02-17T10:01:20.597202916Z Downloading jmespath-1.1.0-py3-none-any.whl (20 kB)
+2026-02-17T10:01:20.600138723Z Downloading s3transfer-0.16.0-py3-none-any.whl (86 kB)
+2026-02-17T10:01:20.603790788Z Downloading brotli-1.2.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+2026-02-17T10:01:20.608139342Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 681.7 MB/s  0:00:00
+2026-02-17T10:01:20.611425428Z Downloading click-8.3.1-py3-none-any.whl (108 kB)
+2026-02-17T10:01:20.614368173Z Downloading fastapi-0.129.0-py3-none-any.whl (102 kB)
+2026-02-17T10:01:20.617321054Z Downloading starlette-0.52.1-py3-none-any.whl (74 kB)
+2026-02-17T10:01:20.620279622Z Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+2026-02-17T10:01:20.623164560Z Downloading email_validator-2.3.0-py3-none-any.whl (35 kB)
+2026-02-17T10:01:20.626317327Z Downloading dnspython-2.8.0-py3-none-any.whl (331 kB)
+2026-02-17T10:01:20.630736624Z Downloading fastapi_cli-0.0.23-py3-none-any.whl (12 kB)
+2026-02-17T10:01:20.633556396Z Downloading fastapi_cloud_cli-0.13.0-py3-none-any.whl (27 kB)
+2026-02-17T10:01:20.639385270Z Downloading fastar-0.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (821 kB)
+2026-02-17T10:01:20.644273511Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 821.6/821.6 kB 298.0 MB/s  0:00:00
+2026-02-17T10:01:20.648252671Z Downloading frozenlist-1.8.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (231 kB)
+2026-02-17T10:01:20.651565634Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-02-17T10:01:20.654491337Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-02-17T10:01:20.658421187Z Downloading orjson-3.11.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (133 kB)
+2026-02-17T10:01:20.663297592Z Downloading paramiko-4.0.0-py3-none-any.whl (223 kB)
+2026-02-17T10:01:20.667747986Z Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+2026-02-17T10:01:20.672970476Z Downloading invoke-2.2.1-py3-none-any.whl (160 kB)
+2026-02-17T10:01:20.676058356Z Downloading prettytable-3.17.0-py3-none-any.whl (34 kB)
+2026-02-17T10:01:20.679628685Z Downloading propcache-0.4.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (210 kB)
+2026-02-17T10:01:20.683458193Z Downloading py_cpuinfo-9.0.0-py3-none-any.whl (22 kB)
+2026-02-17T10:01:20.686349516Z Downloading pydantic-2.12.5-py3-none-any.whl (463 kB)
+2026-02-17T10:01:20.691206422Z Downloading pydantic_core-2.41.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+2026-02-17T10:01:20.696712350Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 682.0 MB/s  0:00:00
+2026-02-17T10:01:20.699853302Z Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+2026-02-17T10:01:20.702668756Z Downloading pydantic_extra_types-2.11.0-py3-none-any.whl (74 kB)
+2026-02-17T10:01:20.705627998Z Downloading pydantic_settings-2.13.0-py3-none-any.whl (58 kB)
+2026-02-17T10:01:20.709516086Z Downloading pynacl-1.6.2-cp38-abi3-manylinux_2_34_x86_64.whl (1.4 MB)
+2026-02-17T10:01:20.715063471Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 400.4 MB/s  0:00:00
+2026-02-17T10:01:20.718705386Z Downloading cffi-2.0.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (215 kB)
+2026-02-17T10:01:20.721960702Z Downloading python_dotenv-1.2.1-py3-none-any.whl (21 kB)
+2026-02-17T10:01:20.724764031Z Downloading python_multipart-0.0.22-py3-none-any.whl (24 kB)
+2026-02-17T10:01:20.727617509Z Downloading rich_toolkit-0.19.4-py3-none-any.whl (32 kB)
+2026-02-17T10:01:20.730421713Z Downloading rich-14.3.2-py3-none-any.whl (309 kB)
+2026-02-17T10:01:20.733999120Z Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+2026-02-17T10:01:20.736900683Z Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+2026-02-17T10:01:20.740202893Z Downloading rignore-0.7.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (959 kB)
+2026-02-17T10:01:20.743941722Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 959.5/959.5 kB 680.0 MB/s  0:00:00
+2026-02-17T10:01:20.747198423Z Downloading sentry_sdk-2.53.0-py2.py3-none-any.whl (437 kB)
+2026-02-17T10:01:20.751301220Z Downloading tomli-2.4.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (243 kB)
+2026-02-17T10:01:20.754407885Z Downloading tomlkit-0.14.0-py3-none-any.whl (39 kB)
+2026-02-17T10:01:20.757465140Z Downloading tqdm_loggable-0.3-py3-none-any.whl (9.4 kB)
+2026-02-17T10:01:20.760223427Z Downloading tqdm-4.67.3-py3-none-any.whl (78 kB)
+2026-02-17T10:01:20.763109018Z Downloading typer-0.24.0-py3-none-any.whl (56 kB)
+2026-02-17T10:01:20.766044955Z Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+2026-02-17T10:01:20.768875359Z Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+2026-02-17T10:01:20.771814542Z Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+2026-02-17T10:01:20.775695080Z Downloading ujson-5.11.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (57 kB)
+2026-02-17T10:01:20.778547163Z Downloading uvicorn-0.41.0-py3-none-any.whl (68 kB)
+2026-02-17T10:01:20.782261758Z Downloading httptools-0.7.1-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (456 kB)
+2026-02-17T10:01:20.786279712Z Downloading uvloop-0.22.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.8 MB)
+2026-02-17T10:01:20.794305269Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.8/3.8 MB 678.0 MB/s  0:00:00
+2026-02-17T10:01:20.798037194Z Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl (79 kB)
+2026-02-17T10:01:20.801685600Z Downloading watchfiles-1.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (456 kB)
+2026-02-17T10:01:20.805902515Z Downloading websockets-16.0-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (184 kB)
+2026-02-17T10:01:20.809077256Z Downloading backports_zstd-1.3.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (491 kB)
+2026-02-17T10:01:21.158118784Z Installing collected packages: py-cpuinfo, Brotli, websockets, watchdog, uvloop, ujson, typing-extensions, tqdm, tomlkit, tomli, shellingham, sentry-sdk, rignore, python-multipart, python-dotenv, propcache, prettytable, pfzy, orjson, multidict, mdurl, jmespath, jinja2, itsdangerous, invoke, httptools, frozenlist, fastar, dnspython, colorama, click, cffi, bcrypt, backports.zstd, backoff, annotated-types, annotated-doc, aiohappyeyeballs, yarl, watchfiles, uvicorn, typing-inspection, tqdm-loggable, starlette, pynacl, pydantic-core, pycares, markdown-it-py, inquirerpy, email-validator, botocore, aiosignal, s3transfer, rich, pydantic, paramiko, aiohttp, aiodns, typer, rich-toolkit, pydantic-settings, pydantic-extra-types, fastapi, boto3, aiohttp-retry, fastapi-cloud-cli, fastapi-cli, runpod
+2026-02-17T10:01:21.429294377Z   Attempting uninstall: typing-extensions
+2026-02-17T10:01:21.433375452Z     Found existing installation: typing_extensions 4.9.0
+2026-02-17T10:01:21.435559595Z     Uninstalling typing_extensions-4.9.0:
+2026-02-17T10:01:21.596617622Z       Successfully uninstalled typing_extensions-4.9.0
+2026-02-17T10:01:22.149226649Z   Attempting uninstall: jinja2
+2026-02-17T10:01:22.153242215Z     Found existing installation: Jinja2 3.1.3
+2026-02-17T10:01:22.157458973Z     Uninstalling Jinja2-3.1.3:
+2026-02-17T10:01:22.175085322Z       Successfully uninstalled Jinja2-3.1.3
+2026-02-17T10:01:22.730768929Z   Attempting uninstall: cffi
+2026-02-17T10:01:22.734511982Z     Found existing installation: cffi 1.17.1
+2026-02-17T10:01:22.738267763Z     Uninstalling cffi-1.17.1:
+2026-02-17T10:01:22.894493507Z       Successfully uninstalled cffi-1.17.1
+2026-02-17T10:01:24.948299564Z Successfully installed Brotli-1.2.0 aiodns-4.0.0 aiohappyeyeballs-2.6.1 aiohttp-3.13.3 aiohttp-retry-2.9.1 aiosignal-1.4.0 annotated-doc-0.0.4 annotated-types-0.7.0 backoff-2.2.1 backports.zstd-1.3.0 bcrypt-5.0.0 boto3-1.42.50 botocore-1.42.50 cffi-2.0.0 click-8.3.1 colorama-0.4.6 dnspython-2.8.0 email-validator-2.3.0 fastapi-0.129.0 fastapi-cli-0.0.23 fastapi-cloud-cli-0.13.0 fastar-0.8.0 frozenlist-1.8.0 httptools-0.7.1 inquirerpy-0.3.4 invoke-2.2.1 itsdangerous-2.2.0 jinja2-3.1.6 jmespath-1.1.0 markdown-it-py-4.0.0 mdurl-0.1.2 multidict-6.7.1 orjson-3.11.7 paramiko-4.0.0 pfzy-0.3.4 prettytable-3.17.0 propcache-0.4.1 py-cpuinfo-9.0.0 pycares-5.0.1 pydantic-2.12.5 pydantic-core-2.41.5 pydantic-extra-types-2.11.0 pydantic-settings-2.13.0 pynacl-1.6.2 python-dotenv-1.2.1 python-multipart-0.0.22 rich-14.3.2 rich-toolkit-0.19.4 rignore-0.7.6 runpod-1.8.1 s3transfer-0.16.0 sentry-sdk-2.53.0 shellingham-1.5.4 starlette-0.52.1 tomli-2.4.0 tomlkit-0.14.0 tqdm-4.67.3 tqdm-loggable-0.3 typer-0.24.0 typing-extensions-4.15.0 typing-inspection-0.4.2 ujson-5.11.0 uvicorn-0.41.0 uvloop-0.22.1 watchdog-6.0.0 watchfiles-1.1.1 websockets-16.0 yarl-1.22.0
+2026-02-17T10:01:24.948673572Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:01:25.964531946Z Installing critical package: scikit-image...
+2026-02-17T10:01:26.510825134Z Collecting scikit-image
+2026-02-17T10:01:26.587066353Z   Downloading scikit_image-0.26.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (15 kB)
+2026-02-17T10:01:26.597808848Z Requirement already satisfied: numpy>=1.24 in /usr/local/lib/python3.11/dist-packages (from scikit-image) (1.26.3)
+2026-02-17T10:01:26.723891206Z Collecting scipy>=1.11.4 (from scikit-image)
+2026-02-17T10:01:26.727109407Z   Downloading scipy-1.17.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+2026-02-17T10:01:26.762414784Z Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.11/dist-packages (from scikit-image) (3.2.1)
+2026-02-17T10:01:26.762753367Z Requirement already satisfied: pillow>=10.1 in /usr/local/lib/python3.11/dist-packages (from scikit-image) (10.2.0)
+2026-02-17T10:01:26.777021797Z Collecting imageio!=2.35.0,>=2.33 (from scikit-image)
+2026-02-17T10:01:26.780301514Z   Downloading imageio-2.37.2-py3-none-any.whl.metadata (9.7 kB)
+2026-02-17T10:01:26.814388126Z Collecting tifffile>=2022.8.12 (from scikit-image)
+2026-02-17T10:01:26.817606694Z   Downloading tifffile-2026.2.16-py3-none-any.whl.metadata (30 kB)
+2026-02-17T10:01:26.826993887Z Requirement already satisfied: packaging>=21 in /usr/local/lib/python3.11/dist-packages (from scikit-image) (24.1)
+2026-02-17T10:01:26.831968958Z Collecting lazy-loader>=0.4 (from scikit-image)
+2026-02-17T10:01:26.834686383Z   Downloading lazy_loader-0.4-py3-none-any.whl.metadata (7.6 kB)
+2026-02-17T10:01:27.109676294Z Collecting numpy>=1.24 (from scikit-image)
+2026-02-17T10:01:27.113002221Z   Downloading numpy-2.4.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+2026-02-17T10:01:27.119263206Z Downloading scikit_image-0.26.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (13.7 MB)
+2026-02-17T10:01:27.367448739Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.7/13.7 MB 60.6 MB/s  0:00:00
+2026-02-17T10:01:27.370896309Z Downloading imageio-2.37.2-py3-none-any.whl (317 kB)
+2026-02-17T10:01:27.373831816Z Downloading lazy_loader-0.4-py3-none-any.whl (12 kB)
+2026-02-17T10:01:27.376410645Z Downloading scipy-1.17.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.1 MB)
+2026-02-17T10:01:27.430167098Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.1/35.1 MB 682.9 MB/s  0:00:00
+2026-02-17T10:01:27.433186906Z Downloading numpy-2.4.2-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+2026-02-17T10:01:27.459073067Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 704.7 MB/s  0:00:00
+2026-02-17T10:01:27.462652263Z Downloading tifffile-2026.2.16-py3-none-any.whl (233 kB)
+2026-02-17T10:01:27.803195913Z Installing collected packages: numpy, lazy-loader, tifffile, scipy, imageio, scikit-image
+2026-02-17T10:01:27.803858299Z   Attempting uninstall: numpy
+2026-02-17T10:01:27.811428346Z     Found existing installation: numpy 1.26.3
+2026-02-17T10:01:27.858486007Z     Uninstalling numpy-1.26.3:
+2026-02-17T10:01:28.253400066Z       Successfully uninstalled numpy-1.26.3
+2026-02-17T10:01:34.977857675Z Successfully installed imageio-2.37.2 lazy-loader-0.4 numpy-2.4.2 scikit-image-0.26.0 scipy-1.17.0 tifffile-2026.2.16
+2026-02-17T10:01:34.978171170Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:01:35.195054703Z Installing critical package: requests...
+2026-02-17T10:01:35.576610824Z Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (2.32.3)
+2026-02-17T10:01:35.679637598Z Collecting requests
+2026-02-17T10:01:35.754843674Z   Downloading requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+2026-02-17T10:01:35.757877959Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests) (3.3.2)
+2026-02-17T10:01:35.758405040Z Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/dist-packages (from requests) (3.10)
+2026-02-17T10:01:35.758811483Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests) (2.2.3)
+2026-02-17T10:01:35.759254869Z Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests) (2024.8.30)
+2026-02-17T10:01:35.765964361Z Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+2026-02-17T10:01:35.993665612Z Installing collected packages: requests
+2026-02-17T10:01:35.993708910Z   Attempting uninstall: requests
+2026-02-17T10:01:35.996876127Z     Found existing installation: requests 2.32.3
+2026-02-17T10:01:36.000334709Z     Uninstalling requests-2.32.3:
+2026-02-17T10:01:36.008461844Z       Successfully uninstalled requests-2.32.3
+2026-02-17T10:01:36.050212749Z Successfully installed requests-2.32.5
+2026-02-17T10:01:36.050443491Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:01:36.212057590Z Installing other requirements from requirements.txt...
+2026-02-17T10:01:36.940052940Z Collecting numpy<2.0.0 (from -r requirements.txt (line 2))
+2026-02-17T10:01:37.007113804Z   Downloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+2026-02-17T10:01:37.041846938Z Collecting comfy-aimdo>=0.1.7 (from -r requirements.txt (line 3))
+2026-02-17T10:01:37.044700518Z   Downloading comfy_aimdo-0.1.8-cp39-abi3-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (4.4 kB)
+2026-02-17T10:01:37.057834113Z Collecting diffusers>=0.25.0 (from -r requirements.txt (line 9))
+2026-02-17T10:01:37.060809493Z   Downloading diffusers-0.36.0-py3-none-any.whl.metadata (20 kB)
+2026-02-17T10:01:37.095530286Z Collecting transformers>=4.36.0 (from -r requirements.txt (line 10))
+2026-02-17T10:01:37.098874921Z   Downloading transformers-5.2.0-py3-none-any.whl.metadata (32 kB)
+2026-02-17T10:01:37.153535080Z Collecting accelerate>=0.25.0 (from -r requirements.txt (line 11))
+2026-02-17T10:01:37.155639447Z   Downloading accelerate-1.12.0-py3-none-any.whl.metadata (19 kB)
+2026-02-17T10:01:37.257648548Z Collecting safetensors>=0.4.1 (from -r requirements.txt (line 12))
+2026-02-17T10:01:37.260762070Z   Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-02-17T10:01:37.295020673Z Collecting huggingface_hub>=0.20.0 (from -r requirements.txt (line 13))
+2026-02-17T10:01:37.297779070Z   Downloading huggingface_hub-1.4.1-py3-none-any.whl.metadata (13 kB)
+2026-02-17T10:01:37.369408268Z Collecting opencv-python-headless==4.8.1.78 (from -r requirements.txt (line 16))
+2026-02-17T10:01:37.373013960Z   Downloading opencv_python_headless-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (19 kB)
+2026-02-17T10:01:37.376057255Z Requirement already satisfied: Pillow>=10.2.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 17)) (10.2.0)
+2026-02-17T10:01:37.384368855Z Collecting rembg==2.0.52 (from -r requirements.txt (line 18))
+2026-02-17T10:01:37.387440317Z   Downloading rembg-2.0.52-py3-none-any.whl.metadata (14 kB)
+2026-02-17T10:01:37.395211852Z Collecting insightface>=0.7.3 (from -r requirements.txt (line 23))
+2026-02-17T10:01:37.398009146Z   Downloading insightface-0.7.3.tar.gz (439 kB)
+2026-02-17T10:01:37.437061039Z   Installing build dependencies: started
+2026-02-17T10:01:39.661802324Z   Installing build dependencies: finished with status 'done'
+2026-02-17T10:01:39.663337472Z   Getting requirements to build wheel: started
+2026-02-17T10:01:41.462893079Z   Getting requirements to build wheel: finished with status 'done'
+2026-02-17T10:01:41.463703064Z   Preparing metadata (pyproject.toml): started
+2026-02-17T10:01:41.961371374Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-02-17T10:01:41.981725176Z Collecting onnxruntime-gpu>=1.16.0 (from -r requirements.txt (line 24))
+2026-02-17T10:01:41.985315102Z   Downloading onnxruntime_gpu-1.24.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+2026-02-17T10:01:42.097531812Z Collecting ultralytics>=8.0.0 (from -r requirements.txt (line 25))
+2026-02-17T10:01:42.101735681Z   Downloading ultralytics-8.4.14-py3-none-any.whl.metadata (39 kB)
+2026-02-17T10:01:42.141942408Z Collecting aiogram>=3.3.0 (from -r requirements.txt (line 29))
+2026-02-17T10:01:42.145571836Z   Downloading aiogram-3.25.0-py3-none-any.whl.metadata (6.7 kB)
+2026-02-17T10:01:42.151146749Z Requirement already satisfied: python-dotenv>=1.0.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 30)) (1.2.1)
+2026-02-17T10:01:42.169464931Z Collecting redis>=5.0.1 (from -r requirements.txt (line 31))
+2026-02-17T10:01:42.172554264Z   Downloading redis-7.2.0-py3-none-any.whl.metadata (12 kB)
+2026-02-17T10:01:42.176134233Z Requirement already satisfied: requests>=2.31.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 34)) (2.32.5)
+2026-02-17T10:01:42.176524638Z Requirement already satisfied: aiohttp>=3.9.1 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 35)) (3.13.3)
+2026-02-17T10:01:42.176825197Z Requirement already satisfied: tqdm>=4.66.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 36)) (4.67.3)
+2026-02-17T10:01:42.177133595Z Requirement already satisfied: pyyaml>=6.0.1 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 37)) (6.0.2)
+2026-02-17T10:01:42.177466080Z Requirement already satisfied: runpod>=1.3.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 38)) (1.8.1)
+2026-02-17T10:01:42.443541526Z Collecting sqlalchemy>=2.0.0 (from -r requirements.txt (line 39))
+2026-02-17T10:01:42.447262275Z   Downloading sqlalchemy-2.0.46-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.5 kB)
+2026-02-17T10:01:42.462032514Z Collecting spandrel>=0.1.8 (from -r requirements.txt (line 40))
+2026-02-17T10:01:42.465544497Z   Downloading spandrel-0.4.1-py3-none-any.whl.metadata (15 kB)
+2026-02-17T10:01:42.510958995Z Collecting kornia>=0.7.0 (from -r requirements.txt (line 41))
+2026-02-17T10:01:42.514291475Z   Downloading kornia-0.8.2-py2.py3-none-any.whl.metadata (18 kB)
+2026-02-17T10:01:42.525267465Z Collecting einops>=0.7.0 (from -r requirements.txt (line 42))
+2026-02-17T10:01:42.528290836Z   Downloading einops-0.8.2-py3-none-any.whl.metadata (13 kB)
+2026-02-17T10:01:42.530502214Z Requirement already satisfied: scipy>=1.11.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 43)) (1.17.0)
+2026-02-17T10:01:42.543784850Z Collecting alembic>=1.13.0 (from -r requirements.txt (line 44))
+2026-02-17T10:01:42.546018022Z   Downloading alembic-1.18.4-py3-none-any.whl.metadata (7.2 kB)
+2026-02-17T10:01:42.547765066Z Requirement already satisfied: scikit-image>=0.21.0 in /usr/local/lib/python3.11/dist-packages (from -r requirements.txt (line 45)) (0.26.0)
+2026-02-17T10:01:42.558212540Z Collecting deep-translator==1.11.4 (from -r requirements.txt (line 46))
+2026-02-17T10:01:42.561563842Z   Downloading deep_translator-1.11.4-py3-none-any.whl.metadata (30 kB)
+2026-02-17T10:01:42.576701182Z Requirement already satisfied: jsonschema in /usr/local/lib/python3.11/dist-packages (from rembg==2.0.52->-r requirements.txt (line 18)) (4.23.0)
+2026-02-17T10:01:42.619847091Z Collecting onnxruntime (from rembg==2.0.52->-r requirements.txt (line 18))
+2026-02-17T10:01:42.622618352Z   Downloading onnxruntime-1.24.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (4.9 kB)
+2026-02-17T10:01:42.631777656Z Collecting pooch (from rembg==2.0.52->-r requirements.txt (line 18))
+2026-02-17T10:01:42.634444290Z   Downloading pooch-1.9.0-py3-none-any.whl.metadata (10 kB)
+2026-02-17T10:01:42.642899724Z Collecting pymatting (from rembg==2.0.52->-r requirements.txt (line 18))
+2026-02-17T10:01:42.645890472Z   Downloading pymatting-1.1.15-py3-none-any.whl.metadata (8.7 kB)
+2026-02-17T10:01:42.648878200Z Requirement already satisfied: beautifulsoup4<5.0.0,>=4.9.1 in /usr/local/lib/python3.11/dist-packages (from deep-translator==1.11.4->-r requirements.txt (line 46)) (4.12.3)
+2026-02-17T10:01:42.650574992Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests>=2.31.0->-r requirements.txt (line 34)) (3.3.2)
+2026-02-17T10:01:42.651014768Z Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/dist-packages (from requests>=2.31.0->-r requirements.txt (line 34)) (3.10)
+2026-02-17T10:01:42.651476900Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests>=2.31.0->-r requirements.txt (line 34)) (2.2.3)
+2026-02-17T10:01:42.651867180Z Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests>=2.31.0->-r requirements.txt (line 34)) (2024.8.30)
+2026-02-17T10:01:42.653039130Z Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.11/dist-packages (from beautifulsoup4<5.0.0,>=4.9.1->deep-translator==1.11.4->-r requirements.txt (line 46)) (2.6)
+2026-02-17T10:01:42.658016165Z Requirement already satisfied: importlib_metadata in /usr/lib/python3/dist-packages (from diffusers>=0.25.0->-r requirements.txt (line 9)) (4.6.4)
+2026-02-17T10:01:42.658294723Z Requirement already satisfied: filelock in /usr/local/lib/python3.11/dist-packages (from diffusers>=0.25.0->-r requirements.txt (line 9)) (3.13.1)
+2026-02-17T10:01:42.658598927Z Requirement already satisfied: httpx<1.0.0 in /usr/local/lib/python3.11/dist-packages (from diffusers>=0.25.0->-r requirements.txt (line 9)) (0.27.2)
+2026-02-17T10:01:42.998089186Z Collecting regex!=2019.12.17 (from diffusers>=0.25.0->-r requirements.txt (line 9))
+2026-02-17T10:01:43.001997718Z   Downloading regex-2026.1.15-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+2026-02-17T10:01:43.008580713Z Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.11/dist-packages (from huggingface_hub>=0.20.0->-r requirements.txt (line 13)) (2024.2.0)
+2026-02-17T10:01:43.041406996Z Collecting hf-xet<2.0.0,>=1.2.0 (from huggingface_hub>=0.20.0->-r requirements.txt (line 13))
+2026-02-17T10:01:43.043949879Z   Downloading hf_xet-1.2.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+2026-02-17T10:01:43.045630362Z Requirement already satisfied: packaging>=20.9 in /usr/local/lib/python3.11/dist-packages (from huggingface_hub>=0.20.0->-r requirements.txt (line 13)) (24.1)
+2026-02-17T10:01:43.045945966Z Requirement already satisfied: shellingham in /usr/local/lib/python3.11/dist-packages (from huggingface_hub>=0.20.0->-r requirements.txt (line 13)) (1.5.4)
+2026-02-17T10:01:43.053701125Z Collecting typer-slim (from huggingface_hub>=0.20.0->-r requirements.txt (line 13))
+2026-02-17T10:01:43.056839121Z   Downloading typer_slim-0.24.0-py3-none-any.whl.metadata (4.2 kB)
+2026-02-17T10:01:43.058319253Z Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.11/dist-packages (from huggingface_hub>=0.20.0->-r requirements.txt (line 13)) (4.15.0)
+2026-02-17T10:01:43.060648720Z Requirement already satisfied: anyio in /usr/local/lib/python3.11/dist-packages (from httpx<1.0.0->diffusers>=0.25.0->-r requirements.txt (line 9)) (4.6.0)
+2026-02-17T10:01:43.061081261Z Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<1.0.0->diffusers>=0.25.0->-r requirements.txt (line 9)) (1.0.5)
+2026-02-17T10:01:43.061437879Z Requirement already satisfied: sniffio in /usr/local/lib/python3.11/dist-packages (from httpx<1.0.0->diffusers>=0.25.0->-r requirements.txt (line 9)) (1.3.1)
+2026-02-17T10:01:43.063461061Z Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx<1.0.0->diffusers>=0.25.0->-r requirements.txt (line 9)) (0.14.0)
+2026-02-17T10:01:43.184333962Z Collecting tokenizers<=0.23.0,>=0.22.0 (from transformers>=4.36.0->-r requirements.txt (line 10))
+2026-02-17T10:01:43.186991080Z   Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+2026-02-17T10:01:43.197761975Z Requirement already satisfied: psutil in /usr/local/lib/python3.11/dist-packages (from accelerate>=0.25.0->-r requirements.txt (line 11)) (6.0.0)
+2026-02-17T10:01:43.198007433Z Requirement already satisfied: torch>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from accelerate>=0.25.0->-r requirements.txt (line 11)) (2.4.1+cu124)
+2026-02-17T10:01:43.246722422Z Collecting onnx (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.249794779Z   Downloading onnx-1.20.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.4 kB)
+2026-02-17T10:01:43.355658287Z Collecting matplotlib (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.358669369Z   Downloading matplotlib-3.10.8-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (52 kB)
+2026-02-17T10:01:43.493340134Z Collecting scikit-learn (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.496511394Z   Downloading scikit_learn-1.8.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (11 kB)
+2026-02-17T10:01:43.506934209Z Collecting easydict (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.510049529Z   Downloading easydict-1.13-py3-none-any.whl.metadata (4.2 kB)
+2026-02-17T10:01:43.692711955Z Collecting cython (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.696348993Z   Downloading cython-3.2.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (7.5 kB)
+2026-02-17T10:01:43.709223516Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:43.712257113Z   Downloading albumentations-2.0.8-py3-none-any.whl.metadata (43 kB)
+2026-02-17T10:01:43.716406044Z Requirement already satisfied: prettytable in /usr/local/lib/python3.11/dist-packages (from insightface>=0.7.3->-r requirements.txt (line 23)) (3.17.0)
+2026-02-17T10:01:43.723818533Z Collecting flatbuffers (from onnxruntime-gpu>=1.16.0->-r requirements.txt (line 24))
+2026-02-17T10:01:43.726831781Z   Downloading flatbuffers-25.12.19-py2.py3-none-any.whl.metadata (1.0 kB)
+2026-02-17T10:01:43.856901855Z Collecting protobuf (from onnxruntime-gpu>=1.16.0->-r requirements.txt (line 24))
+2026-02-17T10:01:43.859423685Z   Downloading protobuf-6.33.5-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+2026-02-17T10:01:43.860648522Z Requirement already satisfied: sympy in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu>=1.16.0->-r requirements.txt (line 24)) (1.12)
+2026-02-17T10:01:43.918472176Z Collecting opencv-python>=4.6.0 (from ultralytics>=8.0.0->-r requirements.txt (line 25))
+2026-02-17T10:01:43.921545065Z   Downloading opencv_python-4.13.0.92-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (19 kB)
+2026-02-17T10:01:43.924351598Z Requirement already satisfied: torchvision>=0.9.0 in /usr/local/lib/python3.11/dist-packages (from ultralytics>=8.0.0->-r requirements.txt (line 25)) (0.19.1+cu124)
+2026-02-17T10:01:44.090779328Z Collecting polars>=0.20.0 (from ultralytics>=8.0.0->-r requirements.txt (line 25))
+2026-02-17T10:01:44.094020339Z   Downloading polars-1.38.1-py3-none-any.whl.metadata (10 kB)
+2026-02-17T10:01:44.106041985Z Collecting ultralytics-thop>=2.0.18 (from ultralytics>=8.0.0->-r requirements.txt (line 25))
+2026-02-17T10:01:44.109114565Z   Downloading ultralytics_thop-2.0.18-py3-none-any.whl.metadata (14 kB)
+2026-02-17T10:01:44.116933227Z Collecting aiofiles<26.0,>=23.2.1 (from aiogram>=3.3.0->-r requirements.txt (line 29))
+2026-02-17T10:01:44.119947349Z   Downloading aiofiles-25.1.0-py3-none-any.whl.metadata (6.3 kB)
+2026-02-17T10:01:44.141127300Z Collecting magic-filter<1.1,>=1.0.12 (from aiogram>=3.3.0->-r requirements.txt (line 29))
+2026-02-17T10:01:44.144281322Z   Downloading magic_filter-1.0.12-py3-none-any.whl.metadata (1.5 kB)
+2026-02-17T10:01:44.146124359Z Requirement already satisfied: pydantic<2.13,>=2.4.1 in /usr/local/lib/python3.11/dist-packages (from aiogram>=3.3.0->-r requirements.txt (line 29)) (2.12.5)
+2026-02-17T10:01:44.147898601Z Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (2.6.1)
+2026-02-17T10:01:44.148270797Z Requirement already satisfied: aiosignal>=1.4.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (1.4.0)
+2026-02-17T10:01:44.148732708Z Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (24.2.0)
+2026-02-17T10:01:44.149094228Z Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (1.8.0)
+2026-02-17T10:01:44.149479827Z Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (6.7.1)
+2026-02-17T10:01:44.149960031Z Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (0.4.1)
+2026-02-17T10:01:44.150370380Z Requirement already satisfied: yarl<2.0,>=1.17.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.9.1->-r requirements.txt (line 35)) (1.22.0)
+2026-02-17T10:01:44.155552686Z Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.11/dist-packages (from pydantic<2.13,>=2.4.1->aiogram>=3.3.0->-r requirements.txt (line 29)) (0.7.0)
+2026-02-17T10:01:44.155949459Z Requirement already satisfied: pydantic-core==2.41.5 in /usr/local/lib/python3.11/dist-packages (from pydantic<2.13,>=2.4.1->aiogram>=3.3.0->-r requirements.txt (line 29)) (2.41.5)
+2026-02-17T10:01:44.156454641Z Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/lib/python3.11/dist-packages (from pydantic<2.13,>=2.4.1->aiogram>=3.3.0->-r requirements.txt (line 29)) (0.4.2)
+2026-02-17T10:01:44.169850299Z Requirement already satisfied: aiohttp-retry>=2.8.3 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (2.9.1)
+2026-02-17T10:01:44.170207558Z Requirement already satisfied: backoff>=2.2.1 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (2.2.1)
+2026-02-17T10:01:44.170565881Z Requirement already satisfied: boto3>=1.26.165 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (1.42.50)
+2026-02-17T10:01:44.170909941Z Requirement already satisfied: click>=8.1.7 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (8.3.1)
+2026-02-17T10:01:44.171262772Z Requirement already satisfied: colorama<0.4.7,>=0.2.5 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (0.4.6)
+2026-02-17T10:01:44.172102470Z Requirement already satisfied: cryptography<46.0.0 in /usr/lib/python3/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (3.4.8)
+2026-02-17T10:01:44.172571094Z Requirement already satisfied: fastapi>=0.94.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.129.0)
+2026-02-17T10:01:44.173197705Z Requirement already satisfied: paramiko>=3.3.1 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (4.0.0)
+2026-02-17T10:01:44.173647371Z Requirement already satisfied: py-cpuinfo>=9.0.0 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (9.0.0)
+2026-02-17T10:01:44.173987333Z Requirement already satisfied: inquirerpy==0.3.4 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (0.3.4)
+2026-02-17T10:01:44.174434127Z Requirement already satisfied: tomli>=2.0.1 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (2.4.0)
+2026-02-17T10:01:44.174780156Z Requirement already satisfied: tomlkit>=0.12.2 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (0.14.0)
+2026-02-17T10:01:44.175166549Z Requirement already satisfied: tqdm-loggable>=0.1.4 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (0.3)
+2026-02-17T10:01:44.175593956Z Requirement already satisfied: watchdog>=3.0.0 in /usr/local/lib/python3.11/dist-packages (from runpod>=1.3.0->-r requirements.txt (line 38)) (6.0.0)
+2026-02-17T10:01:44.177664722Z Requirement already satisfied: pfzy<0.4.0,>=0.3.1 in /usr/local/lib/python3.11/dist-packages (from inquirerpy==0.3.4->runpod>=1.3.0->-r requirements.txt (line 38)) (0.3.4)
+2026-02-17T10:01:44.178149415Z Requirement already satisfied: prompt-toolkit<4.0.0,>=3.0.1 in /usr/local/lib/python3.11/dist-packages (from inquirerpy==0.3.4->runpod>=1.3.0->-r requirements.txt (line 38)) (3.0.47)
+2026-02-17T10:01:44.185327301Z Requirement already satisfied: wcwidth in /usr/local/lib/python3.11/dist-packages (from prompt-toolkit<4.0.0,>=3.0.1->inquirerpy==0.3.4->runpod>=1.3.0->-r requirements.txt (line 38)) (0.2.13)
+2026-02-17T10:01:44.287096735Z Collecting greenlet>=1 (from sqlalchemy>=2.0.0->-r requirements.txt (line 39))
+2026-02-17T10:01:44.290911081Z   Downloading greenlet-3.3.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.7 kB)
+2026-02-17T10:01:44.316611282Z Collecting kornia_rs>=0.1.9 (from kornia>=0.7.0->-r requirements.txt (line 41))
+2026-02-17T10:01:44.319490842Z   Downloading kornia_rs-0.1.10-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (12 kB)
+2026-02-17T10:01:44.347361222Z Collecting Mako (from alembic>=1.13.0->-r requirements.txt (line 44))
+2026-02-17T10:01:44.349674838Z   Downloading mako-1.3.10-py3-none-any.whl.metadata (2.9 kB)
+2026-02-17T10:01:44.355056177Z Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.11/dist-packages (from scikit-image>=0.21.0->-r requirements.txt (line 45)) (3.2.1)
+2026-02-17T10:01:44.355596866Z Requirement already satisfied: imageio!=2.35.0,>=2.33 in /usr/local/lib/python3.11/dist-packages (from scikit-image>=0.21.0->-r requirements.txt (line 45)) (2.37.2)
+2026-02-17T10:01:44.355921852Z Requirement already satisfied: tifffile>=2022.8.12 in /usr/local/lib/python3.11/dist-packages (from scikit-image>=0.21.0->-r requirements.txt (line 45)) (2026.2.16)
+2026-02-17T10:01:44.356388055Z Requirement already satisfied: lazy-loader>=0.4 in /usr/local/lib/python3.11/dist-packages (from scikit-image>=0.21.0->-r requirements.txt (line 45)) (0.4)
+2026-02-17T10:01:44.364681706Z Requirement already satisfied: aiodns>=3.3.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (4.0.0)
+2026-02-17T10:01:44.365145867Z Requirement already satisfied: Brotli>=1.2 in /usr/local/lib/python3.11/dist-packages (from aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (1.2.0)
+2026-02-17T10:01:44.365648514Z Requirement already satisfied: backports.zstd in /usr/local/lib/python3.11/dist-packages (from aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (1.3.0)
+2026-02-17T10:01:44.367714829Z Requirement already satisfied: pycares<6,>=5.0.0 in /usr/local/lib/python3.11/dist-packages (from aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (5.0.1)
+2026-02-17T10:01:44.370310151Z Requirement already satisfied: cffi>=1.5.0 in /usr/local/lib/python3.11/dist-packages (from pycares<6,>=5.0.0->aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (2.0.0)
+2026-02-17T10:01:44.382335915Z Requirement already satisfied: botocore<1.43.0,>=1.42.50 in /usr/local/lib/python3.11/dist-packages (from boto3>=1.26.165->runpod>=1.3.0->-r requirements.txt (line 38)) (1.42.50)
+2026-02-17T10:01:44.382803310Z Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /usr/local/lib/python3.11/dist-packages (from boto3>=1.26.165->runpod>=1.3.0->-r requirements.txt (line 38)) (1.1.0)
+2026-02-17T10:01:44.383255627Z Requirement already satisfied: s3transfer<0.17.0,>=0.16.0 in /usr/local/lib/python3.11/dist-packages (from boto3>=1.26.165->runpod>=1.3.0->-r requirements.txt (line 38)) (0.16.0)
+2026-02-17T10:01:44.385595749Z Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /usr/local/lib/python3.11/dist-packages (from botocore<1.43.0,>=1.42.50->boto3>=1.26.165->runpod>=1.3.0->-r requirements.txt (line 38)) (2.9.0.post0)
+2026-02-17T10:01:44.390191939Z Requirement already satisfied: six>=1.5 in /usr/lib/python3/dist-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.43.0,>=1.42.50->boto3>=1.26.165->runpod>=1.3.0->-r requirements.txt (line 38)) (1.16.0)
+2026-02-17T10:01:44.397415763Z Requirement already satisfied: pycparser in /usr/local/lib/python3.11/dist-packages (from cffi>=1.5.0->pycares<6,>=5.0.0->aiodns>=3.3.0->aiohttp[speedups]>=3.9.3->runpod>=1.3.0->-r requirements.txt (line 38)) (2.22)
+2026-02-17T10:01:44.401601281Z Requirement already satisfied: starlette<1.0.0,>=0.40.0 in /usr/local/lib/python3.11/dist-packages (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.52.1)
+2026-02-17T10:01:44.402322677Z Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.11/dist-packages (from fastapi>=0.94.0->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.0.4)
+2026-02-17T10:01:44.414198147Z Requirement already satisfied: fastapi-cli>=0.0.8 in /usr/local/lib/python3.11/dist-packages (from fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.0.23)
+2026-02-17T10:01:44.414784534Z Requirement already satisfied: jinja2>=3.1.5 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (3.1.6)
+2026-02-17T10:01:44.415207746Z Requirement already satisfied: python-multipart>=0.0.18 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.0.22)
+2026-02-17T10:01:44.415618831Z Requirement already satisfied: itsdangerous>=1.1.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.2.0)
+2026-02-17T10:01:44.416246790Z Requirement already satisfied: ujson>=5.8.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (5.11.0)
+2026-02-17T10:01:44.416686737Z Requirement already satisfied: orjson>=3.9.3 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (3.11.7)
+2026-02-17T10:01:44.417139448Z Requirement already satisfied: email-validator>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.3.0)
+2026-02-17T10:01:44.417682556Z Requirement already satisfied: uvicorn>=0.12.0 in /usr/local/lib/python3.11/dist-packages (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.41.0)
+2026-02-17T10:01:44.418230201Z Requirement already satisfied: pydantic-settings>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.13.0)
+2026-02-17T10:01:44.418691246Z Requirement already satisfied: pydantic-extra-types>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.11.0)
+2026-02-17T10:01:44.421386865Z Requirement already satisfied: dnspython>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from email-validator>=2.0.0->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.8.0)
+2026-02-17T10:01:44.427256753Z Requirement already satisfied: typer>=0.16.0 in /usr/local/lib/python3.11/dist-packages (from fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.24.0)
+2026-02-17T10:01:44.427973104Z Requirement already satisfied: rich-toolkit>=0.14.8 in /usr/local/lib/python3.11/dist-packages (from fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.19.4)
+2026-02-17T10:01:44.431162966Z Requirement already satisfied: fastapi-cloud-cli>=0.1.1 in /usr/local/lib/python3.11/dist-packages (from fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.13.0)
+2026-02-17T10:01:44.433899038Z Requirement already satisfied: rignore>=0.5.1 in /usr/local/lib/python3.11/dist-packages (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.7.6)
+2026-02-17T10:01:44.435156568Z Requirement already satisfied: sentry-sdk>=2.20.0 in /usr/local/lib/python3.11/dist-packages (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.53.0)
+2026-02-17T10:01:44.435554011Z Requirement already satisfied: fastar>=0.8.0 in /usr/local/lib/python3.11/dist-packages (from fastapi-cloud-cli>=0.1.1->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.8.0)
+2026-02-17T10:01:44.458312571Z Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2>=3.1.5->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.1.5)
+2026-02-17T10:01:44.517118030Z Collecting contourpy>=1.0.1 (from matplotlib->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:44.520555241Z   Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.5 kB)
+2026-02-17T10:01:44.527581927Z Collecting cycler>=0.10 (from matplotlib->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:44.530186271Z   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+2026-02-17T10:01:44.650714686Z Collecting fonttools>=4.22.0 (from matplotlib->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:44.654506672Z   Downloading fonttools-4.61.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (114 kB)
+2026-02-17T10:01:44.829125196Z Collecting kiwisolver>=1.3.1 (from matplotlib->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:44.833451618Z   Downloading kiwisolver-1.4.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.3 kB)
+2026-02-17T10:01:44.857464222Z Collecting pyparsing>=3 (from matplotlib->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:44.860579161Z   Downloading pyparsing-3.3.2-py3-none-any.whl.metadata (5.8 kB)
+2026-02-17T10:01:44.884847215Z INFO: pip is looking at multiple versions of opencv-python to determine which version is compatible with other requirements. This could take a while.
+2026-02-17T10:01:44.885492354Z Collecting opencv-python>=4.6.0 (from ultralytics>=8.0.0->-r requirements.txt (line 25))
+2026-02-17T10:01:44.889656710Z   Downloading opencv_python-4.13.0.90-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (19 kB)
+2026-02-17T10:01:44.896541880Z   Downloading opencv_python-4.12.0.88-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (19 kB)
+2026-02-17T10:01:44.904405989Z   Downloading opencv_python-4.11.0.86-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
+2026-02-17T10:01:44.918660233Z Requirement already satisfied: bcrypt>=3.2 in /usr/local/lib/python3.11/dist-packages (from paramiko>=3.3.1->runpod>=1.3.0->-r requirements.txt (line 38)) (5.0.0)
+2026-02-17T10:01:44.919397319Z Requirement already satisfied: invoke>=2.0 in /usr/local/lib/python3.11/dist-packages (from paramiko>=3.3.1->runpod>=1.3.0->-r requirements.txt (line 38)) (2.2.1)
+2026-02-17T10:01:44.919795171Z Requirement already satisfied: pynacl>=1.5 in /usr/local/lib/python3.11/dist-packages (from paramiko>=3.3.1->runpod>=1.3.0->-r requirements.txt (line 38)) (1.6.2)
+2026-02-17T10:01:44.940001980Z Collecting polars-runtime-32==1.38.1 (from polars>=0.20.0->ultralytics>=8.0.0->-r requirements.txt (line 25))
+2026-02-17T10:01:44.943568690Z   Downloading polars_runtime_32-1.38.1-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (1.5 kB)
+2026-02-17T10:01:44.988437439Z Requirement already satisfied: rich>=13.7.1 in /usr/local/lib/python3.11/dist-packages (from rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (14.3.2)
+2026-02-17T10:01:44.992364259Z Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.11/dist-packages (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (4.0.0)
+2026-02-17T10:01:44.992902869Z Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/dist-packages (from rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (2.18.0)
+2026-02-17T10:01:44.999573522Z Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.11/dist-packages (from markdown-it-py>=2.2.0->rich>=13.7.1->rich-toolkit>=0.14.8->fastapi-cli>=0.0.8->fastapi-cli[standard]>=0.0.8; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.1.2)
+2026-02-17T10:01:45.039340556Z Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.99)
+2026-02-17T10:01:45.040110615Z Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.99)
+2026-02-17T10:01:45.040828561Z Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.99)
+2026-02-17T10:01:45.041470304Z Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (9.1.0.70)
+2026-02-17T10:01:45.042146806Z Requirement already satisfied: nvidia-cublas-cu12==12.4.2.65 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.2.65)
+2026-02-17T10:01:45.042921761Z Requirement already satisfied: nvidia-cufft-cu12==11.2.0.44 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (11.2.0.44)
+2026-02-17T10:01:45.043642561Z Requirement already satisfied: nvidia-curand-cu12==10.3.5.119 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (10.3.5.119)
+2026-02-17T10:01:45.044313485Z Requirement already satisfied: nvidia-cusolver-cu12==11.6.0.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (11.6.0.99)
+2026-02-17T10:01:45.044986487Z Requirement already satisfied: nvidia-cusparse-cu12==12.3.0.142 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.3.0.142)
+2026-02-17T10:01:45.045656577Z Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (2.20.5)
+2026-02-17T10:01:45.046439033Z Requirement already satisfied: nvidia-nvtx-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.99)
+2026-02-17T10:01:45.047133059Z Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (12.4.99)
+2026-02-17T10:01:45.047920137Z Requirement already satisfied: triton==3.0.0 in /usr/local/lib/python3.11/dist-packages (from torch>=2.0.0->accelerate>=0.25.0->-r requirements.txt (line 11)) (3.0.0)
+2026-02-17T10:01:45.122691420Z Requirement already satisfied: httptools>=0.6.3 in /usr/local/lib/python3.11/dist-packages (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.7.1)
+2026-02-17T10:01:45.123726298Z Requirement already satisfied: uvloop>=0.15.1 in /usr/local/lib/python3.11/dist-packages (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (0.22.1)
+2026-02-17T10:01:45.124266303Z Requirement already satisfied: watchfiles>=0.20 in /usr/local/lib/python3.11/dist-packages (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (1.1.1)
+2026-02-17T10:01:45.124752660Z Requirement already satisfied: websockets>=10.4 in /usr/local/lib/python3.11/dist-packages (from uvicorn[standard]>=0.12.0; extra == "all"->fastapi[all]>=0.94.0->runpod>=1.3.0->-r requirements.txt (line 38)) (16.0)
+2026-02-17T10:01:45.154572600Z Collecting albucore==0.0.24 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.158218773Z   Downloading albucore-0.0.24-py3-none-any.whl.metadata (5.3 kB)
+2026-02-17T10:01:45.160566019Z INFO: pip is looking at multiple versions of albumentations to determine which version is compatible with other requirements. This could take a while.
+2026-02-17T10:01:45.160873423Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.163997982Z   Downloading albumentations-2.0.7-py3-none-any.whl.metadata (43 kB)
+2026-02-17T10:01:45.171371924Z   Downloading albumentations-2.0.6-py3-none-any.whl.metadata (43 kB)
+2026-02-17T10:01:45.178227630Z   Downloading albumentations-2.0.5-py3-none-any.whl.metadata (41 kB)
+2026-02-17T10:01:45.182822171Z Collecting albucore==0.0.23 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.186042675Z   Downloading albucore-0.0.23-py3-none-any.whl.metadata (5.3 kB)
+2026-02-17T10:01:45.187864819Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.191093549Z   Downloading albumentations-2.0.4-py3-none-any.whl.metadata (41 kB)
+2026-02-17T10:01:45.203978435Z   Downloading albumentations-2.0.3-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.210762793Z   Downloading albumentations-2.0.2-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.217468582Z   Downloading albumentations-2.0.1-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.221357727Z INFO: pip is still looking at multiple versions of albumentations to determine which version is compatible with other requirements. This could take a while.
+2026-02-17T10:01:45.224388685Z   Downloading albumentations-2.0.0-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.231136693Z   Downloading albumentations-1.4.24-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.237993241Z   Downloading albumentations-1.4.23-py3-none-any.whl.metadata (36 kB)
+2026-02-17T10:01:45.242253849Z Collecting albucore==0.0.21 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.244951129Z   Downloading albucore-0.0.21-py3-none-any.whl.metadata (5.3 kB)
+2026-02-17T10:01:45.264884589Z Collecting eval-type-backport (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.268037951Z   Downloading eval_type_backport-0.3.1-py3-none-any.whl.metadata (2.4 kB)
+2026-02-17T10:01:45.269411800Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.272388949Z   Downloading albumentations-1.4.22-py3-none-any.whl.metadata (33 kB)
+2026-02-17T10:01:45.278669856Z   Downloading albumentations-1.4.21-py3-none-any.whl.metadata (31 kB)
+2026-02-17T10:01:45.282705489Z Collecting albucore==0.0.20 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.285531477Z   Downloading albucore-0.0.20-py3-none-any.whl.metadata (5.3 kB)
+2026-02-17T10:01:45.287233773Z INFO: This is taking longer than usual. You might need to provide the dependency resolver with stricter constraints to reduce runtime. See https://pip.pypa.io/warnings/backtracking for guidance. If you want to abort this run, press Ctrl + C.
+2026-02-17T10:01:45.287568458Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.290829413Z   Downloading albumentations-1.4.20-py3-none-any.whl.metadata (32 kB)
+2026-02-17T10:01:45.294993451Z Collecting albucore==0.0.19 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.298640705Z   Downloading albucore-0.0.19-py3-none-any.whl.metadata (5.2 kB)
+2026-02-17T10:01:45.300502800Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.304100236Z   Downloading albumentations-1.4.19-py3-none-any.whl.metadata (32 kB)
+2026-02-17T10:01:45.315295319Z   Downloading albumentations-1.4.18-py3-none-any.whl.metadata (32 kB)
+2026-02-17T10:01:45.319243733Z Collecting albucore==0.0.17 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.322352486Z   Downloading albucore-0.0.17-py3-none-any.whl.metadata (3.1 kB)
+2026-02-17T10:01:45.323857583Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.326695749Z   Downloading albumentations-1.4.17-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.332860948Z   Downloading albumentations-1.4.16-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.340851675Z   Downloading albumentations-1.4.15-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.345753611Z Collecting albucore>=0.0.15 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.348783976Z   Downloading albucore-0.0.37-py3-none-any.whl.metadata (9.3 kB)
+2026-02-17T10:01:45.351183559Z Collecting albumentations (from insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.354287435Z   Downloading albumentations-1.4.14-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.363091690Z   Downloading albumentations-1.4.13-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.369783033Z   Downloading albumentations-1.4.12-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.378132437Z   Downloading albumentations-1.4.11-py3-none-any.whl.metadata (39 kB)
+2026-02-17T10:01:45.386213624Z   Downloading albumentations-1.4.10-py3-none-any.whl.metadata (38 kB)
+2026-02-17T10:01:45.393042248Z   Downloading albumentations-1.4.8-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.401719375Z   Downloading albumentations-1.4.7-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.408214462Z   Downloading albumentations-1.4.6-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.414784723Z   Downloading albumentations-1.4.4-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.421747690Z   Downloading albumentations-1.4.3-py3-none-any.whl.metadata (37 kB)
+2026-02-17T10:01:45.429874310Z   Downloading albumentations-1.4.2-py3-none-any.whl.metadata (36 kB)
+2026-02-17T10:01:45.437569696Z   Downloading albumentations-1.4.1-py3-none-any.whl.metadata (36 kB)
+2026-02-17T10:01:45.445737949Z   Downloading albumentations-1.4.0-py3-none-any.whl.metadata (35 kB)
+2026-02-17T10:01:45.467590279Z Collecting qudida>=0.0.4 (from albumentations->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.470655433Z   Downloading qudida-0.0.4-py3-none-any.whl.metadata (1.5 kB)
+2026-02-17T10:01:45.506546526Z Collecting joblib>=1.3.0 (from scikit-learn->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.509700388Z   Downloading joblib-1.5.3-py3-none-any.whl.metadata (5.5 kB)
+2026-02-17T10:01:45.517351567Z Collecting threadpoolctl>=3.2.0 (from scikit-learn->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.519982749Z   Downloading threadpoolctl-3.6.0-py3-none-any.whl.metadata (13 kB)
+2026-02-17T10:01:45.558284034Z Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.11/dist-packages (from jsonschema->rembg==2.0.52->-r requirements.txt (line 18)) (2023.12.1)
+2026-02-17T10:01:45.558782771Z Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.11/dist-packages (from jsonschema->rembg==2.0.52->-r requirements.txt (line 18)) (0.35.1)
+2026-02-17T10:01:45.559213119Z Requirement already satisfied: rpds-py>=0.7.1 in /usr/local/lib/python3.11/dist-packages (from jsonschema->rembg==2.0.52->-r requirements.txt (line 18)) (0.20.0)
+2026-02-17T10:01:45.610234258Z Collecting ml_dtypes>=0.5.0 (from onnx->insightface>=0.7.3->-r requirements.txt (line 23))
+2026-02-17T10:01:45.613506367Z   Downloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.9 kB)
+2026-02-17T10:01:45.632374455Z Requirement already satisfied: platformdirs>=2.5.0 in /usr/local/lib/python3.11/dist-packages (from pooch->rembg==2.0.52->-r requirements.txt (line 18)) (4.3.6)
+2026-02-17T10:01:45.718828241Z Collecting numba>=0.60.0 (from pymatting->rembg==2.0.52->-r requirements.txt (line 18))
+2026-02-17T10:01:45.721918238Z   Downloading numba-0.63.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.9 kB)
+2026-02-17T10:01:45.773153549Z Collecting llvmlite<0.47,>=0.46.0dev0 (from numba>=0.60.0->pymatting->rembg==2.0.52->-r requirements.txt (line 18))
+2026-02-17T10:01:45.776792525Z   Downloading llvmlite-0.46.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.0 kB)
+2026-02-17T10:01:45.786666185Z Requirement already satisfied: mpmath>=0.19 in /usr/local/lib/python3.11/dist-packages (from sympy->onnxruntime-gpu>=1.16.0->-r requirements.txt (line 24)) (1.3.0)
+2026-02-17T10:01:45.807594315Z Downloading opencv_python_headless-4.8.1.78-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (49.1 MB)
+2026-02-17T10:01:46.040598665Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 49.1/49.1 MB 216.1 MB/s  0:00:00
+2026-02-17T10:01:46.046344302Z Downloading rembg-2.0.52-py3-none-any.whl (32 kB)
+2026-02-17T10:01:46.051883133Z Downloading deep_translator-1.11.4-py3-none-any.whl (42 kB)
+2026-02-17T10:01:46.057585977Z Downloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.3 MB)
+2026-02-17T10:01:46.106515864Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.3/18.3 MB 403.6 MB/s  0:00:00
+2026-02-17T10:01:46.111532797Z Downloading comfy_aimdo-0.1.8-cp39-abi3-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (65 kB)
+2026-02-17T10:01:46.116135289Z Downloading diffusers-0.36.0-py3-none-any.whl (4.6 MB)
+2026-02-17T10:01:46.131602631Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 401.5 MB/s  0:00:00
+2026-02-17T10:01:46.135630248Z Downloading huggingface_hub-1.4.1-py3-none-any.whl (553 kB)
+2026-02-17T10:01:46.140238270Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 553.3/553.3 kB 453.9 MB/s  0:00:00
+2026-02-17T10:01:46.145201889Z Downloading hf_xet-1.2.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+2026-02-17T10:01:46.155157044Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 483.5 MB/s  0:00:00
+2026-02-17T10:01:46.160427866Z Downloading transformers-5.2.0-py3-none-any.whl (10.4 MB)
+2026-02-17T10:01:46.181484037Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 560.2 MB/s  0:00:00
+2026-02-17T10:01:46.185737976Z Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+2026-02-17T10:01:46.193142223Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 650.0 MB/s  0:00:00
+2026-02-17T10:01:46.196960858Z Downloading accelerate-1.12.0-py3-none-any.whl (380 kB)
+2026-02-17T10:01:46.201915297Z Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (507 kB)
+2026-02-17T10:01:46.206822962Z Downloading onnxruntime_gpu-1.24.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (252.6 MB)
+2026-02-17T10:01:47.253980752Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 252.6/252.6 MB 241.9 MB/s  0:00:01
+2026-02-17T10:01:47.257962893Z Downloading ultralytics-8.4.14-py3-none-any.whl (1.2 MB)
+2026-02-17T10:01:47.262158309Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 592.4 MB/s  0:00:00
+2026-02-17T10:01:47.265931823Z Downloading aiogram-3.25.0-py3-none-any.whl (713 kB)
+2026-02-17T10:01:47.270747206Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 714.0/714.0 kB 549.7 MB/s  0:00:00
+2026-02-17T10:01:47.273703523Z Downloading aiofiles-25.1.0-py3-none-any.whl (14 kB)
+2026-02-17T10:01:47.277389982Z Downloading magic_filter-1.0.12-py3-none-any.whl (11 kB)
+2026-02-17T10:01:47.281231048Z Downloading redis-7.2.0-py3-none-any.whl (394 kB)
+2026-02-17T10:01:47.285858733Z Downloading sqlalchemy-2.0.46-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.3 MB)
+2026-02-17T10:01:47.294087325Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 523.6 MB/s  0:00:00
+2026-02-17T10:01:47.297580168Z Downloading spandrel-0.4.1-py3-none-any.whl (305 kB)
+2026-02-17T10:01:47.301693070Z Downloading kornia-0.8.2-py2.py3-none-any.whl (1.1 MB)
+2026-02-17T10:01:47.307449459Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 533.0 MB/s  0:00:00
+2026-02-17T10:01:47.311269605Z Downloading einops-0.8.2-py3-none-any.whl (65 kB)
+2026-02-17T10:01:47.315205147Z Downloading alembic-1.18.4-py3-none-any.whl (263 kB)
+2026-02-17T10:01:47.319347733Z Downloading greenlet-3.3.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (590 kB)
+2026-02-17T10:01:47.322382793Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 590.3/590.3 kB 550.7 MB/s  0:00:00
+2026-02-17T10:01:47.326000425Z Downloading kornia_rs-0.1.10-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 MB)
+2026-02-17T10:01:47.381268427Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.0/3.0 MB 56.6 MB/s  0:00:00
+2026-02-17T10:01:47.385064702Z Downloading matplotlib-3.10.8-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (8.7 MB)
+2026-02-17T10:01:47.418240617Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.7/8.7 MB 284.3 MB/s  0:00:00
+2026-02-17T10:01:47.422966140Z Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (355 kB)
+2026-02-17T10:01:47.427740290Z Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+2026-02-17T10:01:47.432036311Z Downloading fonttools-4.61.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.0 MB)
+2026-02-17T10:01:47.449682679Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 319.2 MB/s  0:00:00
+2026-02-17T10:01:47.453568554Z Downloading kiwisolver-1.4.9-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+2026-02-17T10:01:47.459777241Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 445.5 MB/s  0:00:00
+2026-02-17T10:01:47.463868109Z Downloading opencv_python-4.11.0.86-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (63.0 MB)
+2026-02-17T10:01:47.692636044Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 63.0/63.0 MB 281.8 MB/s  0:00:00
+2026-02-17T10:01:47.698334900Z Downloading polars-1.38.1-py3-none-any.whl (810 kB)
+2026-02-17T10:01:47.703548734Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 810.4/810.4 kB 445.5 MB/s  0:00:00
+2026-02-17T10:01:47.709428476Z Downloading polars_runtime_32-1.38.1-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (45.8 MB)
+2026-02-17T10:01:47.822121587Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.8/45.8 MB 416.7 MB/s  0:00:00
+2026-02-17T10:01:47.826135386Z Downloading pyparsing-3.3.2-py3-none-any.whl (122 kB)
+2026-02-17T10:01:47.830363772Z Downloading regex-2026.1.15-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (800 kB)
+2026-02-17T10:01:47.834478214Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 800.5/800.5 kB 559.5 MB/s  0:00:00
+2026-02-17T10:01:47.838202209Z Downloading ultralytics_thop-2.0.18-py3-none-any.whl (28 kB)
+2026-02-17T10:01:47.842074590Z Downloading albumentations-1.4.0-py3-none-any.whl (123 kB)
+2026-02-17T10:01:47.846213449Z Downloading qudida-0.0.4-py3-none-any.whl (3.5 kB)
+2026-02-17T10:01:47.850633055Z Downloading scikit_learn-1.8.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (9.1 MB)
+2026-02-17T10:01:47.874952931Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 422.6 MB/s  0:00:00
+2026-02-17T10:01:47.878623484Z Downloading joblib-1.5.3-py3-none-any.whl (309 kB)
+2026-02-17T10:01:47.882653881Z Downloading threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+2026-02-17T10:01:47.887216734Z Downloading cython-3.2.4-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.4 MB)
+2026-02-17T10:01:47.902581845Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 259.3 MB/s  0:00:00
+2026-02-17T10:01:47.907182755Z Downloading easydict-1.13-py3-none-any.whl (6.8 kB)
+2026-02-17T10:01:47.910777249Z Downloading flatbuffers-25.12.19-py2.py3-none-any.whl (26 kB)
+2026-02-17T10:01:47.914438518Z Downloading mako-1.3.10-py3-none-any.whl (78 kB)
+2026-02-17T10:01:47.918626649Z Downloading onnx-1.20.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (17.5 MB)
+2026-02-17T10:01:48.002044054Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.5/17.5 MB 221.8 MB/s  0:00:00
+2026-02-17T10:01:48.008576625Z Downloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (5.0 MB)
+2026-02-17T10:01:48.032929285Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 245.6 MB/s  0:00:00
+2026-02-17T10:01:48.037659192Z Downloading protobuf-6.33.5-cp39-abi3-manylinux2014_x86_64.whl (323 kB)
+2026-02-17T10:01:48.043994379Z Downloading onnxruntime-1.24.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (17.1 MB)
+2026-02-17T10:01:48.108473748Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.1/17.1 MB 281.4 MB/s  0:00:00
+2026-02-17T10:01:48.113201570Z Downloading pooch-1.9.0-py3-none-any.whl (67 kB)
+2026-02-17T10:01:48.117715437Z Downloading pymatting-1.1.15-py3-none-any.whl (54 kB)
+2026-02-17T10:01:48.122719385Z Downloading numba-0.63.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (3.7 MB)
+2026-02-17T10:01:48.140387544Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.7/3.7 MB 269.5 MB/s  0:00:00
+2026-02-17T10:01:48.144965940Z Downloading llvmlite-0.46.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (56.3 MB)
+2026-02-17T10:01:48.345198920Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.3/56.3 MB 285.9 MB/s  0:00:00
+2026-02-17T10:01:48.349581988Z Downloading typer_slim-0.24.0-py3-none-any.whl (3.4 kB)
+2026-02-17T10:01:49.181559403Z Building wheels for collected packages: insightface
+2026-02-17T10:01:49.182621004Z   Building wheel for insightface (pyproject.toml): started
+2026-02-17T10:01:52.905391862Z   Building wheel for insightface (pyproject.toml): finished with status 'done'
+2026-02-17T10:01:52.906889475Z   Created wheel for insightface: filename=insightface-0.7.3-cp311-cp311-linux_x86_64.whl size=1061422 sha256=04bae49d94a68ecff7f7c88944ead4f7e99cda64fedbfe6a4c8354a9f0d693f4
+2026-02-17T10:01:52.906995710Z   Stored in directory: /tmp/pip-ephem-wheel-cache-v3_yfvsn/wheels/27/d8/22/f52d858d16cd06e7b2e6aad34a1777dcfaf000be833bbf8146
+2026-02-17T10:01:52.909199260Z Successfully built insightface
+2026-02-17T10:01:53.226997710Z Installing collected packages: flatbuffers, easydict, threadpoolctl, safetensors, regex, redis, pyparsing, protobuf, polars-runtime-32, numpy, Mako, magic-filter, llvmlite, kornia_rs, kiwisolver, joblib, hf-xet, greenlet, fonttools, einops, cython, cycler, comfy-aimdo, aiofiles, sqlalchemy, pooch, polars, opencv-python-headless, opencv-python, onnxruntime-gpu, onnxruntime, numba, ml_dtypes, deep-translator, contourpy, scikit-learn, pymatting, onnx, matplotlib, alembic, aiogram, ultralytics-thop, typer-slim, rembg, qudida, kornia, ultralytics, spandrel, huggingface_hub, albumentations, tokenizers, insightface, diffusers, accelerate, transformers
+2026-02-17T10:01:53.557407663Z   Attempting uninstall: pyparsing
+2026-02-17T10:01:53.562805961Z     Found existing installation: pyparsing 2.4.7
+2026-02-17T10:01:53.564582855Z     Uninstalling pyparsing-2.4.7:
+2026-02-17T10:01:53.571524593Z       Successfully uninstalled pyparsing-2.4.7
+2026-02-17T10:01:54.388540064Z   Attempting uninstall: numpy
+2026-02-17T10:01:54.392118113Z     Found existing installation: numpy 2.4.2
+2026-02-17T10:01:54.432913628Z     Uninstalling numpy-2.4.2:
+2026-02-17T10:01:54.440744592Z       Successfully uninstalled numpy-2.4.2
+2026-02-17T10:02:22.578896754Z Successfully installed Mako-1.3.10 accelerate-1.12.0 aiofiles-25.1.0 aiogram-3.25.0 albumentations-1.4.0 alembic-1.18.4 comfy-aimdo-0.1.8 contourpy-1.3.3 cycler-0.12.1 cython-3.2.4 deep-translator-1.11.4 diffusers-0.36.0 easydict-1.13 einops-0.8.2 flatbuffers-25.12.19 fonttools-4.61.1 greenlet-3.3.1 hf-xet-1.2.0 huggingface_hub-1.4.1 insightface-0.7.3 joblib-1.5.3 kiwisolver-1.4.9 kornia-0.8.2 kornia_rs-0.1.10 llvmlite-0.46.0 magic-filter-1.0.12 matplotlib-3.10.8 ml_dtypes-0.5.4 numba-0.63.1 numpy-1.26.4 onnx-1.20.1 onnxruntime-1.24.1 onnxruntime-gpu-1.24.1 opencv-python-4.11.0.86 opencv-python-headless-4.8.1.78 polars-1.38.1 polars-runtime-32-1.38.1 pooch-1.9.0 protobuf-6.33.5 pymatting-1.1.15 pyparsing-3.3.2 qudida-0.0.4 redis-7.2.0 regex-2026.1.15 rembg-2.0.52 safetensors-0.7.0 scikit-learn-1.8.0 spandrel-0.4.1 sqlalchemy-2.0.46 threadpoolctl-3.6.0 tokenizers-0.22.2 transformers-5.2.0 typer-slim-0.24.0 ultralytics-8.4.14 ultralytics-thop-2.0.18
+2026-02-17T10:02:22.579195825Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:23.268173432Z Running scripts/install_insightface.sh...
+2026-02-17T10:02:23.271378531Z Installing InsightFace...
+2026-02-17T10:02:23.646723405Z Requirement already satisfied: insightface==0.7.3 in /usr/local/lib/python3.11/dist-packages (0.7.3)
+2026-02-17T10:02:23.647578447Z Requirement already satisfied: numpy in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.26.4)
+2026-02-17T10:02:23.648018177Z Requirement already satisfied: onnx in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.20.1)
+2026-02-17T10:02:23.648474868Z Requirement already satisfied: tqdm in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (4.67.3)
+2026-02-17T10:02:23.648857122Z Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (2.32.5)
+2026-02-17T10:02:23.649276096Z Requirement already satisfied: matplotlib in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (3.10.8)
+2026-02-17T10:02:23.649705460Z Requirement already satisfied: Pillow in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (10.2.0)
+2026-02-17T10:02:23.650176334Z Requirement already satisfied: scipy in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.17.0)
+2026-02-17T10:02:23.650666120Z Requirement already satisfied: scikit-learn in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.8.0)
+2026-02-17T10:02:23.651039576Z Requirement already satisfied: scikit-image in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (0.26.0)
+2026-02-17T10:02:23.651394956Z Requirement already satisfied: easydict in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.13)
+2026-02-17T10:02:23.651768263Z Requirement already satisfied: cython in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (3.2.4)
+2026-02-17T10:02:23.652105568Z Requirement already satisfied: albumentations in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (1.4.0)
+2026-02-17T10:02:23.652453666Z Requirement already satisfied: prettytable in /usr/local/lib/python3.11/dist-packages (from insightface==0.7.3) (3.17.0)
+2026-02-17T10:02:23.654395350Z Requirement already satisfied: PyYAML in /usr/local/lib/python3.11/dist-packages (from albumentations->insightface==0.7.3) (6.0.2)
+2026-02-17T10:02:23.654891015Z Requirement already satisfied: qudida>=0.0.4 in /usr/local/lib/python3.11/dist-packages (from albumentations->insightface==0.7.3) (0.0.4)
+2026-02-17T10:02:23.655381728Z Requirement already satisfied: opencv-python>=4.9.0 in /usr/local/lib/python3.11/dist-packages (from albumentations->insightface==0.7.3) (4.11.0.86)
+2026-02-17T10:02:23.663436340Z Requirement already satisfied: typing-extensions in /usr/local/lib/python3.11/dist-packages (from qudida>=0.0.4->albumentations->insightface==0.7.3) (4.15.0)
+2026-02-17T10:02:23.664021098Z Requirement already satisfied: opencv-python-headless>=4.0.1 in /usr/local/lib/python3.11/dist-packages (from qudida>=0.0.4->albumentations->insightface==0.7.3) (4.8.1.78)
+2026-02-17T10:02:23.668964874Z Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface==0.7.3) (3.2.1)
+2026-02-17T10:02:23.669529827Z Requirement already satisfied: imageio!=2.35.0,>=2.33 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface==0.7.3) (2.37.2)
+2026-02-17T10:02:23.669940304Z Requirement already satisfied: tifffile>=2022.8.12 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface==0.7.3) (2026.2.16)
+2026-02-17T10:02:23.670363102Z Requirement already satisfied: packaging>=21 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface==0.7.3) (24.1)
+2026-02-17T10:02:23.670767862Z Requirement already satisfied: lazy-loader>=0.4 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface==0.7.3) (0.4)
+2026-02-17T10:02:23.688108203Z Requirement already satisfied: joblib>=1.3.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn->insightface==0.7.3) (1.5.3)
+2026-02-17T10:02:23.688405905Z Requirement already satisfied: threadpoolctl>=3.2.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn->insightface==0.7.3) (3.6.0)
+2026-02-17T10:02:23.709602223Z Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (1.3.3)
+2026-02-17T10:02:23.709955814Z Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (0.12.1)
+2026-02-17T10:02:23.710345676Z Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (4.61.1)
+2026-02-17T10:02:23.710722679Z Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (1.4.9)
+2026-02-17T10:02:23.711585619Z Requirement already satisfied: pyparsing>=3 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (3.3.2)
+2026-02-17T10:02:23.711977716Z Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface==0.7.3) (2.9.0.post0)
+2026-02-17T10:02:23.725562199Z Requirement already satisfied: six>=1.5 in /usr/lib/python3/dist-packages (from python-dateutil>=2.7->matplotlib->insightface==0.7.3) (1.16.0)
+2026-02-17T10:02:23.728179514Z Requirement already satisfied: protobuf>=4.25.1 in /usr/local/lib/python3.11/dist-packages (from onnx->insightface==0.7.3) (6.33.5)
+2026-02-17T10:02:23.728688784Z Requirement already satisfied: ml_dtypes>=0.5.0 in /usr/local/lib/python3.11/dist-packages (from onnx->insightface==0.7.3) (0.5.4)
+2026-02-17T10:02:23.743847525Z Requirement already satisfied: wcwidth in /usr/local/lib/python3.11/dist-packages (from prettytable->insightface==0.7.3) (0.2.13)
+2026-02-17T10:02:23.746621317Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests->insightface==0.7.3) (3.3.2)
+2026-02-17T10:02:23.747049155Z Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/dist-packages (from requests->insightface==0.7.3) (3.10)
+2026-02-17T10:02:23.747579168Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests->insightface==0.7.3) (2.2.3)
+2026-02-17T10:02:23.747959115Z Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests->insightface==0.7.3) (2024.8.30)
+2026-02-17T10:02:24.021289458Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:24.666116005Z Collecting onnxruntime-gpu==1.16.3
+2026-02-17T10:02:24.739127065Z   Downloading onnxruntime_gpu-1.16.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.3 kB)
+2026-02-17T10:02:24.756278094Z Collecting coloredlogs (from onnxruntime-gpu==1.16.3)
+2026-02-17T10:02:24.760182368Z   Downloading coloredlogs-15.0.1-py2.py3-none-any.whl.metadata (12 kB)
+2026-02-17T10:02:24.764193585Z Requirement already satisfied: flatbuffers in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu==1.16.3) (25.12.19)
+2026-02-17T10:02:24.764680890Z Requirement already satisfied: numpy>=1.24.2 in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu==1.16.3) (1.26.4)
+2026-02-17T10:02:24.765039034Z Requirement already satisfied: packaging in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu==1.16.3) (24.1)
+2026-02-17T10:02:24.765413668Z Requirement already satisfied: protobuf in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu==1.16.3) (6.33.5)
+2026-02-17T10:02:24.765747838Z Requirement already satisfied: sympy in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu==1.16.3) (1.12)
+2026-02-17T10:02:24.786886922Z Collecting humanfriendly>=9.1 (from coloredlogs->onnxruntime-gpu==1.16.3)
+2026-02-17T10:02:24.790591651Z   Downloading humanfriendly-10.0-py2.py3-none-any.whl.metadata (9.2 kB)
+2026-02-17T10:02:24.796858740Z Requirement already satisfied: mpmath>=0.19 in /usr/local/lib/python3.11/dist-packages (from sympy->onnxruntime-gpu==1.16.3) (1.3.0)
+2026-02-17T10:02:24.802031973Z Downloading onnxruntime_gpu-1.16.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (157.1 MB)
+2026-02-17T10:02:26.201824867Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 157.1/157.1 MB 114.3 MB/s  0:00:01
+2026-02-17T10:02:26.205851970Z Downloading coloredlogs-15.0.1-py2.py3-none-any.whl (46 kB)
+2026-02-17T10:02:26.211150387Z Downloading humanfriendly-10.0-py2.py3-none-any.whl (86 kB)
+2026-02-17T10:02:26.732662424Z Installing collected packages: humanfriendly, coloredlogs, onnxruntime-gpu
+2026-02-17T10:02:26.791251328Z   Attempting uninstall: onnxruntime-gpu
+2026-02-17T10:02:26.796450513Z     Found existing installation: onnxruntime-gpu 1.24.1
+2026-02-17T10:02:26.829206042Z     Uninstalling onnxruntime-gpu-1.24.1:
+2026-02-17T10:02:26.834411098Z       Successfully uninstalled onnxruntime-gpu-1.24.1
+2026-02-17T10:02:29.627718664Z Successfully installed coloredlogs-15.0.1 humanfriendly-10.0 onnxruntime-gpu-1.16.3
+2026-02-17T10:02:29.627859313Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:29.709457912Z InsightFace installed successfully.
+2026-02-17T10:02:29.710026911Z Starting Serverless Handler...
+2026-02-17T10:02:31.576577688Z --- Starting Serverless Worker |  Version 1.8.1 ---
+2026-02-17T10:02:31.900146650Z {"requestId": null, "message": "Jobs in queue: 1", "level": "INFO"}
+2026-02-17T10:02:31.900184387Z {"requestId": null, "message": "Jobs in progress: 1", "level": "INFO"}
+2026-02-17T10:02:31.900272000Z {"requestId": "fa5917e2-a893-4a15-84b3-494f9c60d913-e2", "message": "Started.", "level": "INFO"}
+2026-02-17T10:02:31.900296940Z [Handler] --- STARTING JOB fa5917e2-a893-4a15-84b3-494f9c60d913-e2 ---
+2026-02-17T10:02:31.900302120Z [Handler] --- PIPELINE VERSION: 2.0-PRO-PIPELINE ---
+2026-02-17T10:02:31.900356664Z [Handler] Created OUTPUT_DIR: /app_code/ComfyUI/output
+2026-02-17T10:02:31.900372666Z [Handler] Clean installing ComfyUI...
+2026-02-17T10:02:31.903895776Z Cloning into '/app_code/ComfyUI'...
+2026-02-17T10:02:35.662042569Z Collecting comfyui-frontend-package==1.38.14 (from -r /app_code/ComfyUI/requirements.txt (line 1))
+2026-02-17T10:02:35.729525657Z   Downloading comfyui_frontend_package-1.38.14-py3-none-any.whl.metadata (118 bytes)
+2026-02-17T10:02:35.750558546Z Collecting comfyui-workflow-templates==0.8.42 (from -r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.753644102Z   Downloading comfyui_workflow_templates-0.8.42-py3-none-any.whl.metadata (21 kB)
+2026-02-17T10:02:35.767918440Z Collecting comfyui-embedded-docs==0.4.1 (from -r /app_code/ComfyUI/requirements.txt (line 3))
+2026-02-17T10:02:35.770399895Z   Downloading comfyui_embedded_docs-0.4.1-py3-none-any.whl.metadata (2.9 kB)
+2026-02-17T10:02:35.771680038Z Requirement already satisfied: torch in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 4)) (2.4.1+cu124)
+2026-02-17T10:02:35.776150466Z Collecting torchsde (from -r /app_code/ComfyUI/requirements.txt (line 5))
+2026-02-17T10:02:35.778831307Z   Downloading torchsde-0.2.6-py3-none-any.whl.metadata (5.3 kB)
+2026-02-17T10:02:35.780336101Z Requirement already satisfied: torchvision in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 6)) (0.19.1+cu124)
+2026-02-17T10:02:35.780618340Z Requirement already satisfied: torchaudio in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 7)) (2.4.1+cu124)
+2026-02-17T10:02:35.780944284Z Requirement already satisfied: numpy>=1.25.0 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 8)) (1.26.4)
+2026-02-17T10:02:35.781201814Z Requirement already satisfied: einops in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 9)) (0.8.2)
+2026-02-17T10:02:35.781573407Z Requirement already satisfied: transformers>=4.50.3 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 10)) (5.2.0)
+2026-02-17T10:02:35.781884623Z Requirement already satisfied: tokenizers>=0.13.3 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 11)) (0.22.2)
+2026-02-17T10:02:35.817347059Z Collecting sentencepiece (from -r /app_code/ComfyUI/requirements.txt (line 12))
+2026-02-17T10:02:35.820314321Z   Downloading sentencepiece-0.2.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (10 kB)
+2026-02-17T10:02:35.822530932Z Requirement already satisfied: safetensors>=0.4.2 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 13)) (0.7.0)
+2026-02-17T10:02:35.822848653Z Requirement already satisfied: aiohttp>=3.11.8 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 14)) (3.13.3)
+2026-02-17T10:02:35.823151378Z Requirement already satisfied: yarl>=1.18.0 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 15)) (1.22.0)
+2026-02-17T10:02:35.823436494Z Requirement already satisfied: pyyaml in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 16)) (6.0.2)
+2026-02-17T10:02:35.823713039Z Requirement already satisfied: Pillow in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 17)) (10.2.0)
+2026-02-17T10:02:35.823971938Z Requirement already satisfied: scipy in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 18)) (1.17.0)
+2026-02-17T10:02:35.824219546Z Requirement already satisfied: tqdm in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 19)) (4.67.3)
+2026-02-17T10:02:35.824468338Z Requirement already satisfied: psutil in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 20)) (6.0.0)
+2026-02-17T10:02:35.824709479Z Requirement already satisfied: alembic in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 21)) (1.18.4)
+2026-02-17T10:02:35.824986575Z Requirement already satisfied: SQLAlchemy in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 22)) (2.0.46)
+2026-02-17T10:02:35.858285546Z Collecting av>=14.2.0 (from -r /app_code/ComfyUI/requirements.txt (line 23))
+2026-02-17T10:02:35.863164055Z   Downloading av-16.1.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (4.6 kB)
+2026-02-17T10:02:35.873143348Z Collecting comfy-kitchen>=0.2.7 (from -r /app_code/ComfyUI/requirements.txt (line 24))
+2026-02-17T10:02:35.876254776Z   Downloading comfy_kitchen-0.2.7-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (7.2 kB)
+2026-02-17T10:02:35.878304059Z Requirement already satisfied: comfy-aimdo>=0.1.8 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 25)) (0.1.8)
+2026-02-17T10:02:35.878568829Z Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 26)) (2.32.5)
+2026-02-17T10:02:35.878835905Z Requirement already satisfied: kornia>=0.7.1 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 29)) (0.8.2)
+2026-02-17T10:02:35.879069176Z Requirement already satisfied: spandrel in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 30)) (0.4.1)
+2026-02-17T10:02:35.879391104Z Requirement already satisfied: pydantic~=2.0 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 31)) (2.12.5)
+2026-02-17T10:02:35.879684036Z Requirement already satisfied: pydantic-settings~=2.0 in /usr/local/lib/python3.11/dist-packages (from -r /app_code/ComfyUI/requirements.txt (line 32)) (2.13.0)
+2026-02-17T10:02:35.890944128Z Collecting comfyui-workflow-templates-core==0.3.143 (from comfyui-workflow-templates==0.8.42->-r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.894402643Z   Downloading comfyui_workflow_templates_core-0.3.143-py3-none-any.whl.metadata (260 bytes)
+2026-02-17T10:02:35.901779155Z Collecting comfyui-workflow-templates-media-api==0.3.51 (from comfyui-workflow-templates==0.8.42->-r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.904820253Z   Downloading comfyui_workflow_templates_media_api-0.3.51-py3-none-any.whl.metadata (290 bytes)
+2026-02-17T10:02:35.911623383Z Collecting comfyui-workflow-templates-media-video==0.3.47 (from comfyui-workflow-templates==0.8.42->-r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.914521253Z   Downloading comfyui_workflow_templates_media_video-0.3.47-py3-none-any.whl.metadata (282 bytes)
+2026-02-17T10:02:35.923795892Z Collecting comfyui-workflow-templates-media-image==0.3.88 (from comfyui-workflow-templates==0.8.42->-r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.926814935Z   Downloading comfyui_workflow_templates_media_image-0.3.88-py3-none-any.whl.metadata (282 bytes)
+2026-02-17T10:02:35.936515119Z Collecting comfyui-workflow-templates-media-other==0.3.120 (from comfyui-workflow-templates==0.8.42->-r /app_code/ComfyUI/requirements.txt (line 2))
+2026-02-17T10:02:35.939246577Z   Downloading comfyui_workflow_templates_media_other-0.3.120-py3-none-any.whl.metadata (306 bytes)
+2026-02-17T10:02:35.943523090Z Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.11/dist-packages (from pydantic~=2.0->-r /app_code/ComfyUI/requirements.txt (line 31)) (0.7.0)
+2026-02-17T10:02:35.943853944Z Requirement already satisfied: pydantic-core==2.41.5 in /usr/local/lib/python3.11/dist-packages (from pydantic~=2.0->-r /app_code/ComfyUI/requirements.txt (line 31)) (2.41.5)
+2026-02-17T10:02:35.944168949Z Requirement already satisfied: typing-extensions>=4.14.1 in /usr/local/lib/python3.11/dist-packages (from pydantic~=2.0->-r /app_code/ComfyUI/requirements.txt (line 31)) (4.15.0)
+2026-02-17T10:02:35.944472558Z Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/lib/python3.11/dist-packages (from pydantic~=2.0->-r /app_code/ComfyUI/requirements.txt (line 31)) (0.4.2)
+2026-02-17T10:02:35.946480106Z Requirement already satisfied: python-dotenv>=0.21.0 in /usr/local/lib/python3.11/dist-packages (from pydantic-settings~=2.0->-r /app_code/ComfyUI/requirements.txt (line 32)) (1.2.1)
+2026-02-17T10:02:35.948390822Z Requirement already satisfied: filelock in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (3.13.1)
+2026-02-17T10:02:35.948682089Z Requirement already satisfied: sympy in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (1.12)
+2026-02-17T10:02:35.948936127Z Requirement already satisfied: networkx in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (3.2.1)
+2026-02-17T10:02:35.949175941Z Requirement already satisfied: jinja2 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (3.1.6)
+2026-02-17T10:02:35.949491838Z Requirement already satisfied: fsspec in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (2024.2.0)
+2026-02-17T10:02:35.950095769Z Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.99)
+2026-02-17T10:02:35.950651912Z Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.99)
+2026-02-17T10:02:35.951220031Z Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.99)
+2026-02-17T10:02:35.951773608Z Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (9.1.0.70)
+2026-02-17T10:02:35.952360569Z Requirement already satisfied: nvidia-cublas-cu12==12.4.2.65 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.2.65)
+2026-02-17T10:02:35.952927189Z Requirement already satisfied: nvidia-cufft-cu12==11.2.0.44 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (11.2.0.44)
+2026-02-17T10:02:35.953492051Z Requirement already satisfied: nvidia-curand-cu12==10.3.5.119 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (10.3.5.119)
+2026-02-17T10:02:35.954007096Z Requirement already satisfied: nvidia-cusolver-cu12==11.6.0.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (11.6.0.99)
+2026-02-17T10:02:35.954543197Z Requirement already satisfied: nvidia-cusparse-cu12==12.3.0.142 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.3.0.142)
+2026-02-17T10:02:35.955175526Z Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (2.20.5)
+2026-02-17T10:02:35.955724923Z Requirement already satisfied: nvidia-nvtx-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.99)
+2026-02-17T10:02:35.956244140Z Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (12.4.99)
+2026-02-17T10:02:35.956876439Z Requirement already satisfied: triton==3.0.0 in /usr/local/lib/python3.11/dist-packages (from torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (3.0.0)
+2026-02-17T10:02:35.972255468Z Collecting trampoline>=0.1.2 (from torchsde->-r /app_code/ComfyUI/requirements.txt (line 5))
+2026-02-17T10:02:35.975173537Z   Downloading trampoline-0.1.2-py3-none-any.whl.metadata (10 kB)
+2026-02-17T10:02:35.985478962Z Requirement already satisfied: huggingface-hub<2.0,>=1.3.0 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (1.4.1)
+2026-02-17T10:02:35.985945895Z Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (24.1)
+2026-02-17T10:02:35.986358837Z Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (2026.1.15)
+2026-02-17T10:02:35.986780421Z Requirement already satisfied: typer-slim in /usr/local/lib/python3.11/dist-packages (from transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.24.0)
+2026-02-17T10:02:36.002867768Z Requirement already satisfied: hf-xet<2.0.0,>=1.2.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (1.2.0)
+2026-02-17T10:02:36.003235759Z Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.27.2)
+2026-02-17T10:02:36.003710549Z Requirement already satisfied: shellingham in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (1.5.4)
+2026-02-17T10:02:36.011669287Z Requirement already satisfied: anyio in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (4.6.0)
+2026-02-17T10:02:36.011983379Z Requirement already satisfied: certifi in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (2024.8.30)
+2026-02-17T10:02:36.012324754Z Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (1.0.5)
+2026-02-17T10:02:36.012609061Z Requirement already satisfied: idna in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (3.10)
+2026-02-17T10:02:36.012888087Z Requirement already satisfied: sniffio in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (1.3.1)
+2026-02-17T10:02:36.015188938Z Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.14.0)
+2026-02-17T10:02:36.022134326Z Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (2.6.1)
+2026-02-17T10:02:36.022486172Z Requirement already satisfied: aiosignal>=1.4.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (1.4.0)
+2026-02-17T10:02:36.022938082Z Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (24.2.0)
+2026-02-17T10:02:36.023273921Z Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (1.8.0)
+2026-02-17T10:02:36.023649719Z Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (6.7.1)
+2026-02-17T10:02:36.024058755Z Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp>=3.11.8->-r /app_code/ComfyUI/requirements.txt (line 14)) (0.4.1)
+2026-02-17T10:02:36.043156557Z Requirement already satisfied: Mako in /usr/local/lib/python3.11/dist-packages (from alembic->-r /app_code/ComfyUI/requirements.txt (line 21)) (1.3.10)
+2026-02-17T10:02:36.045559079Z Requirement already satisfied: greenlet>=1 in /usr/local/lib/python3.11/dist-packages (from SQLAlchemy->-r /app_code/ComfyUI/requirements.txt (line 22)) (3.3.1)
+2026-02-17T10:02:36.052018246Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests->-r /app_code/ComfyUI/requirements.txt (line 26)) (3.3.2)
+2026-02-17T10:02:36.052603031Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests->-r /app_code/ComfyUI/requirements.txt (line 26)) (2.2.3)
+2026-02-17T10:02:36.059771164Z Requirement already satisfied: kornia_rs>=0.1.9 in /usr/local/lib/python3.11/dist-packages (from kornia>=0.7.1->-r /app_code/ComfyUI/requirements.txt (line 29)) (0.1.10)
+2026-02-17T10:02:36.099678192Z Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2->torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (2.1.5)
+2026-02-17T10:02:36.109042054Z Requirement already satisfied: mpmath>=0.19 in /usr/local/lib/python3.11/dist-packages (from sympy->torch->-r /app_code/ComfyUI/requirements.txt (line 4)) (1.3.0)
+2026-02-17T10:02:36.113002310Z Requirement already satisfied: typer>=0.24.0 in /usr/local/lib/python3.11/dist-packages (from typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.24.0)
+2026-02-17T10:02:36.114967557Z Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (8.3.1)
+2026-02-17T10:02:36.115420455Z Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (14.3.2)
+2026-02-17T10:02:36.115747610Z Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.0.4)
+2026-02-17T10:02:36.121199841Z Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.11/dist-packages (from rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (4.0.0)
+2026-02-17T10:02:36.121608474Z Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/dist-packages (from rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (2.18.0)
+2026-02-17T10:02:36.125320884Z Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.11/dist-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.50.3->-r /app_code/ComfyUI/requirements.txt (line 10)) (0.1.2)
+2026-02-17T10:02:36.133777186Z Downloading comfyui_frontend_package-1.38.14-py3-none-any.whl (21.8 MB)
+2026-02-17T10:02:36.209048946Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 21.8/21.8 MB 321.6 MB/s  0:00:00
+2026-02-17T10:02:36.212868067Z Downloading comfyui_workflow_templates-0.8.42-py3-none-any.whl (9.8 kB)
+2026-02-17T10:02:36.216315037Z Downloading comfyui_embedded_docs-0.4.1-py3-none-any.whl (10.3 MB)
+2026-02-17T10:02:36.243207866Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 410.8 MB/s  0:00:00
+2026-02-17T10:02:36.246876814Z Downloading comfyui_workflow_templates_core-0.3.143-py3-none-any.whl (47 kB)
+2026-02-17T10:02:36.250643694Z Downloading comfyui_workflow_templates_media_api-0.3.51-py3-none-any.whl (78.1 MB)
+2026-02-17T10:02:36.509871946Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.1/78.1 MB 305.9 MB/s  0:00:00
+2026-02-17T10:02:36.515655612Z Downloading comfyui_workflow_templates_media_image-0.3.88-py3-none-any.whl (15.5 MB)
+2026-02-17T10:02:36.552912234Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.5/15.5 MB 461.7 MB/s  0:00:00
+2026-02-17T10:02:36.557153231Z Downloading comfyui_workflow_templates_media_other-0.3.120-py3-none-any.whl (64.0 MB)
+2026-02-17T10:02:36.757108973Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.0/64.0 MB 325.7 MB/s  0:00:00
+2026-02-17T10:02:36.763094125Z Downloading comfyui_workflow_templates_media_video-0.3.47-py3-none-any.whl (81.8 MB)
+2026-02-17T10:02:37.304757021Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 81.8/81.8 MB 151.8 MB/s  0:00:00
+2026-02-17T10:02:37.308923010Z Downloading torchsde-0.2.6-py3-none-any.whl (61 kB)
+2026-02-17T10:02:37.313612220Z Downloading sentencepiece-0.2.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.4 MB)
+2026-02-17T10:02:37.319748091Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 489.8 MB/s  0:00:00
+2026-02-17T10:02:37.324410060Z Downloading av-16.1.0-cp311-cp311-manylinux_2_28_x86_64.whl (40.8 MB)
+2026-02-17T10:02:37.568043677Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.8/40.8 MB 170.6 MB/s  0:00:00
+2026-02-17T10:02:37.574704291Z Downloading comfy_kitchen-0.2.7-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (683 kB)
+2026-02-17T10:02:37.582289138Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 683.1/683.1 kB 315.3 MB/s  0:00:00
+2026-02-17T10:02:37.588347979Z Downloading trampoline-0.1.2-py3-none-any.whl (5.2 kB)
+2026-02-17T10:02:38.335371334Z Installing collected packages: trampoline, sentencepiece, comfyui-workflow-templates-media-video, comfyui-workflow-templates-media-other, comfyui-workflow-templates-media-image, comfyui-workflow-templates-media-api, comfyui-workflow-templates-core, comfyui-frontend-package, comfyui-embedded-docs, comfy-kitchen, av, comfyui-workflow-templates, torchsde
+2026-02-17T10:02:41.763830496Z Successfully installed av-16.1.0 comfy-kitchen-0.2.7 comfyui-embedded-docs-0.4.1 comfyui-frontend-package-1.38.14 comfyui-workflow-templates-0.8.42 comfyui-workflow-templates-core-0.3.143 comfyui-workflow-templates-media-api-0.3.51 comfyui-workflow-templates-media-image-0.3.88 comfyui-workflow-templates-media-other-0.3.120 comfyui-workflow-templates-media-video-0.3.47 sentencepiece-0.2.1 torchsde-0.2.6 trampoline-0.1.2
+2026-02-17T10:02:41.764025944Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:42.488667637Z Collecting comfy-ui-client
+2026-02-17T10:02:42.569270936Z   Downloading comfy_ui_client-0.0.1.10-py3-none-any.whl.metadata (1.1 kB)
+2026-02-17T10:02:42.571963043Z Requirement already satisfied: websocket-client in /usr/local/lib/python3.11/dist-packages (from comfy-ui-client) (1.8.0)
+2026-02-17T10:02:42.591931325Z Collecting uuid (from comfy-ui-client)
+2026-02-17T10:02:42.596511574Z   Downloading uuid-1.30.tar.gz (5.8 kB)
+2026-02-17T10:02:42.600557120Z   Installing build dependencies: started
+2026-02-17T10:02:43.703674925Z   Installing build dependencies: finished with status 'done'
+2026-02-17T10:02:43.704894888Z   Getting requirements to build wheel: started
+2026-02-17T10:02:44.000094429Z   Getting requirements to build wheel: finished with status 'done'
+2026-02-17T10:02:44.001353749Z   Preparing metadata (pyproject.toml): started
+2026-02-17T10:02:44.157831828Z   Preparing metadata (pyproject.toml): finished with status 'done'
+2026-02-17T10:02:44.159495936Z Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (from comfy-ui-client) (2.32.5)
+2026-02-17T10:02:44.160684201Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests->comfy-ui-client) (3.3.2)
+2026-02-17T10:02:44.161128333Z Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.11/dist-packages (from requests->comfy-ui-client) (3.10)
+2026-02-17T10:02:44.161670476Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests->comfy-ui-client) (2.2.3)
+2026-02-17T10:02:44.161970112Z Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests->comfy-ui-client) (2024.8.30)
+2026-02-17T10:02:44.171159559Z Downloading comfy_ui_client-0.0.1.10-py3-none-any.whl (6.3 kB)
+2026-02-17T10:02:44.176309639Z Building wheels for collected packages: uuid
+2026-02-17T10:02:44.177121025Z   Building wheel for uuid (pyproject.toml): started
+2026-02-17T10:02:44.361565811Z   Building wheel for uuid (pyproject.toml): finished with status 'done'
+2026-02-17T10:02:44.362078724Z   Created wheel for uuid: filename=uuid-1.30-py3-none-any.whl size=6502 sha256=83e177ce8236429b7e6b87c054663b2065cf27afb312fedcbaa1c907150643af
+2026-02-17T10:02:44.362223837Z   Stored in directory: /tmp/pip-ephem-wheel-cache-0hxhw_68/wheels/e0/01/df/bd20df409bd81f8b99e6cd343c5f49731dc0a20eefefdafae0
+2026-02-17T10:02:44.363714476Z Successfully built uuid
+2026-02-17T10:02:44.615975498Z Installing collected packages: uuid, comfy-ui-client
+2026-02-17T10:02:44.639359047Z Successfully installed comfy-ui-client-0.0.1.10 uuid-1.30
+2026-02-17T10:02:44.639606757Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:45.202439924Z Requirement already satisfied: numpy<2.0.0 in /usr/local/lib/python3.11/dist-packages (1.26.4)
+2026-02-17T10:02:45.202873157Z Requirement already satisfied: comfy-aimdo>=0.1.7 in /usr/local/lib/python3.11/dist-packages (0.1.8)
+2026-02-17T10:02:45.203086299Z Requirement already satisfied: torchsde in /usr/local/lib/python3.11/dist-packages (0.2.6)
+2026-02-17T10:02:45.203367970Z Requirement already satisfied: einops in /usr/local/lib/python3.11/dist-packages (0.8.2)
+2026-02-17T10:02:45.203679518Z Requirement already satisfied: transformers>=4.25.1 in /usr/local/lib/python3.11/dist-packages (5.2.0)
+2026-02-17T10:02:45.203949904Z Requirement already satisfied: av in /usr/local/lib/python3.11/dist-packages (16.1.0)
+2026-02-17T10:02:45.204167283Z Requirement already satisfied: kornia in /usr/local/lib/python3.11/dist-packages (0.8.2)
+2026-02-17T10:02:45.204475001Z Requirement already satisfied: spandrel in /usr/local/lib/python3.11/dist-packages (0.4.1)
+2026-02-17T10:02:45.294575298Z Collecting piexif
+2026-02-17T10:02:45.367939960Z   Downloading piexif-1.1.3-py2.py3-none-any.whl.metadata (3.7 kB)
+2026-02-17T10:02:45.374472620Z Collecting segment_anything
+2026-02-17T10:02:45.378020326Z   Downloading segment_anything-1.0-py3-none-any.whl.metadata (487 bytes)
+2026-02-17T10:02:45.380065649Z Requirement already satisfied: opencv-python-headless==4.8.1.78 in /usr/local/lib/python3.11/dist-packages (4.8.1.78)
+2026-02-17T10:02:45.381457140Z Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (2.32.5)
+2026-02-17T10:02:45.381775197Z Requirement already satisfied: aiohttp in /usr/local/lib/python3.11/dist-packages (3.13.3)
+2026-02-17T10:02:45.382096952Z Requirement already satisfied: Pillow in /usr/local/lib/python3.11/dist-packages (10.2.0)
+2026-02-17T10:02:45.382391094Z Requirement already satisfied: scipy in /usr/local/lib/python3.11/dist-packages (1.17.0)
+2026-02-17T10:02:45.382656106Z Requirement already satisfied: tqdm in /usr/local/lib/python3.11/dist-packages (4.67.3)
+2026-02-17T10:02:45.382970704Z Requirement already satisfied: diffusers>=0.29.0 in /usr/local/lib/python3.11/dist-packages (0.36.0)
+2026-02-17T10:02:45.383238055Z Requirement already satisfied: accelerate in /usr/local/lib/python3.11/dist-packages (1.12.0)
+2026-02-17T10:02:45.392662256Z Collecting peft
+2026-02-17T10:02:45.396194208Z   Downloading peft-0.18.1-py3-none-any.whl.metadata (14 kB)
+2026-02-17T10:02:45.417466489Z Collecting bitsandbytes
+2026-02-17T10:02:45.421338391Z   Downloading bitsandbytes-0.49.2-py3-none-manylinux_2_24_x86_64.whl.metadata (10 kB)
+2026-02-17T10:02:45.425295081Z Requirement already satisfied: insightface in /usr/local/lib/python3.11/dist-packages (0.7.3)
+2026-02-17T10:02:45.425644682Z Requirement already satisfied: onnxruntime-gpu in /usr/local/lib/python3.11/dist-packages (1.16.3)
+2026-02-17T10:02:45.434756829Z Requirement already satisfied: torch>=1.6.0 in /usr/local/lib/python3.11/dist-packages (from torchsde) (2.4.1+cu124)
+2026-02-17T10:02:45.435333383Z Requirement already satisfied: trampoline>=0.1.2 in /usr/local/lib/python3.11/dist-packages (from torchsde) (0.1.2)
+2026-02-17T10:02:45.438592607Z Requirement already satisfied: huggingface-hub<2.0,>=1.3.0 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (1.4.1)
+2026-02-17T10:02:45.439105623Z Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (24.1)
+2026-02-17T10:02:45.439541512Z Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (6.0.2)
+2026-02-17T10:02:45.439966716Z Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (2026.1.15)
+2026-02-17T10:02:45.440416184Z Requirement already satisfied: tokenizers<=0.23.0,>=0.22.0 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (0.22.2)
+2026-02-17T10:02:45.440748571Z Requirement already satisfied: typer-slim in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (0.24.0)
+2026-02-17T10:02:45.441134410Z Requirement already satisfied: safetensors>=0.4.3 in /usr/local/lib/python3.11/dist-packages (from transformers>=4.25.1) (0.7.0)
+2026-02-17T10:02:45.468719244Z Requirement already satisfied: filelock in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (3.13.1)
+2026-02-17T10:02:45.469068948Z Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (2024.2.0)
+2026-02-17T10:02:45.469940783Z Requirement already satisfied: hf-xet<2.0.0,>=1.2.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (1.2.0)
+2026-02-17T10:02:45.470411811Z Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (0.27.2)
+2026-02-17T10:02:45.470945355Z Requirement already satisfied: shellingham in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (1.5.4)
+2026-02-17T10:02:45.471673378Z Requirement already satisfied: typing-extensions>=4.1.0 in /usr/local/lib/python3.11/dist-packages (from huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (4.15.0)
+2026-02-17T10:02:45.479116278Z Requirement already satisfied: anyio in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (4.6.0)
+2026-02-17T10:02:45.479541776Z Requirement already satisfied: certifi in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (2024.8.30)
+2026-02-17T10:02:45.480004889Z Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (1.0.5)
+2026-02-17T10:02:45.480422289Z Requirement already satisfied: idna in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (3.10)
+2026-02-17T10:02:45.480813652Z Requirement already satisfied: sniffio in /usr/local/lib/python3.11/dist-packages (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (1.3.1)
+2026-02-17T10:02:45.483285428Z Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.3.0->transformers>=4.25.1) (0.14.0)
+2026-02-17T10:02:45.488838957Z Requirement already satisfied: kornia_rs>=0.1.9 in /usr/local/lib/python3.11/dist-packages (from kornia) (0.1.10)
+2026-02-17T10:02:45.492620196Z Requirement already satisfied: torchvision in /usr/local/lib/python3.11/dist-packages (from spandrel) (0.19.1+cu124)
+2026-02-17T10:02:45.496585835Z Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/dist-packages (from requests) (3.3.2)
+2026-02-17T10:02:45.497217694Z Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests) (2.2.3)
+2026-02-17T10:02:45.503497122Z Requirement already satisfied: aiohappyeyeballs>=2.5.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (2.6.1)
+2026-02-17T10:02:45.503916918Z Requirement already satisfied: aiosignal>=1.4.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (1.4.0)
+2026-02-17T10:02:45.504493062Z Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (24.2.0)
+2026-02-17T10:02:45.504933183Z Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (1.8.0)
+2026-02-17T10:02:45.505399033Z Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (6.7.1)
+2026-02-17T10:02:45.505828028Z Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (0.4.1)
+2026-02-17T10:02:45.506271404Z Requirement already satisfied: yarl<2.0,>=1.17.0 in /usr/local/lib/python3.11/dist-packages (from aiohttp) (1.22.0)
+2026-02-17T10:02:45.525608478Z Requirement already satisfied: importlib_metadata in /usr/lib/python3/dist-packages (from diffusers>=0.29.0) (4.6.4)
+2026-02-17T10:02:45.533308368Z Requirement already satisfied: psutil in /usr/local/lib/python3.11/dist-packages (from accelerate) (6.0.0)
+2026-02-17T10:02:45.542794612Z Requirement already satisfied: sympy in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (1.12)
+2026-02-17T10:02:45.543135671Z Requirement already satisfied: networkx in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (3.2.1)
+2026-02-17T10:02:45.543535613Z Requirement already satisfied: jinja2 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (3.1.6)
+2026-02-17T10:02:45.544344403Z Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.99)
+2026-02-17T10:02:45.545060660Z Requirement already satisfied: nvidia-cuda-runtime-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.99)
+2026-02-17T10:02:45.545888754Z Requirement already satisfied: nvidia-cuda-cupti-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.99)
+2026-02-17T10:02:45.546556731Z Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (9.1.0.70)
+2026-02-17T10:02:45.547258380Z Requirement already satisfied: nvidia-cublas-cu12==12.4.2.65 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.2.65)
+2026-02-17T10:02:45.547963105Z Requirement already satisfied: nvidia-cufft-cu12==11.2.0.44 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (11.2.0.44)
+2026-02-17T10:02:45.548663367Z Requirement already satisfied: nvidia-curand-cu12==10.3.5.119 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (10.3.5.119)
+2026-02-17T10:02:45.549478049Z Requirement already satisfied: nvidia-cusolver-cu12==11.6.0.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (11.6.0.99)
+2026-02-17T10:02:45.550205057Z Requirement already satisfied: nvidia-cusparse-cu12==12.3.0.142 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.3.0.142)
+2026-02-17T10:02:45.550932153Z Requirement already satisfied: nvidia-nccl-cu12==2.20.5 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (2.20.5)
+2026-02-17T10:02:45.551678406Z Requirement already satisfied: nvidia-nvtx-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.99)
+2026-02-17T10:02:45.552415150Z Requirement already satisfied: nvidia-nvjitlink-cu12==12.4.99 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (12.4.99)
+2026-02-17T10:02:45.553318357Z Requirement already satisfied: triton==3.0.0 in /usr/local/lib/python3.11/dist-packages (from torch>=1.6.0->torchsde) (3.0.0)
+2026-02-17T10:02:45.575292586Z Requirement already satisfied: onnx in /usr/local/lib/python3.11/dist-packages (from insightface) (1.20.1)
+2026-02-17T10:02:45.575823368Z Requirement already satisfied: matplotlib in /usr/local/lib/python3.11/dist-packages (from insightface) (3.10.8)
+2026-02-17T10:02:45.576301560Z Requirement already satisfied: scikit-learn in /usr/local/lib/python3.11/dist-packages (from insightface) (1.8.0)
+2026-02-17T10:02:45.576634336Z Requirement already satisfied: scikit-image in /usr/local/lib/python3.11/dist-packages (from insightface) (0.26.0)
+2026-02-17T10:02:45.576955799Z Requirement already satisfied: easydict in /usr/local/lib/python3.11/dist-packages (from insightface) (1.13)
+2026-02-17T10:02:45.577285964Z Requirement already satisfied: cython in /usr/local/lib/python3.11/dist-packages (from insightface) (3.2.4)
+2026-02-17T10:02:45.577629619Z Requirement already satisfied: albumentations in /usr/local/lib/python3.11/dist-packages (from insightface) (1.4.0)
+2026-02-17T10:02:45.578059425Z Requirement already satisfied: prettytable in /usr/local/lib/python3.11/dist-packages (from insightface) (3.17.0)
+2026-02-17T10:02:45.580129110Z Requirement already satisfied: coloredlogs in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu) (15.0.1)
+2026-02-17T10:02:45.580478298Z Requirement already satisfied: flatbuffers in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu) (25.12.19)
+2026-02-17T10:02:45.581239254Z Requirement already satisfied: protobuf in /usr/local/lib/python3.11/dist-packages (from onnxruntime-gpu) (6.33.5)
+2026-02-17T10:02:45.619892419Z Requirement already satisfied: qudida>=0.0.4 in /usr/local/lib/python3.11/dist-packages (from albumentations->insightface) (0.0.4)
+2026-02-17T10:02:45.620351207Z Requirement already satisfied: opencv-python>=4.9.0 in /usr/local/lib/python3.11/dist-packages (from albumentations->insightface) (4.11.0.86)
+2026-02-17T10:02:45.631181982Z Requirement already satisfied: imageio!=2.35.0,>=2.33 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface) (2.37.2)
+2026-02-17T10:02:45.631491703Z Requirement already satisfied: tifffile>=2022.8.12 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface) (2026.2.16)
+2026-02-17T10:02:45.632185824Z Requirement already satisfied: lazy-loader>=0.4 in /usr/local/lib/python3.11/dist-packages (from scikit-image->insightface) (0.4)
+2026-02-17T10:02:45.651788468Z Requirement already satisfied: joblib>=1.3.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn->insightface) (1.5.3)
+2026-02-17T10:02:45.652237803Z Requirement already satisfied: threadpoolctl>=3.2.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn->insightface) (3.6.0)
+2026-02-17T10:02:45.674128506Z Requirement already satisfied: humanfriendly>=9.1 in /usr/local/lib/python3.11/dist-packages (from coloredlogs->onnxruntime-gpu) (10.0)
+2026-02-17T10:02:45.692880352Z Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2->torch>=1.6.0->torchsde) (2.1.5)
+2026-02-17T10:02:45.701789213Z Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (1.3.3)
+2026-02-17T10:02:45.702236032Z Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (0.12.1)
+2026-02-17T10:02:45.702755295Z Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (4.61.1)
+2026-02-17T10:02:45.703178846Z Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (1.4.9)
+2026-02-17T10:02:45.704329170Z Requirement already satisfied: pyparsing>=3 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (3.3.2)
+2026-02-17T10:02:45.704744186Z Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib->insightface) (2.9.0.post0)
+2026-02-17T10:02:45.726590678Z Requirement already satisfied: six>=1.5 in /usr/lib/python3/dist-packages (from python-dateutil>=2.7->matplotlib->insightface) (1.16.0)
+2026-02-17T10:02:45.732422655Z Requirement already satisfied: ml_dtypes>=0.5.0 in /usr/local/lib/python3.11/dist-packages (from onnx->insightface) (0.5.4)
+2026-02-17T10:02:45.741983749Z Requirement already satisfied: wcwidth in /usr/local/lib/python3.11/dist-packages (from prettytable->insightface) (0.2.13)
+2026-02-17T10:02:45.751600015Z Requirement already satisfied: mpmath>=0.19 in /usr/local/lib/python3.11/dist-packages (from sympy->torch>=1.6.0->torchsde) (1.3.0)
+2026-02-17T10:02:45.760929263Z Requirement already satisfied: typer>=0.24.0 in /usr/local/lib/python3.11/dist-packages (from typer-slim->transformers>=4.25.1) (0.24.0)
+2026-02-17T10:02:45.764233358Z Requirement already satisfied: click>=8.2.1 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.25.1) (8.3.1)
+2026-02-17T10:02:45.764775976Z Requirement already satisfied: rich>=12.3.0 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.25.1) (14.3.2)
+2026-02-17T10:02:45.765172684Z Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.11/dist-packages (from typer>=0.24.0->typer-slim->transformers>=4.25.1) (0.0.4)
+2026-02-17T10:02:45.773779334Z Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.11/dist-packages (from rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.25.1) (4.0.0)
+2026-02-17T10:02:45.774277539Z Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/dist-packages (from rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.25.1) (2.18.0)
+2026-02-17T10:02:45.780332903Z Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.11/dist-packages (from markdown-it-py>=2.2.0->rich>=12.3.0->typer>=0.24.0->typer-slim->transformers>=4.25.1) (0.1.2)
+2026-02-17T10:02:45.795497863Z Downloading piexif-1.1.3-py2.py3-none-any.whl (20 kB)
+2026-02-17T10:02:45.803814116Z Downloading segment_anything-1.0-py3-none-any.whl (36 kB)
+2026-02-17T10:02:45.812564138Z Downloading peft-0.18.1-py3-none-any.whl (556 kB)
+2026-02-17T10:02:45.828880019Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 557.0/557.0 kB 95.3 MB/s  0:00:00
+2026-02-17T10:02:45.886510232Z Downloading bitsandbytes-0.49.2-py3-none-manylinux_2_24_x86_64.whl (60.7 MB)
+2026-02-17T10:02:46.173561499Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.7/60.7 MB 212.4 MB/s  0:00:00
+2026-02-17T10:02:46.478684431Z Installing collected packages: segment_anything, piexif, bitsandbytes, peft
+2026-02-17T10:02:47.894270627Z Successfully installed bitsandbytes-0.49.2 peft-0.18.1 piexif-1.1.3 segment_anything-1.0
+2026-02-17T10:02:47.894453632Z WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-02-17T10:02:48.072100008Z [Handler] Installing ComfyUI-Impact-Pack via ZIP...
+2026-02-17T10:02:49.205409978Z [Handler] Successfully installed ComfyUI-Impact-Pack
+2026-02-17T10:02:49.207595704Z [Handler] Installing comfyui-essentials via ZIP...
+2026-02-17T10:02:49.681662831Z [Handler] Installing comfyui-reactor-node via ZIP...
+2026-02-17T10:02:50.287101517Z [Handler] Installing ComfyUI_IPAdapter_plus via ZIP...
+2026-02-17T10:02:50.786558884Z [Handler] Successfully installed ComfyUI_IPAdapter_plus
+2026-02-17T10:02:51.497557198Z [Handler] Downloaded 200 MB / 530 MB
+2026-02-17T10:02:51.835245675Z [Handler] Downloaded 400 MB / 530 MB
+2026-02-17T10:02:52.062950283Z [Handler] Download complete: inswapper_128.onnx
+2026-02-17T10:02:53.588440210Z [Handler] Downloaded 200 MB / 359 MB
+2026-02-17T10:02:54.463461417Z [Handler] Download complete: codeformer-v0.1.0.pth
+2026-02-17T10:02:54.473653141Z [Handler] Launching ComfyUI...
+2026-02-17T10:02:57.562946567Z WARNING: You need pytorch with cu130 or higher to use optimized CUDA operations.
+2026-02-17T10:02:57.562989951Z Found comfy_kitchen backend cuda: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_nvfp4']}
+2026-02-17T10:02:57.562997287Z Found comfy_kitchen backend eager: {'available': True, 'disabled': False, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8', 'scaled_mm_nvfp4']}
+2026-02-17T10:02:57.563002216Z Found comfy_kitchen backend triton: {'available': True, 'disabled': True, 'unavailable_reason': None, 'capabilities': ['apply_rope', 'apply_rope1', 'dequantize_nvfp4', 'dequantize_per_tensor_fp8', 'quantize_nvfp4', 'quantize_per_tensor_fp8']}
+2026-02-17T10:02:57.569772312Z Checkpoint files will always be loaded safely.
+2026-02-17T10:02:57.868376093Z Total VRAM 24122 MB, total RAM 515602 MB
+2026-02-17T10:02:57.868418010Z pytorch version: 2.4.1+cu124
+2026-02-17T10:02:57.869052084Z Set vram state to: NORMAL_VRAM
+2026-02-17T10:02:57.869886939Z Device: cuda:0 NVIDIA RTX A5000 : cudaMallocAsync
+2026-02-17T10:02:57.870167693Z Using async weight offloading with 2 streams
+2026-02-17T10:02:57.870347496Z Enabled pinned memory 489821.0
+2026-02-17T10:02:58.150245202Z Using pytorch attention
+2026-02-17T10:03:00.934829593Z Python version: 3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]
+2026-02-17T10:03:00.934861462Z ComfyUI version: 0.14.0
+2026-02-17T10:03:00.938077570Z ****** User settings have been changed to be stored on the server instead of browser storage. ******
+2026-02-17T10:03:00.938114843Z ****** For multi-user setups add the --multi-user CLI argument to enable multiple user profiles. ******
+2026-02-17T10:03:00.938774949Z ComfyUI frontend version: 1.38.14
+2026-02-17T10:03:00.939349551Z [Prompt Server] web root: /usr/local/lib/python3.11/dist-packages/comfyui_frontend_package/static
+2026-02-17T10:03:02.622361665Z ### Loading: ComfyUI-Impact-Pack (V8.28.2)
+2026-02-17T10:03:02.888211690Z ----------------------------------------------------------------------------
+2026-02-17T10:03:02.888228954Z [Impact Pack] The SAM2 functionality is unavailable because the `facebook/sam2` dependency is not installed.
+2026-02-17T10:03:02.888239334Z Installation command:
+2026-02-17T10:03:02.888243987Z /usr/bin/python3 -m pip install git+https://github.com/facebookresearch/sam2
+2026-02-17T10:03:02.888248280Z ----------------------------------------------------------------------------
+2026-02-17T10:03:02.932823820Z ----------------------------------------------------------------------------
+2026-02-17T10:03:02.932830563Z [Impact Pack] The SAM2 functionality is unavailable because the `facebook/sam2` dependency is not installed.
+2026-02-17T10:03:02.932839313Z Installation command:
+2026-02-17T10:03:02.932843916Z /usr/bin/python3 -m pip install git+https://github.com/facebookresearch/sam2
+2026-02-17T10:03:02.932848176Z ----------------------------------------------------------------------------
+2026-02-17T10:03:02.968240434Z [Impact Pack] Wildcard total size (0.00 MB) is within cache limit (50.00 MB). Using full cache mode.
+2026-02-17T10:03:02.970246252Z [Impact Pack] Wildcards loading done.
+2026-02-17T10:03:03.415033700Z generated new fontManager
+2026-02-17T10:03:03.896849656Z [0;33m[ReActor][0m - [38;5;173mSTATUS[0m - [0;32mRunning v0.6.2-b1 in ComfyUI[0m
+2026-02-17T10:03:03.896855216Z Torch version: 2.4.1+cu124
+2026-02-17T10:03:03.896859819Z Creating new Ultralytics Settings v0.0.6 file ✅
+2026-02-17T10:03:03.896864116Z View Ultralytics Settings with 'yolo settings' or at '/root/.config/Ultralytics/settings.json'
+2026-02-17T10:03:03.896868566Z Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/quickstart/#ultralytics-settings.
+2026-02-17T10:03:04.129131717Z Import times for custom nodes:
+2026-02-17T10:03:04.129137217Z    0.0 seconds: /app_code/ComfyUI/custom_nodes/websocket_image_save.py
+2026-02-17T10:03:04.129142567Z    0.0 seconds: /app_code/ComfyUI/custom_nodes/ComfyUI_IPAdapter_plus
+2026-02-17T10:03:04.129146823Z    0.0 seconds: /app_code/ComfyUI/custom_nodes/ComfyUI_essentials-main
+2026-02-17T10:03:04.129150820Z    0.4 seconds: /app_code/ComfyUI/custom_nodes/ComfyUI-Impact-Pack
+2026-02-17T10:03:04.129154843Z    1.1 seconds: /app_code/ComfyUI/custom_nodes/ComfyUI-ReActor-main
+2026-02-17T10:03:04.133372712Z Context impl SQLiteImpl.
+2026-02-17T10:03:04.133429308Z Will assume non-transactional DDL.
+2026-02-17T10:03:04.137584989Z Context impl SQLiteImpl.
+2026-02-17T10:03:04.137612359Z Will assume non-transactional DDL.
+2026-02-17T10:03:04.146660269Z Running upgrade  -> 0001_assets, Initial assets schema
+2026-02-17T10:03:04.146675635Z Revision ID: 0001_assets
+2026-02-17T10:03:04.146680966Z Revises: None
+2026-02-17T10:03:04.146685839Z Create Date: 2025-12-10 00:00:00
+2026-02-17T10:03:04.169309839Z Database upgraded from None to 0001_assets
+2026-02-17T10:03:04.219329967Z Assets scan(roots=['models']) completed in 0.050s (created=12, skipped_existing=0, orphans_pruned=0, total_seen=13)
+2026-02-17T10:03:04.258367044Z Starting server
+2026-02-17T10:03:04.258505936Z To see the GUI go to: http://0.0.0.0:8188
+2026-02-17T10:03:04.510395185Z [Handler] ComfyUI is ready!
+2026-02-17T10:03:05.140225988Z [Handler] Downloaded 200 MB / 6617 MB
+2026-02-17T10:03:05.495255946Z [Handler] Downloaded 400 MB / 6617 MB
+2026-02-17T10:03:05.838513742Z [Handler] Downloaded 600 MB / 6617 MB
+2026-02-17T10:03:06.206145292Z [Handler] Downloaded 800 MB / 6617 MB
+2026-02-17T10:03:06.546758663Z [Handler] Downloaded 1000 MB / 6617 MB
+2026-02-17T10:03:06.894162013Z [Handler] Downloaded 1200 MB / 6617 MB
+2026-02-17T10:03:07.226426838Z [Handler] Downloaded 1400 MB / 6617 MB
+2026-02-17T10:03:07.578306930Z [Handler] Downloaded 1600 MB / 6617 MB
+2026-02-17T10:03:07.949803987Z [Handler] Downloaded 1800 MB / 6617 MB
+2026-02-17T10:03:08.299903430Z [Handler] Downloaded 2000 MB / 6617 MB
+2026-02-17T10:03:08.647301251Z [Handler] Downloaded 2200 MB / 6617 MB
+2026-02-17T10:03:08.989804738Z [Handler] Downloaded 2400 MB / 6617 MB
+2026-02-17T10:03:09.330370752Z [Handler] Downloaded 2600 MB / 6617 MB
+2026-02-17T10:03:09.670460963Z [Handler] Downloaded 2800 MB / 6617 MB
+2026-02-17T10:03:10.016753246Z [Handler] Downloaded 3000 MB / 6617 MB
+2026-02-17T10:03:10.378242087Z [Handler] Downloaded 3200 MB / 6617 MB
+2026-02-17T10:03:10.846140572Z [Handler] Downloaded 3400 MB / 6617 MB
+2026-02-17T10:03:11.303743044Z [Handler] Downloaded 3600 MB / 6617 MB
+2026-02-17T10:03:11.656752014Z [Handler] Downloaded 3800 MB / 6617 MB
+2026-02-17T10:03:12.005729710Z [Handler] Downloaded 4000 MB / 6617 MB
+2026-02-17T10:03:12.355663493Z [Handler] Downloaded 4200 MB / 6617 MB
+2026-02-17T10:03:12.852646279Z [Handler] Downloaded 4400 MB / 6617 MB
+2026-02-17T10:03:13.275903193Z [Handler] Downloaded 4600 MB / 6617 MB
+2026-02-17T10:03:13.635543673Z [Handler] Downloaded 4800 MB / 6617 MB
+2026-02-17T10:03:13.988876547Z [Handler] Downloaded 5000 MB / 6617 MB
+2026-02-17T10:03:14.340215481Z [Handler] Downloaded 5200 MB / 6617 MB
+2026-02-17T10:03:14.686207422Z [Handler] Downloaded 5400 MB / 6617 MB
+2026-02-17T10:03:15.289364938Z [Handler] Downloaded 5600 MB / 6617 MB
+2026-02-17T10:03:15.658319656Z [Handler] Downloaded 5800 MB / 6617 MB
+2026-02-17T10:03:16.008384130Z [Handler] Downloaded 6000 MB / 6617 MB
+2026-02-17T10:03:16.358191945Z [Handler] Downloaded 6200 MB / 6617 MB
+2026-02-17T10:03:16.727478704Z [Handler] Downloaded 6400 MB / 6617 MB
+2026-02-17T10:03:17.144829485Z [Handler] Downloaded 6600 MB / 6617 MB
+2026-02-17T10:03:17.178901800Z [Handler] Download complete: sd_xl_base_1.0.safetensors
+2026-02-17T10:03:25.004232268Z [Handler] Downloaded 200 MB / 6617 MB
+2026-02-17T10:03:32.263650671Z [Handler] Downloaded 400 MB / 6617 MB
+2026-02-17T10:03:39.457598940Z [Handler] Downloaded 600 MB / 6617 MB
+2026-02-17T10:03:44.813376957Z [Handler] Downloaded 800 MB / 6617 MB
+2026-02-17T10:03:47.492622423Z [Handler] Downloaded 1000 MB / 6617 MB
+2026-02-17T10:03:50.524048266Z [Handler] Downloaded 1200 MB / 6617 MB
+2026-02-17T10:03:53.501741000Z [Handler] Downloaded 1400 MB / 6617 MB
+2026-02-17T10:03:56.298433787Z [Handler] Downloaded 1600 MB / 6617 MB
+2026-02-17T10:03:59.561685609Z [Handler] Downloaded 1800 MB / 6617 MB
+2026-02-17T10:04:02.749081620Z [Handler] Downloaded 2000 MB / 6617 MB
+2026-02-17T10:04:06.054802101Z [Handler] Downloaded 2200 MB / 6617 MB
+2026-02-17T10:04:09.101629842Z [Handler] Downloaded 2400 MB / 6617 MB
+2026-02-17T10:04:12.722855255Z [Handler] Downloaded 2600 MB / 6617 MB
+2026-02-17T10:04:20.994420902Z [Handler] Downloaded 2800 MB / 6617 MB
+2026-02-17T10:04:28.558965231Z [Handler] Downloaded 3000 MB / 6617 MB
+2026-02-17T10:04:31.991803086Z [Handler] Downloaded 3200 MB / 6617 MB
+2026-02-17T10:04:35.264199908Z [Handler] Downloaded 3400 MB / 6617 MB
+2026-02-17T10:04:39.603878915Z [Handler] Downloaded 3600 MB / 6617 MB
+2026-02-17T10:04:43.318818146Z [Handler] Downloaded 3800 MB / 6617 MB
+2026-02-17T10:04:46.638909586Z [Handler] Downloaded 4000 MB / 6617 MB
+2026-02-17T10:04:49.462636565Z [Handler] Downloaded 4200 MB / 6617 MB
+2026-02-17T10:04:54.406025864Z [Handler] Downloaded 4400 MB / 6617 MB
+2026-02-17T10:04:57.033041313Z [Handler] Downloaded 4600 MB / 6617 MB
+2026-02-17T10:04:59.916212320Z [Handler] Downloaded 4800 MB / 6617 MB
+2026-02-17T10:05:03.238582352Z [Handler] Downloaded 5000 MB / 6617 MB
+2026-02-17T10:05:06.421143239Z [Handler] Downloaded 5200 MB / 6617 MB
+2026-02-17T10:05:09.025222958Z [Handler] Downloaded 5400 MB / 6617 MB
+2026-02-17T10:05:11.710636747Z [Handler] Downloaded 5600 MB / 6617 MB
+2026-02-17T10:05:14.556198279Z [Handler] Downloaded 5800 MB / 6617 MB
+2026-02-17T10:05:16.901838364Z [Handler] Downloaded 6000 MB / 6617 MB
+2026-02-17T10:05:19.375796983Z [Handler] Downloaded 6200 MB / 6617 MB
+2026-02-17T10:05:21.965453457Z [Handler] Downloaded 6400 MB / 6617 MB
+2026-02-17T10:05:24.884075568Z [Handler] Downloaded 6600 MB / 6617 MB
+2026-02-17T10:05:25.072887212Z [Handler] Download complete: URPMPonyXL-HybridV1.safetensors
+2026-02-17T10:05:25.895407117Z [Handler] Downloaded 200 MB / 319 MB
+2026-02-17T10:05:26.114538094Z [Handler] Download complete: sdxl_vae.safetensors
+2026-02-17T10:05:26.550102726Z [Handler] Download complete: 4x-UltraSharp.pth
+2026-02-17T10:05:27.140405191Z [Handler] Downloaded 200 MB / 4772 MB
+2026-02-17T10:05:27.507858428Z [Handler] Downloaded 400 MB / 4772 MB
+2026-02-17T10:05:27.897611186Z [Handler] Downloaded 600 MB / 4772 MB
+2026-02-17T10:05:28.276200479Z [Handler] Downloaded 800 MB / 4772 MB
+2026-02-17T10:05:28.706243325Z [Handler] Downloaded 1000 MB / 4772 MB
+2026-02-17T10:05:29.111621594Z [Handler] Downloaded 1200 MB / 4772 MB
+2026-02-17T10:05:29.477138541Z [Handler] Downloaded 1400 MB / 4772 MB
+2026-02-17T10:05:29.851061597Z [Handler] Downloaded 1600 MB / 4772 MB
+2026-02-17T10:05:30.231889894Z [Handler] Downloaded 1800 MB / 4772 MB
+2026-02-17T10:05:30.601402942Z [Handler] Downloaded 2000 MB / 4772 MB
+2026-02-17T10:05:30.977011419Z [Handler] Downloaded 2200 MB / 4772 MB
+2026-02-17T10:05:31.335969957Z [Handler] Downloaded 2400 MB / 4772 MB
+2026-02-17T10:05:31.751870415Z [Handler] Downloaded 2600 MB / 4772 MB
+2026-02-17T10:05:32.106307501Z [Handler] Downloaded 2800 MB / 4772 MB
+2026-02-17T10:05:32.490713343Z [Handler] Downloaded 3000 MB / 4772 MB
+2026-02-17T10:05:32.865269886Z [Handler] Downloaded 3200 MB / 4772 MB
+2026-02-17T10:05:33.318285069Z [Handler] Downloaded 3400 MB / 4772 MB
+2026-02-17T10:05:33.853698504Z [Handler] Downloaded 3600 MB / 4772 MB
+2026-02-17T10:05:34.313732711Z [Handler] Downloaded 3800 MB / 4772 MB
+2026-02-17T10:05:34.671060576Z [Handler] Downloaded 4000 MB / 4772 MB
+2026-02-17T10:05:35.029468057Z [Handler] Downloaded 4200 MB / 4772 MB
+2026-02-17T10:05:35.376839381Z [Handler] Downloaded 4400 MB / 4772 MB
+2026-02-17T10:05:35.734495883Z [Handler] Downloaded 4600 MB / 4772 MB
+2026-02-17T10:05:36.036386408Z [Handler] Download complete: controlnet-depth-sdxl-1.0.safetensors
+2026-02-17T10:05:36.594070627Z [Handler] Downloaded 200 MB / 4772 MB
+2026-02-17T10:05:36.906514529Z [Handler] Downloaded 400 MB / 4772 MB
+2026-02-17T10:05:37.221652644Z [Handler] Downloaded 600 MB / 4772 MB
+2026-02-17T10:05:37.548160376Z [Handler] Downloaded 800 MB / 4772 MB
+2026-02-17T10:05:37.875358347Z [Handler] Downloaded 1000 MB / 4772 MB
+2026-02-17T10:05:38.217017315Z [Handler] Downloaded 1200 MB / 4772 MB
+2026-02-17T10:05:38.551993143Z [Handler] Downloaded 1400 MB / 4772 MB
+2026-02-17T10:05:38.904054475Z [Handler] Downloaded 1600 MB / 4772 MB
+2026-02-17T10:05:39.231889898Z [Handler] Downloaded 1800 MB / 4772 MB
+2026-02-17T10:05:39.544738831Z [Handler] Downloaded 2000 MB / 4772 MB
+2026-02-17T10:05:39.858277493Z [Handler] Downloaded 2200 MB / 4772 MB
+2026-02-17T10:05:40.181498161Z [Handler] Downloaded 2400 MB / 4772 MB
+2026-02-17T10:05:40.531984918Z [Handler] Downloaded 2600 MB / 4772 MB
+2026-02-17T10:05:40.950014824Z [Handler] Downloaded 2800 MB / 4772 MB
+2026-02-17T10:05:41.302424497Z [Handler] Downloaded 3000 MB / 4772 MB
+2026-02-17T10:05:41.683350551Z [Handler] Downloaded 3200 MB / 4772 MB
+2026-02-17T10:05:42.034858852Z [Handler] Downloaded 3400 MB / 4772 MB
+2026-02-17T10:05:42.536596009Z [Handler] Downloaded 3600 MB / 4772 MB
+2026-02-17T10:05:42.997672960Z [Handler] Downloaded 3800 MB / 4772 MB
+2026-02-17T10:05:43.547223191Z [Handler] Downloaded 4000 MB / 4772 MB
+2026-02-17T10:05:43.952262052Z [Handler] Downloaded 4200 MB / 4772 MB
+2026-02-17T10:05:44.348158630Z [Handler] Downloaded 4400 MB / 4772 MB
+2026-02-17T10:05:44.757623151Z [Handler] Downloaded 4600 MB / 4772 MB
+2026-02-17T10:05:45.127891326Z [Handler] Download complete: OpenPoseXL2.safetensors
+2026-02-17T10:05:49.748582114Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:05:49.991123599Z [Handler] Download complete: human_body_realism_sdxl_lora.safetensors
+2026-02-17T10:05:50.681495210Z [Handler] Downloaded 200 MB / 870 MB
+2026-02-17T10:05:51.267750016Z [Handler] Downloaded 400 MB / 870 MB
+2026-02-17T10:05:51.712072713Z [Handler] Downloaded 600 MB / 870 MB
+2026-02-17T10:05:52.127438112Z [Handler] Downloaded 800 MB / 870 MB
+2026-02-17T10:05:52.270591690Z [Handler] Download complete: realistic_skin_texture_sdxl_lora.safetensors
+2026-02-17T10:05:53.921906884Z [Handler] Download complete: LUSTIFY_SDXL_v1.safetensors
+2026-02-17T10:06:00.773237102Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:06:01.071637879Z [Handler] Download complete: DeepThroatXL_v1.safetensors
+2026-02-17T10:06:05.926910536Z [Handler] Downloaded 200 MB / 435 MB
+2026-02-17T10:06:09.664575526Z [Handler] Downloaded 400 MB / 435 MB
+2026-02-17T10:06:10.164988314Z [Handler] Download complete: RealismLora_v3_lite.safetensors
+2026-02-17T10:06:16.699814208Z [Handler] Downloaded 200 MB / 435 MB
+2026-02-17T10:06:19.283769721Z [Handler] Downloaded 400 MB / 435 MB
+2026-02-17T10:06:19.714083396Z [Handler] Download complete: PonyAmateur_v2.safetensors
+2026-02-17T10:06:23.422392761Z [Handler] Downloaded 200 MB / 435 MB
+2026-02-17T10:06:26.644188825Z [Handler] Downloaded 400 MB / 435 MB
+2026-02-17T10:06:27.165705610Z [Handler] Download complete: PerfectFacial_Pony_v1.safetensors
+2026-02-17T10:06:31.270154118Z [Handler] Download complete: PhotoRealBetterNudes_v3.safetensors
+2026-02-17T10:06:33.656262894Z [Handler] Download complete: RealisticFutaTrans_v1.safetensors
+2026-02-17T10:06:38.882311343Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:06:39.501369343Z [Handler] Download complete: ButtPlugUnderThong_v075.safetensors
+2026-02-17T10:06:46.609615212Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:06:46.882638753Z [Handler] Download complete: AnalSideMissionary_Pony_v1.safetensors
+2026-02-17T10:06:51.736647505Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:06:52.043847595Z [Handler] Download complete: AnalAbuse_v1.safetensors
+2026-02-17T10:06:56.367686667Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:06:56.629754313Z [Handler] Download complete: PerfectAnal_Pony_v1.safetensors
+2026-02-17T10:07:00.543634221Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:07:00.810536246Z [Handler] Download complete: PerfectBreasts_v2.safetensors
+2026-02-17T10:07:03.288708221Z [Handler] Download complete: UltraRealBreastDetailer_v2.safetensors
+2026-02-17T10:07:07.194786788Z [Handler] Downloaded 200 MB / 218 MB
+2026-02-17T10:07:07.470902575Z [Handler] Download complete: BetterCum_Pony_v1.safetensors
+2026-02-17T10:07:10.873456048Z [Handler] Download complete: Realistic_Skin_Pony_v0.1beta.safetensors
+2026-02-17T10:07:12.565544371Z [Handler] Download complete: DetailedEyes_XL_v3.safetensors
+2026-02-17T10:07:12.799928424Z [Handler] Download failed for https://civitai.com/api/download/models/559675 (Status: 404)
+2026-02-17T10:07:13.371424037Z [Handler] Downloaded 200 MB / 435 MB
+2026-02-17T10:07:13.751057552Z [Handler] Downloaded 400 MB / 435 MB
+2026-02-17T10:07:13.814599164Z [Handler] Download complete: User_Specific_Girl.safetensors
+2026-02-17T10:07:14.458145944Z [Handler] Downloaded 200 MB / 808 MB
+2026-02-17T10:07:14.877118407Z [Handler] Downloaded 400 MB / 808 MB
+2026-02-17T10:07:15.253928902Z [Handler] Downloaded 600 MB / 808 MB
+2026-02-17T10:07:15.668269601Z [Handler] Downloaded 800 MB / 808 MB
+2026-02-17T10:07:15.684403718Z [Handler] Download complete: ip-adapter-plus-face_sdxl_vit-h.safetensors
+2026-02-17T10:07:16.385328510Z [Handler] Downloaded 200 MB / 3762 MB
+2026-02-17T10:07:16.825755927Z [Handler] Downloaded 400 MB / 3762 MB
+2026-02-17T10:07:17.259995706Z [Handler] Downloaded 600 MB / 3762 MB
+2026-02-17T10:07:17.710528681Z [Handler] Downloaded 800 MB / 3762 MB
+2026-02-17T10:07:18.100702535Z [Handler] Downloaded 1000 MB / 3762 MB
+2026-02-17T10:07:18.497165615Z [Handler] Downloaded 1200 MB / 3762 MB
+2026-02-17T10:07:18.895991047Z [Handler] Downloaded 1400 MB / 3762 MB
+2026-02-17T10:07:19.284858935Z [Handler] Downloaded 1600 MB / 3762 MB
+2026-02-17T10:07:19.806921979Z [Handler] Downloaded 1800 MB / 3762 MB
+2026-02-17T10:07:20.192529439Z [Handler] Downloaded 2000 MB / 3762 MB
+2026-02-17T10:07:20.617702579Z [Handler] Downloaded 2200 MB / 3762 MB
+2026-02-17T10:07:20.972699479Z [Handler] Downloaded 2400 MB / 3762 MB
+2026-02-17T10:07:21.309196088Z [Handler] Downloaded 2600 MB / 3762 MB
+2026-02-17T10:07:21.601466204Z [Handler] Downloaded 2800 MB / 3762 MB
+2026-02-17T10:07:22.050534109Z [Handler] Downloaded 3000 MB / 3762 MB
+2026-02-17T10:07:22.537266589Z [Handler] Downloaded 3200 MB / 3762 MB
+2026-02-17T10:07:22.916350535Z [Handler] Downloaded 3400 MB / 3762 MB
+2026-02-17T10:07:23.368562422Z [Handler] Downloaded 3600 MB / 3762 MB
+2026-02-17T10:07:23.683077637Z [Handler] Download complete: CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors
+2026-02-17T10:07:23.687198196Z [Handler] Warning: Quality LoRA missing: Ebony_Skin_Slider.safetensors
+2026-02-17T10:07:24.330813732Z got prompt
+2026-02-17T10:07:24.331564227Z invalid prompt: {'type': 'missing_node_type', 'message': "Node 'ETN_LoadImageBase64' not found. The custom node may not be installed.", 'details': "Node ID '#input_face_source'", 'extra_info': {'node_id': 'input_face_source', 'class_type': 'ETN_LoadImageBase64', 'node_title': 'ETN_LoadImageBase64'}}
+2026-02-17T10:07:24.568117362Z {"requestId": "fa5917e2-a893-4a15-84b3-494f9c60d913-e2", "message": "Finished.", "level": "INFO"}
