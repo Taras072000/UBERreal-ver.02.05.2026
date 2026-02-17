@@ -40,9 +40,10 @@ dp = Dispatcher()
 runpod.api_key = RUNPOD_API_KEY
 
 # FSM States
-class TrainFace(StatesGroup):
+class ImportLora(StatesGroup):
+    waiting_for_file = State()
     waiting_for_name = State()
-    waiting_for_photos = State()
+
 
 # User settings storage (Persistent JSON)
 SETTINGS_FILE = "user_settings.json"
@@ -564,305 +565,9 @@ async def cmd_status(message: types.Message):
     except Exception as e:
         await msg.edit_text(f"❌ Ошибка RunPod API: {e}")
 
-# --- Training Handlers ---
+# --- Training Handlers REMOVED per user request ---
 
-@dp.message(Command("train_face"))
-async def cmd_train_face(message: types.Message, state: FSMContext):
-    """Start the face training process"""
-    await state.set_state(TrainFace.waiting_for_name)
-    await message.answer(
-        "🧠 <b>Обучение персональной LoRA</b>\n\n"
-        "Я могу обучить модель на вашем лице. Это займет около 10-15 минут.\n\n"
-        "📸 <b>Требования к фото (15-30 шт):</b>\n"
-        "• 5-7 фото анфас (прямо)\n"
-        "• 5-7 фото в пол-оборота\n"
-        "• 3-5 фото в профиль\n"
-        "• Разные эмоции (улыбка, серьезное)\n"
-        "• Разное освещение и фон\n"
-        "❌ Без очков, масок и других людей в кадре\n\n"
-        "Для начала, придумайте <b>имя персонажа</b> (на латинице, одним словом).\n"
-        "<i>Например: alex, elena, my_boss</i>",
-        parse_mode="HTML"
-    )
-
-@dp.message(TrainFace.waiting_for_name)
-async def process_train_name(message: types.Message, state: FSMContext):
-    name = message.text.strip()
-    if not name.replace("_", "").isalnum() or not name.isascii():
-        await message.reply("❌ Имя должно содержать только латинские буквы и цифры (без пробелов). Попробуйте еще раз.")
-        return
-    
-    await state.update_data(name=name, photos=[])
-    await state.set_state(TrainFace.waiting_for_photos)
-    
-    kb = [[InlineKeyboardButton(text="✅ Готово / Начать обучение", callback_data="train_start")]]
-    
-    await message.answer(
-        f"👍 Отлично, персонаж будет называться: <b>{name}</b>\n\n"
-        "Теперь отправьте мне <b>15-30 фотографий</b> этого человека.\n"
-        "Требования:\n"
-        "• Разные ракурсы (анфас, профиль, пол-оборота)\n"
-        "• Разные эмоции (улыбка, серьезное лицо)\n"
-        "• Хорошее освещение, без очков и масок\n"
-        "• Желательно квадратные (1:1)\n\n"
-        "📸 <i>Вы можете прислать их по одной, группой или архивом ZIP.</i>\n"
-        "Как закончите — нажмите кнопку ниже.",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=kb),
-        parse_mode="HTML"
-    )
-
-@dp.message(TrainFace.waiting_for_photos)
-async def process_train_photo_handler(message: types.Message, state: FSMContext):
-    data = await state.get_data()
-    photos = data.get("photos", [])
-    
-    if message.photo:
-        # Get the largest photo
-        photo = message.photo[-1]
-        photos.append({"file_id": photo.file_id, "type": "photo"})
-        msg_text = f"📥 Загружено фото: {len(photos)}"
-    elif message.document:
-        doc = message.document
-        mime = doc.mime_type or ""
-        if "image" in mime:
-            photos.append({"file_id": doc.file_id, "type": "doc_image"})
-            msg_text = f"📥 Документ (фото) принят. Всего: {len(photos)}"
-        elif "zip" in mime or doc.file_name.endswith(".zip"):
-            photos.append({"file_id": doc.file_id, "type": "zip"})
-            msg_text = f"📦 ZIP-архив принят. Всего файлов: {len(photos)}"
-        else:
-            await message.reply("❌ Пожалуйста, присылайте только фото (JPG/PNG) или ZIP-архив.")
-            return
-    else:
-         return
-
-    await state.update_data(photos=photos)
-    
-    # Update status
-    kb = []
-    if len(photos) >= 15:
-        kb.append([InlineKeyboardButton(text=f"🚀 Начать ({len(photos)} фото)", callback_data="train_check_requirements")])
-    
-    await message.answer(msg_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=kb) if kb else None)
-
-@dp.callback_query(F.data == "train_check_requirements")
-async def process_check_requirements(callback: types.CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    photos = data.get("photos", [])
-    
-    if len(photos) < 15:
-        await callback.answer(f"❌ Нужно минимум 15 фото! Сейчас: {len(photos)}", show_alert=True)
-        return
-
-    # Ask for confirmation of requirements
-    kb = [
-        [InlineKeyboardButton(text="✅ Да, все есть", callback_data="train_start_confirmed")],
-        [InlineKeyboardButton(text="❌ Нет, добавить еще", callback_data="train_add_more")]
-    ]
-    
-    await callback.message.edit_text(
-        "🛑 <b>Проверка качества данных</b>\n\n"
-        "Для хорошего результата убедитесь, что в ваших фото есть:\n"
-        "1. 👤 <b>Анфас</b> (лицо прямо) - 5-7 шт.\n"
-        "2. 🔄 <b>Полуоборот</b> (слева/справа) - 5-7 шт.\n"
-        "3. 👤 <b>Профиль</b> - 3-5 шт.\n"
-        "4. 😄 <b>Эмоции</b> (улыбка, серьезное, смех)\n"
-        "5. 💡 <b>Разное освещение</b>\n\n"
-        "<i>Если будет только 1 ракурс - нейросеть не сможет поворачивать голову!</i>\n\n"
-        "Подтверждаете, что dataset разнообразный?",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=kb),
-        parse_mode="HTML"
-    )
-
-@dp.callback_query(F.data == "train_add_more")
-async def process_add_more(callback: types.CallbackQuery):
-    await callback.message.delete()
-    await callback.answer("Ок, жду еще фото...")
-
-@dp.callback_query(F.data == "train_start_confirmed")
-async def process_start_training(callback: types.CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    name = data.get("name")
-    photos = data.get("photos", [])
-    
-    await callback.message.edit_text(
-        f"⏳ <b>Подготовка к обучению...</b>\n"
-        f"Персонаж: {name}\n"
-        f"Файлов: {len(photos)}\n\n"
-        "Скачиваю фото и формирую датасет. Это займет минуту...",
-        parse_mode="HTML"
-    )
-    
-    # Download photos logic would go here
-    # Since we are in a serverless environment (bot might be local or on a VPS), we need to gather these
-    # and send them to the worker.
-    # For now, we'll collect URLs or download them.
-    
-    # Create a task to handle download and request
-    asyncio.create_task(run_training_task(callback.message.chat.id, callback.from_user.id, name, photos, state))
-    await callback.answer()
-
-async def run_training_task(chat_id, user_id, name, photos, state: FSMContext):
-    try:
-        # 1. Download all photos into a buffer (ZIP)
-        import io
-        import zipfile
-        
-        zip_buffer = io.BytesIO()
-        
-        # Limit to 30 photos to prevent abuse/memory issues
-        photos = photos[:30]
-        
-        status_msg = await bot.send_message(chat_id, f"📥 Скачиваю {len(photos)} фото...")
-        
-        count = 0
-        with zipfile.ZipFile(zip_buffer, "w") as zf:
-            for i, p in enumerate(photos):
-                if i % 5 == 0:
-                     try:
-                         await bot.edit_message_text(text=f"📥 Скачиваю фото {i+1}/{len(photos)}...", chat_id=chat_id, message_id=status_msg.message_id)
-                     except: pass
-                
-                try:
-                    file_info = await bot.get_file(p["file_id"])
-                    file_content = await bot.download_file(file_info.file_path)
-                    
-                    if p["type"] == "zip":
-                        # Extract zip content and add to our zip
-                        # Need to read content into memory first
-                        content_bytes = file_content.read()
-                        with zipfile.ZipFile(io.BytesIO(content_bytes)) as input_zip:
-                            for file_name in input_zip.namelist():
-                                # Filter only images to avoid garbage
-                                if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
-                                    # Use a flat name to avoid directory issues
-                                    clean_name = os.path.basename(file_name)
-                                    zf.writestr(f"ext_{i}_{clean_name}", input_zip.read(file_name))
-                    else:
-                         zf.writestr(f"image_{i}.jpg", file_content.read())
-                    count += 1
-                except Exception as e:
-                    logger.error(f"Failed to download photo {i}: {e}")
-        
-        zip_buffer.seek(0)
-        # zip_b64 = base64.b64encode(zip_buffer.getvalue()).decode("utf-8")
-        
-        # Upload to transfer.sh (Temporary storage to avoid payload limits)
-        await bot.edit_message_text(text="☁️ Загружаю архив на сервер...", chat_id=chat_id, message_id=status_msg.message_id)
-        
-        dataset_url = None
-        try:
-            # Use asyncio to run synchronous requests in a thread
-            def upload_dataset():
-                # 1. Try transfer.sh (PUT - more reliable for large files)
-                try:
-                    logger.info("Uploading to transfer.sh...")
-                    response = requests.put(
-                        f'https://transfer.sh/{name}_dataset.zip', 
-                        data=zip_buffer.getvalue(),
-                        timeout=180 # 3 minutes timeout
-                    )
-                    if response.status_code == 200:
-                        url = response.text.strip()
-                        if url.startswith("http"): return url
-                except Exception as e:
-                    logger.error(f"transfer.sh failed: {e}")
-
-                # 2. Try file.io (Fallback)
-                try:
-                    logger.info("Uploading to file.io...")
-                    # file.io expects 'file' field in multipart form
-                    files = {'file': (f'{name}_dataset.zip', zip_buffer.getvalue())}
-                    response = requests.post('https://file.io', files=files, timeout=180)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data.get("success"): return data.get("link")
-                except Exception as e:
-                    logger.error(f"file.io failed: {e}")
-                
-                # 3. Try tmpfiles.org (Second Fallback)
-                try:
-                    logger.info("Uploading to tmpfiles.org...")
-                    files = {'file': (f'{name}_dataset.zip', zip_buffer.getvalue())}
-                    response = requests.post('https://tmpfiles.org/api/v1/upload', files=files, timeout=180)
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data.get("status") == "success":
-                            # Convert to direct download link
-                            url = data["data"]["url"]
-                            return url.replace("tmpfiles.org/", "tmpfiles.org/dl/")
-                except Exception as e:
-                    logger.error(f"tmpfiles.org failed: {e}")
-
-                raise Exception("All upload services failed")
-            
-            dataset_url = await asyncio.to_thread(upload_dataset)
-            logger.info(f"Dataset uploaded to: {dataset_url}")
-        except Exception as up_err:
-            logger.error(f"Upload failed: {up_err}")
-            await bot.send_message(chat_id, f"❌ Не удалось загрузить датасет ({up_err}). Попробуйте меньше фото.")
-            return
-
-        # 2. Send to RunPod
-        endpoint = runpod.Endpoint(RUNPOD_ENDPOINT_ID)
-        
-        payload = {
-            "input": {
-                "operation": "train_lora",
-                "lora_name": name,
-                "dataset_url": dataset_url, # Changed from base64
-                "user_id": user_id 
-            }
-        }
-        
-        await bot.delete_message(chat_id, status_msg.message_id)
-        await bot.send_message(chat_id, "🚀 <b>Запуск обучения на GPU...</b>\nОжидайте, это может занять 10-20 минут.", parse_mode="HTML")
-        await state.clear() # Clear state
-        
-        # Run Async
-        run_request = endpoint.run(payload)
-        
-        # Wait for result (Long timeout for training)
-        # RunPod serverless usually times out after 300s-600s in the http request, but execution continues.
-        # We need to poll properly.
-        
-        output = await asyncio.to_thread(run_request.output, timeout=1200) # 20 mins
-        
-        if output and "lora_url" in output:
-            # Success
-            lora_url = output["lora_url"]
-            
-            # Save to user settings
-            settings = get_settings(user_id)
-            if "custom_loras" not in settings:
-                settings["custom_loras"] = {}
-            settings["custom_loras"][name] = lora_url
-            
-            await bot.send_message(chat_id, f"✅ <b>Обучение завершено!</b>\nLoRA создана: {name}\n\nТеперь вы можете использовать её, указав имя <code>{name}</code> в промпте.\n\n⚠️ <b>ВАЖНО:</b>\nСсылка на модель временная (14 дней). Сейчас я отправлю вам сам файл .safetensors. <b>Сохраните его!</b> Если ссылка перестанет работать, вы сможете загрузить файл снова.", parse_mode="HTML")
-            
-            # Download and send the file to user as backup
-            try:
-                import aiohttp
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(lora_url) as resp:
-                        if resp.status == 200:
-                            from aiogram.types import BufferedInputFile
-                            file_data = await resp.read()
-                            input_file = BufferedInputFile(file_data, filename=f"{name}.safetensors")
-                            await bot.send_document(chat_id, input_file, caption=f"📦 Ваш файл модели: {name}.safetensors\nСохраните его надежно!")
-            except Exception as e:
-                logger.error(f"Failed to send LoRA file: {e}")
-                await bot.send_message(chat_id, f"⚠️ Не удалось отправить файл в чат ({e}). Но ссылка работает!")
-            
-        elif output and "error" in output:
-             await bot.send_message(chat_id, f"❌ Ошибка обучения: {output['error']}")
-        else:
-             await bot.send_message(chat_id, "⚠️ Обучение завершилось, но результат не получен.")
-             
-    except Exception as e:
-        logger.error(f"Training failed: {e}")
-        await bot.send_message(chat_id, f"❌ Критическая ошибка: {e}")
-        await state.clear()
+# --- Identity / Settings Handlers ---
 
 async def menu_identity(message: types.Message):
     current = get_settings(message.from_user.id).get("identity_strength", 0.6)
@@ -1012,6 +717,171 @@ async def process_style_ultrareal_breasts(callback: types.CallbackQuery):
     await callback.answer("🍒 UltraReal Details выбран!")
     await callback.message.answer("✅ Выбран стиль: 🍒 UltraReal Details. Отправьте промпт.")
 
+@dp.message(ImportLora.waiting_for_file)
+async def process_import_lora_file(message: types.Message, state: FSMContext):
+    url = ""
+    
+    # 1. Check if it's a direct link (Text)
+    if message.text and (message.text.startswith("http://") or message.text.startswith("https://")):
+        url = message.text.strip()
+        
+        # HuggingFace smart fix: /blob/ -> /resolve/
+        if "huggingface.co" in url and "/blob/" in url:
+            url = url.replace("/blob/", "/resolve/")
+
+        # CivitAI smart fix: Convert model page URL to download API URL
+        if "civitai.com/models/" in url and "/api/download" not in url:
+            import re
+            # Try to find modelVersionId in query params
+            match = re.search(r"[?&]modelVersionId=(\d+)", url)
+            if match:
+                version_id = match.group(1)
+                url = f"https://civitai.com/api/download/models/{version_id}"
+                await message.answer(f"💡 Обнаружил ID версии! Преобразовал в ссылку для скачивания:\n{url}")
+            else:
+                 # If no version ID, warn user
+                 await message.reply(
+                     "⚠️ <b>Это ссылка на страницу модели!</b>\n\n"
+                     "Я не вижу <code>modelVersionId</code> в ссылке.\n"
+                     "Пожалуйста, пришлите:\n"
+                     "1. Ссылку с параметром <code>?modelVersionId=...</code>\n"
+                     "2. ИЛИ прямую ссылку на скачивание (через ПКМ -> Copy Link Address).",
+                     parse_mode="HTML"
+                 )
+                 return
+            
+        if not url.endswith(".safetensors") and "civitai.com" not in url and "huggingface.co" not in url:
+             await message.reply("⚠️ Ссылка должна вести на файл .safetensors (CivitAI/HuggingFace).\nНо я попробую её использовать.")
+        
+        await state.update_data(lora_url=url)
+        await message.answer(
+            f"✅ Ссылка принята!\nURL: {url}\n\n"
+            "Теперь введите <b>имя персонажа (триггер)</b>, которое будет использоваться в промпте.\n"
+            "Например: <code>alex_person</code>",
+            parse_mode="HTML"
+        )
+        await state.set_state(ImportLora.waiting_for_name)
+        return
+
+    # 2. Check if it's a file (Document)
+    if not message.document:
+        await message.reply("❌ Пожалуйста, отправьте файл .safetensors ИЛИ ссылку на него (http...).")
+        return
+
+    doc = message.document
+    if not doc.file_name.endswith(".safetensors"):
+        await message.reply("❌ Это не файл LoRA! Расширение должно быть .safetensors")
+        return
+
+    if doc.file_size > 20 * 1024 * 1024: # 20MB limit for Telegram Bot API
+        await message.reply(
+            "❌ <b>Файл слишком большой (>20MB)</b>\n"
+            "Telegram не позволяет ботам скачивать файлы больше 20MB.\n\n"
+            "👉 <b>Решение:</b>\n"
+            "1. Загрузите файл на облако (Google Drive, transfer.sh, dropmefiles.com)\n"
+            "2. Пришлите мне <b>прямую ссылку</b> на скачивание.",
+            parse_mode="HTML"
+        )
+        return
+
+    status_msg = await message.answer("⏳ Скачиваю файл...")
+
+    try:
+        # Download file
+        file_info = await bot.get_file(doc.file_id)
+        file_content = await bot.download_file(file_info.file_path)
+        
+        await status_msg.edit_text("⏳ Загружаю на облако (для RunPod)...")
+        
+        # Upload to transfer.sh or tmpfiles
+        import requests
+        
+        # 1. Try transfer.sh
+        try:
+            logger.info(f"Uploading {doc.file_name} to transfer.sh...")
+            response = requests.put(
+                f'https://transfer.sh/{doc.file_name}', 
+                data=file_content.read(),
+                timeout=300
+            )
+            if response.status_code == 200:
+                url = response.text.strip()
+        except Exception as e:
+            logger.error(f"transfer.sh upload failed: {e}")
+            
+        if not url:
+            # 2. Try tmpfiles.org
+            try:
+                logger.info(f"Uploading {doc.file_name} to tmpfiles.org...")
+                file_content.seek(0)
+                files = {'file': (doc.file_name, file_content.read())}
+                response = requests.post('https://tmpfiles.org/api/v1/upload', files=files, timeout=300)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "success":
+                        url = data["data"]["url"].replace("tmpfiles.org/", "tmpfiles.org/dl/")
+            except Exception as e:
+                logger.error(f"tmpfiles.org upload failed: {e}")
+        
+        if not url:
+            await status_msg.edit_text("❌ Не удалось загрузить файл на сервер. Попробуйте позже.")
+            return
+            
+        await state.update_data(lora_url=url)
+        await status_msg.delete()
+        
+        await message.answer(
+            f"✅ Файл загружен!\nURL: {url}\n\n"
+            "Теперь введите <b>имя персонажа (триггер)</b>, которое будет использоваться в промпте.\n"
+            "Например: <code>alex_person</code>",
+            parse_mode="HTML"
+        )
+        await state.set_state(ImportLora.waiting_for_name)
+        
+    except Exception as e:
+        logger.error(f"Import failed: {e}")
+        await status_msg.edit_text(f"❌ Ошибка импорта: {e}")
+        await state.clear()
+
+@dp.message(ImportLora.waiting_for_name)
+async def process_import_lora_name(message: types.Message, state: FSMContext):
+    name = message.text.strip()
+    if not name or " " in name or len(name) > 30:
+        await message.reply("❌ Некорректное имя. Используйте одно слово на латинице (например: my_char).")
+        return
+        
+    data = await state.get_data()
+    url = data.get("lora_url")
+    
+    # Save to settings
+    user_id = message.from_user.id
+    settings = get_settings(user_id)
+    if "custom_loras" not in settings:
+        settings["custom_loras"] = {}
+        
+    settings["custom_loras"][name] = url
+    save_settings()
+    
+    await message.answer(
+        f"✅ <b>Персонаж '{name}' добавлен!</b>\n\n"
+        f"Теперь вы можете использовать его в генерации, добавив <code>{name}</code> в описание.\n"
+        f"<i>Примечание: Ссылка временная (14 дней). Сохраните файл .safetensors!</i>",
+        parse_mode="HTML"
+    )
+    await state.clear()
+
+@dp.message(Command("import_lora"))
+async def cmd_import_lora(message: types.Message, state: FSMContext):
+    await message.answer(
+        "📥 <b>Импорт LoRA</b>\n\n"
+        "Отправьте мне файл <code>.safetensors</code> (до 20MB) или <b>ссылку</b> на него.\n\n"
+        "💡 <b>Рекомендую Hugging Face:</b>\n"
+        "1. Загрузите файл на https://huggingface.co/new\n"
+        "2. Пришлите мне ссылку на файл (можно просто из адресной строки).",
+        parse_mode="HTML"
+    )
+    await state.set_state(ImportLora.waiting_for_file)
+
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):
     """
@@ -1128,7 +998,7 @@ async def main():
     commands = [
         types.BotCommand(command="start", description="Начать работу"),
         types.BotCommand(command="help", description="Инструкция"),
-        types.BotCommand(command="train_face", description="Обучить LoRA на лице"),
+        types.BotCommand(command="import_lora", description="Импорт .safetensors"),
         types.BotCommand(command="id", description="Показать ваш user id"),
         types.BotCommand(command="reset_face", description="Сбросить лицо (Deepfake)"),
         types.BotCommand(command="reset_pose", description="Сбросить позу")

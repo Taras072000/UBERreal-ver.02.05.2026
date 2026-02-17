@@ -113,6 +113,12 @@ def download_file(url, path, headers=None):
             
         r = requests.get(url, stream=True, timeout=600, headers=headers)
         if r.status_code == 200:
+            # Check for HTML response (login page or error)
+            content_type = r.headers.get('Content-Type', '').lower()
+            if 'text/html' in content_type:
+                log(f"Error: URL returned HTML (likely login page or 404): {url}")
+                return False
+                
             total_size = int(r.headers.get('content-length', 0))
             downloaded = 0
             with open(path, "wb") as f:
@@ -510,11 +516,8 @@ def setup_env():
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", "bitsandbytes"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
-    # 4. Download Training Script (Diffusers SDXL)
-    # Using v0.29.0 tag to match PyPI version and avoid "source install" requirements
-    TRAIN_SCRIPT_PATH = os.path.join(PROJECT_ROOT, "train_dreambooth_lora_sdxl.py")
-    if not os.path.exists(TRAIN_SCRIPT_PATH):
-        download_file("https://raw.githubusercontent.com/huggingface/diffusers/v0.29.0/examples/dreambooth/train_dreambooth_lora_sdxl.py", TRAIN_SCRIPT_PATH)
+    # 4. Training Script Download REMOVED per user request
+
     
     def download_zip(url, target_dir, folder_name):
         if os.path.exists(target_dir): return
@@ -614,146 +617,12 @@ def log_system_stats():
                     log(line)
     except: pass
 
-def handle_training(job_input, job_id):
-    """Handle LoRA training request"""
-    try:
-        log(f"Starting Training Job: {job_id}")
-        log_system_stats()
-        
-        # Set HF Cache to local dir to avoid filling up root if it's small
-        os.environ["HF_HOME"] = os.path.join(COMFY_PATH, "hf_cache")
-        os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1" # Speed up downloads
-        os.makedirs(os.environ["HF_HOME"], exist_ok=True)
-        
-        lora_name = job_input.get("lora_name", f"lora_{job_id}")
-        dataset_zip_b64 = job_input.get("dataset_zip_base64")
-        dataset_url = job_input.get("dataset_url")
-        user_id = job_input.get("user_id")
-        
-        if not dataset_zip_b64 and not dataset_url:
-            return {"error": "No dataset provided"}
-            
-        # 1. Setup Directories
-        train_dir = os.path.join(PROJECT_ROOT, f"train_{job_id}")
-        dataset_dir = os.path.join(train_dir, "dataset")
-        output_dir = os.path.join(train_dir, "output")
-        os.makedirs(dataset_dir, exist_ok=True)
-        os.makedirs(output_dir, exist_ok=True)
-        
-        # 2. Extract Dataset
-        try:
-            if dataset_url:
-                 zip_path = os.path.join(train_dir, "dataset.zip")
-                 if not download_file(dataset_url, zip_path):
-                     return {"error": f"Failed to download dataset from {dataset_url}"}
-                 with zipfile.ZipFile(zip_path, 'r') as zf:
-                     zf.extractall(dataset_dir)
-            elif dataset_zip_b64:
-                zip_data = base64.b64decode(dataset_zip_b64)
-                with zipfile.ZipFile(BytesIO(zip_data)) as zf:
-                    zf.extractall(dataset_dir)
-            log(f"Dataset extracted to {dataset_dir}")
-        except Exception as e:
-            return {"error": f"Failed to extract dataset: {e}"}
-            
-        # 3. Configure Training Command
-        # Using Diffusers script
-        script_path = os.path.join(PROJECT_ROOT, "train_dreambooth_lora_sdxl.py")
-        if not os.path.exists(script_path):
-             return {"error": "Training script not found"}
-             
-        # Params for SDXL LoRA (Fast & Low VRAM)
-        # Reduced max_train_steps to 400 to speed up and avoid timeouts
-        cmd = [
-            "accelerate", "launch", 
-            "--mixed_precision=fp16",
-            "--num_processes=1",
-            "--num_machines=1",
-            "--dynamo_backend=no",
-            script_path,
-            "--pretrained_model_name_or_path", "stabilityai/stable-diffusion-xl-base-1.0", # Hardcoded HF ID
-            "--instance_data_dir", dataset_dir,
-            "--output_dir", output_dir,
-            "--instance_prompt", f"photo of {lora_name} person", # Trigger word
-            "--resolution", "1024",
-            "--train_batch_size", "1",
-            "--gradient_accumulation_steps", "4",
-            "--learning_rate", "1e-4",
-            "--lr_scheduler", "constant",
-            "--lr_warmup_steps", "0",
-            "--max_train_steps", "400", # Reduced from 500 to save time
-            "--checkpointing_steps", "1000", # Don't save intermediate
-            "--seed", "0",
-            "--mixed_precision", "fp16",
-            "--use_8bit_adam",
-            "--gradient_checkpointing"
-        ]
-        
-        log(f"Running training command: {' '.join(cmd)}")
-        start_time = time.time()
-        
-        # Run Training
-        process = subprocess.run(cmd, capture_output=True, text=True)
-        
-        duration = time.time() - start_time
-        log(f"Training completed in {duration:.1f}s")
-        
-        if process.returncode != 0:
-            log(f"Training failed: {process.stderr}")
-            return {"error": f"Training script failed: {process.stderr[:1000]}"}
-            
-        log("Training finished successfully")
-        
-        # 4. Find Output
-        lora_file = os.path.join(output_dir, "pytorch_lora_weights.safetensors")
-        if not os.path.exists(lora_file):
-             return {"error": "Output LoRA file not found"}
-        
-        # 5. Save to LORA_DIR (Session Cache)
-        # Even without a persistent volume, this speeds up subsequent generations in the same session
-        final_lora_path = os.path.join(LORA_DIR, f"{lora_name}.safetensors")
-        shutil.copy(lora_file, final_lora_path)
-        log(f"Saved LoRA to Session Cache: {final_lora_path}")
-
-        # 6. Upload to Cloud Storage (Robust)
-        lora_url = upload_file_robust(lora_file, f"{lora_name}.safetensors")
-        
-        if not lora_url:
-            log("All upload services failed.")
-            # We return success but with empty URL, bot should handle this?
-            # Actually better to return error if we can't deliver the file
-            return {"error": "Failed to upload result file to transfer services."}
-
-        log(f"Uploaded LoRA to: {lora_url}")
-            
-        # Clean up
-        shutil.rmtree(train_dir, ignore_errors=True)
-        
-        return {
-            "status": "success",
-            "lora_path": final_lora_path,
-            "lora_url": lora_url,
-            "trigger_word": lora_name
-        }
-            
-    except Exception as e:
-        log(f"Training Handler Error: {e}")
-        import traceback
-        return {"error": f"{str(e)}\n{traceback.format_exc()}"}
-
 def handler(job):
     try:
         job_id = job.get("id", "uber")
         job_input = job.get("input", {})
         log(f"--- STARTING JOB {job_id} ---")
         
-        # Dispatch based on operation
-        operation = job_input.get("operation", "generate")
-        
-        if operation == "train_lora":
-            setup_env() # Ensure deps are installed
-            return handle_training(job_input, job_id)
-            
         # Default: Generation
         log(f"--- PIPELINE VERSION: {VERSION} ---")
         
