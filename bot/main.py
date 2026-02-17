@@ -109,8 +109,21 @@ def my_characters_keyboard(user_id):
     kb = []
     
     # 1. User's Specific Girl (Hardcoded for now as per request)
-    label_hardcoded = "✅ User Girl (CivitAI)" if active_char == "user_girl_civitai" else "👩 User Girl (CivitAI)"
-    kb.append([InlineKeyboardButton(text=label_hardcoded, callback_data="set_char_user_girl_civitai")])
+    # Original
+    label_original = "✅ User Girl (Original)" if active_char == "user_girl_civitai" else "👩 User Girl (Original)"
+    kb.append([InlineKeyboardButton(text=label_original, callback_data="set_char_user_girl_civitai")])
+    
+    # New Versions (V10, V7, V5, V2)
+    versions = [
+        ("V10", "10 Epochs", "user_girl_v10"),
+        ("V7", "7 Epochs", "user_girl_v7"),
+        ("V5", "5 Epochs", "user_girl_v5"),
+        ("V2", "2 Epochs", "user_girl_v2")
+    ]
+    
+    for ver, desc, callback in versions:
+        label = f"✅ User Girl ({ver})" if active_char == callback else f"👩 User Girl ({ver} - {desc})"
+        kb.append([InlineKeyboardButton(text=label, callback_data=f"set_char_{callback}")])
 
     if custom_loras:
         for name in custom_loras.keys():
@@ -203,9 +216,18 @@ async def callback_set_character(callback: types.CallbackQuery):
         if "active_character" in settings:
             del settings["active_character"]
         msg = "❌ Персонаж отключен. Теперь генерации будут случайными (или по описанию)."
-    elif char_name == "user_girl_civitai":
-        settings["active_character"] = "user_girl_civitai"
-        msg = f"✅ Персонаж <b>User Girl (CivitAI)</b> выбран!\nТеперь он будет использоваться во всех генерациях."
+    elif char_name in ["user_girl_civitai", "user_girl_v10", "user_girl_v7", "user_girl_v5", "user_girl_v2"]:
+        settings["active_character"] = char_name
+        
+        display_names = {
+            "user_girl_civitai": "User Girl (Original)",
+            "user_girl_v10": "User Girl (V10 - 10 Epochs)",
+            "user_girl_v7": "User Girl (V7 - 7 Epochs)",
+            "user_girl_v5": "User Girl (V5 - 5 Epochs)",
+            "user_girl_v2": "User Girl (V2 - 2 Epochs)"
+        }
+        name = display_names.get(char_name, char_name)
+        msg = f"✅ Персонаж <b>{name}</b> выбран!\nТеперь он будет использоваться во всех генерациях."
     else:
         # Check if LoRA exists
         if "custom_loras" in settings and char_name in settings["custom_loras"]:
@@ -263,13 +285,35 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     active_char = settings.get("active_character")
     
     # 1. Hardcoded User Girl (CivitAI)
+    # Original
     if active_char == "user_girl_civitai":
         loras.append({
             "name": "User_Specific_Girl.safetensors",
             "strength_model": 1.0,
             "strength_clip": 1.0
         })
+        prompt = "dark skin, ebony woman, " + prompt
         logger.info(f"Using Hardcoded User LoRA: User_Specific_Girl.safetensors")
+    
+    # New Versions
+    version_settings = {
+        "user_girl_v10": {"file": "Ebony_V10.safetensors", "strength": 0.7, "trigger": "dark skin, ebony woman"}, # Reduced strength
+        "user_girl_v7": {"file": "Ebony_V7.safetensors", "strength": 0.8, "trigger": "dark skin, ebony woman"},
+        "user_girl_v5": {"file": "Ebony_V5.safetensors", "strength": 0.9, "trigger": "dark skin, ebony woman"},
+        "user_girl_v2": {"file": "Ebony_V2.safetensors", "strength": 1.0, "trigger": "dark skin, ebony woman"}
+    }
+    
+    if active_char in version_settings:
+        conf = version_settings[active_char]
+        lora_filename = conf["file"]
+        loras.append({
+            "name": lora_filename,
+            "strength_model": conf["strength"],
+            "strength_clip": 1.0
+        })
+        # Prepend trigger words to prompt
+        prompt = f"{conf['trigger']}, {prompt}"
+        logger.info(f"Using Hardcoded User LoRA: {lora_filename} (Strength: {conf['strength']})")
     
     if "custom_loras" in settings:
         for name, url in settings["custom_loras"].items():

@@ -99,7 +99,13 @@ def log(message):
 def download_file(url, path, headers=None):
     """Download with progress logging and smart auth"""
     if os.path.exists(path):
-        return True
+        # Check if file is valid (not empty and not tiny error file)
+        if os.path.getsize(path) > 10240: # 10KB
+            return True
+        else:
+            log(f"File {path} exists but is too small ({os.path.getsize(path)} bytes). Re-downloading.")
+            os.remove(path)
+
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         
@@ -211,8 +217,8 @@ def ensure_models(custom_loras=None):
     # Perfect Anal Pony (ID: 639310 -> Ver: 715046)
     download_file("https://civitai.com/api/download/models/715046", os.path.join(LORA_DIR, "PerfectAnal_Pony_v1.safetensors"))
 
-    # Perfect Breasts Pony (ID: 1621732 -> Ver: 1987668)
-    download_file("https://civitai.com/api/download/models/1987668", os.path.join(LORA_DIR, "PerfectBreasts_v2.safetensors"))
+    # Perfect Breasts Pony (ID: 1621732 -> Ver: 1987668) - LINK BROKEN/404
+    # download_file("https://civitai.com/api/download/models/1987668", os.path.join(LORA_DIR, "PerfectBreasts_v2.safetensors"))
 
     # UltraReal Breast & Nipple Detailer (ID: 1259365 -> Ver: 2429108)
     download_file("https://civitai.com/api/download/models/2429108", os.path.join(LORA_DIR, "UltraRealBreastDetailer_v2.safetensors"))
@@ -249,6 +255,24 @@ def ensure_models(custom_loras=None):
             log(f"Failed to remove existing User LoRA: {e}")
 
     download_file("https://huggingface.co/Taras082498/EbonyTest2/resolve/main/test2.safetensors", user_lora_path)
+
+    # New Ebony Versions (V10, V7, V5, V2) - Trying multiple potential filenames
+    ebony_versions = [
+        ("Ebony650PicsV10", "Ebony_V10.safetensors"),
+        ("Ebony650PicsV7", "Ebony_V7.safetensors"),
+        ("Ebony650PicsV5", "Ebony_V5.safetensors"),
+        ("Ebony650PicsV2", "Ebony_V2.safetensors")
+    ]
+    
+    for repo, filename in ebony_versions:
+        target_path = os.path.join(LORA_DIR, filename)
+        # Try common filenames
+        potential_files = ["pytorch_lora_weights.safetensors", "adapter_model.safetensors", "model.safetensors", f"{repo}.safetensors", "test2.safetensors", "Test3_r1.safetensors"]
+        
+        for remote_file in potential_files:
+            url = f"https://huggingface.co/Taras082498/{repo}/resolve/main/{remote_file}"
+            if download_file(url, target_path):
+                break # Stop trying if successful
 
     # --- IPAdapter & CLIP Vision ---
     # IP-Adapter Plus Face SDXL (ViT-H) - Best for likeness
@@ -302,6 +326,8 @@ def ensure_models(custom_loras=None):
 
 def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg, sampler_name, scheduler, controlnet_image=None, face_swap_image=None, identity_strength=0.6, loras=None, job_id="uber"):
     """Professional SDXL Pipeline: Base 1.0 -> Upscale (Standard SDXL for compatibility testing)"""
+    log(f"Building workflow with LoRAs: {json.dumps(loras, indent=2) if loras else 'None'}")
+    
     workflow = {
         "10": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": os.path.basename(BASE_MODEL)}},
         # Refiner removed
@@ -317,12 +343,12 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     # Apply Quality LoRAs (Matching "Идеальное тело" Plan)
     # NOTE: Ebony Skin re-enabled (Refiner was the issue, not LoRA)
     quality_loras = [
-        {"name": "RealismLora_v3_lite.safetensors", "str": 0.8}, # Reduced slightly to mix better
-        {"name": "Realistic_Skin_Pony_v0.1beta.safetensors", "str": 0.8}, # New Pony Skin
+        {"name": "RealismLora_v3_lite.safetensors", "str": 0.6}, # Reduced slightly to mix better
+        {"name": "Realistic_Skin_Pony_v0.1beta.safetensors", "str": 0.4}, # Reduced to avoid washing out skin tone
         {"name": "DetailedEyes_XL_v3.safetensors", "str": 0.8}, # New Detailed Eyes
         {"name": "DynamicPoses_PonyXL_v1.safetensors", "str": 1.0}, # New Dynamic Poses
         {"name": "human_body_realism_sdxl_lora.safetensors", "str": 0.5}, # Reduced
-        {"name": "Ebony_Skin_Slider.safetensors", "str": 0.8} # Re-enabled (File exists)
+        {"name": "Ebony_Skin_Slider.safetensors", "str": 1.0} # Increased to 1.0 for stronger effect
     ]
     
     for i, ql in enumerate(quality_loras):
@@ -360,6 +386,13 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
             }
             current_model = [node_id, 0]
             # current_clip = [node_id, 1]
+
+    # Pony V6 Prompt Engineering (Essential for Quality)
+    if "score_" not in prompt_text:
+        prompt_text = "score_9, score_8_up, score_7_up, score_6_up, " + prompt_text
+    
+    if "source_anime" not in negative_prompt:
+        negative_prompt = "source_anime, score_4, score_5, score_6, monochrome, " + negative_prompt
 
     # Text Encoding
     workflow["11"] = {"class_type": "CLIPTextEncode", "inputs": {"text": prompt_text, "clip": current_clip}}
@@ -415,17 +448,18 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
         ip_weight = identity_strength
 
         workflow["ipadapter_apply"] = {
-            "class_type": "IPAdapterApply",
+            "class_type": "IPAdapterAdvanced",
             "inputs": {
                 "ipadapter": ["ipadapter_model", 0],
                 "clip_vision": ["clip_vision", 0],
                 "image": ["input_face_source", 0],
                 "model": current_model,
                 "weight": ip_weight,
-                "noise": 0.0, 
                 "start_at": 0.0,
                 "end_at": 1.0,
-                "weight_type": "standard"
+                "weight_type": "linear",
+                "combine_embeds": "concat",
+                "embeds_scaling": "V only"
             }
         }
         current_model = ["ipadapter_apply", 0]
@@ -620,6 +654,26 @@ def setup_env():
         log("Clean installing ComfyUI...")
         if os.path.exists(COMFY_PATH): shutil.rmtree(COMFY_PATH)
         subprocess.run(["git", "clone", "https://github.com/comfyanonymous/ComfyUI.git", COMFY_PATH], check=True)
+
+    # InsightFace Models (Critical for ReActor / Face Swap)
+    # Ensure models/insightface exists
+    insightface_dir = os.path.join(COMFY_PATH, "models/insightface")
+    os.makedirs(insightface_dir, exist_ok=True)
+    
+    # Download inswapper_128.onnx (Face Swap Model)
+    # Using reliable source
+    inswapper_path = os.path.join(insightface_dir, "inswapper_128.onnx")
+    if not os.path.exists(inswapper_path):
+        log("Downloading inswapper_128.onnx for ReActor...")
+        download_file("https://huggingface.co/ezioruan/inswapper_128.onnx/resolve/main/inswapper_128.onnx", inswapper_path)
+        
+    # Download CodeFormer (Face Restoration) - usually placed in models/facerestore_models
+    facerestore_dir = os.path.join(COMFY_PATH, "models/facerestore_models")
+    os.makedirs(facerestore_dir, exist_ok=True)
+    codeformer_path = os.path.join(facerestore_dir, "codeformer-v0.1.0.pth")
+    if not os.path.exists(codeformer_path):
+        log("Downloading CodeFormer for ReActor...")
+        download_file("https://huggingface.co/sczhou/CodeFormer/resolve/main/codeformer-v0.1.0.pth", codeformer_path)
         
         # Install official ComfyUI requirements
         subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
@@ -667,9 +721,21 @@ def setup_env():
     download_zip("https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.zip",
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-reactor-node"), "comfyui-reactor-node")
                  
-    # Install IPAdapter Plus (Critical for Smart Mode)
+    # Install IPAdapter Plus (Use latest version for IPAdapterAdvanced node)
+    ipadapter_path = os.path.join(COMFY_PATH, "custom_nodes/ComfyUI_IPAdapter_plus")
+    
+    # FORCE UPDATE: Remove existing folder to ensure we get the latest version (V2)
+    # This fixes the "Node 'IPAdapterApply' not found" error by ensuring we have the new nodes
+    # and the workflow is updated to match.
+    if os.path.exists(ipadapter_path):
+        try:
+            shutil.rmtree(ipadapter_path)
+            log("Removed existing IPAdapter Plus to force update to V2")
+        except Exception as e:
+            log(f"Failed to remove IPAdapter Plus: {e}")
+
     download_zip("https://github.com/cubiq/ComfyUI_IPAdapter_plus/archive/refs/heads/main.zip",
-                 os.path.join(COMFY_PATH, "custom_nodes/ComfyUI_IPAdapter_plus"), "ComfyUI_IPAdapter_plus")
+                 ipadapter_path, "ComfyUI_IPAdapter_plus")
                  
     # Easy Tools & Easy Use Nodes REMOVED (Replaced with standard LoadImage + local file saving)
     # These packs were causing download failures and are no longer needed for the core pipeline.
