@@ -228,7 +228,8 @@ def ensure_models(custom_loras=None):
 
     # Dynamic Poses Slider PONYXL (ID: 438059 -> Version ID: 489439)
     # Allows for more dynamic and extreme poses
-    download_file("https://civitai.com/api/download/models/489439", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
+    # 404 Error on CivitAI, using alternative or skipping if failed
+    # download_file("https://civitai.com/api/download/models/489439", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
 
     # User's Custom LoRA (ID: 2696202)
     # WARNING: Requires login? We try to download it. If fails, user needs token.
@@ -242,7 +243,8 @@ def ensure_models(custom_loras=None):
     download_file("https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors", IPADAPTER_MODEL)
     
     # CLIP Vision (ViT-H) - Required for IPAdapter Plus
-    download_file("https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/sdxl_model.safetensors", CLIP_VISION_MODEL) # Note: Often named like this or CLIP-ViT-H-14... using standard HF path
+    # Use standard CLIP ViT-H-14 link which is more reliable
+    download_file("https://huggingface.co/laion/CLIP-ViT-H-14-laion2B-s32B-b79K/resolve/main/open_clip_pytorch_model.safetensors", CLIP_VISION_MODEL)
 
     # 5. Custom LoRAs from Request
     actual_loras = []
@@ -566,10 +568,14 @@ def setup_env():
     download_zip("https://github.com/Gourieff/ComfyUI-ReActor/archive/refs/heads/main.zip",
                  os.path.join(COMFY_PATH, "custom_nodes/comfyui-reactor-node"), "comfyui-reactor-node")
                  
+    # Install IPAdapter Plus (Critical for Smart Mode)
+    download_zip("https://github.com/cubiq/ComfyUI_IPAdapter_plus/archive/refs/heads/main.zip",
+                 os.path.join(COMFY_PATH, "custom_nodes/ComfyUI_IPAdapter_plus"), "ComfyUI_IPAdapter_plus")
+
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
-        # Using github release asset which is more reliable
-        download_file("https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx", INSWAPPER_FILE)
+        # Using huggingface mirror (more reliable than github assets)
+        download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
 
     # Ensure CodeFormer model exists (for face restoration)
     if not os.path.exists(CODEFORMER_MODEL):
