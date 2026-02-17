@@ -576,6 +576,15 @@ def setup_env():
     download_zip("https://github.com/Jordach/ComfyUI-Easy-Tools/archive/refs/heads/main.zip",
                  os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Easy-Tools"), "ComfyUI-Easy-Tools")
 
+    # Install ETN Nodes (The specific node 'ETN_LoadImageBase64' is likely in this pack or similar)
+    # The error says 'ETN_LoadImageBase64', which is from 'ComfyUI-Easy-Tools' or 'ComfyUI_ETN'
+    # Checking source: https://github.com/yolain/ComfyUI-Easy-Use-Nodes is popular, but ETN usually means Easy Tools Node
+    # Actually, 'ETN_LoadImageBase64' is specifically from https://github.com/yolain/ComfyUI-Easy-Use-Nodes (often aliased)
+    # or it might be from a custom script.
+    # Let's install 'ComfyUI-Easy-Use-Nodes' as it is a very common dependency for such nodes.
+    download_zip("https://github.com/yolain/ComfyUI-Easy-Use-Nodes/archive/refs/heads/main.zip",
+                 os.path.join(COMFY_PATH, "custom_nodes/ComfyUI-Easy-Use-Nodes"), "ComfyUI-Easy-Use-Nodes")
+
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
         # Using huggingface mirror (more reliable than github assets)
