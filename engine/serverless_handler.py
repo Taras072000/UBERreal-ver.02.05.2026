@@ -89,6 +89,10 @@ ULTRASHARP_FILE = os.path.join(UPSCALERS_DIR, "4x-UltraSharp.pth")
 INSIGHTFACE_DIR = os.path.join(MODELS_DIR, "insightface")
 INSWAPPER_FILE = os.path.join(INSIGHTFACE_DIR, "inswapper_128.onnx")
 
+# Face Restore
+FACERESTORE_DIR = os.path.join(MODELS_DIR, "facerestore_models")
+CODEFORMER_MODEL = os.path.join(FACERESTORE_DIR, "codeformer-v0.1.0.pth")
+
 def log(message):
     print(f"[Handler] {message}", flush=True)
 
@@ -520,12 +524,12 @@ def setup_env():
     # 3. Force compatible versions and install missing system dependencies
     # NOTE: Using standard diffusers (0.29.0+) from PyPI is safer/faster than git source
     # Downgrading to 0.29.0 to ensure compatibility with older PyTorch versions in RunPod base images
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", "bitsandbytes"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "numpy<2.0.0", "comfy-aimdo>=0.1.7", "torchsde", "einops", "transformers>=4.25.1", "av", "kornia", "spandrel", "piexif", "segment_anything", "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", "bitsandbytes", "insightface", "onnxruntime-gpu"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     # 4. Training Script Download REMOVED per user request
 
-    
+
     def download_zip(url, target_dir, folder_name):
         if os.path.exists(target_dir): return
         log(f"Installing {folder_name} via ZIP...")
@@ -564,8 +568,12 @@ def setup_env():
                  
     # Ensure InsightFace model exists
     if not os.path.exists(INSWAPPER_FILE):
-        # Using huggingface mirror which is more reliable than facefusion assets (often 404)
-        download_file("https://huggingface.co/eziorry/inswapper_128.onnx/resolve/main/inswapper_128.onnx", INSWAPPER_FILE)
+        # Using github release asset which is more reliable
+        download_file("https://github.com/facefusion/facefusion-assets/releases/download/models/inswapper_128.onnx", INSWAPPER_FILE)
+
+    # Ensure CodeFormer model exists (for face restoration)
+    if not os.path.exists(CODEFORMER_MODEL):
+         download_file("https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth", CODEFORMER_MODEL)
 
 def upload_file_robust(file_path, file_name):
     """Upload file to multiple services with fallback"""

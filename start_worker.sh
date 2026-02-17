@@ -37,5 +37,11 @@ else
     echo "requirements.txt not found, skipping..."
 fi
 
+# Explicitly install InsightFace (Critical for Face Swap)
+if [ -f "scripts/install_insightface.sh" ]; then
+    echo "Running scripts/install_insightface.sh..."
+    bash scripts/install_insightface.sh || echo "Warning: InsightFace installation script failed."
+fi
+
 echo "Starting Serverless Handler..."
 python3 -u engine/serverless_handler.py
