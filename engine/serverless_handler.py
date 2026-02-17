@@ -226,6 +226,9 @@ def ensure_models(custom_loras=None):
     # Detailed Eyes XL - v3.0 (ID: 120723)
     download_file("https://civitai.com/api/download/models/120723", os.path.join(LORA_DIR, "DetailedEyes_XL_v3.safetensors"))
 
+    # Ebony Skin Slider / Beauty Ebony Face (ID: 559675)
+    download_file("https://civitai.com/api/download/models/559675", LORA_EBONY)
+
     # Dynamic Poses Slider PONYXL (ID: 438059 -> Version ID: 489439)
     # Allows for more dynamic and extreme poses
     # 404 Error on CivitAI, using alternative or skipping if failed
@@ -435,8 +438,28 @@ def build_workflow(prompt_text, negative_prompt, width, height, seed, steps, cfg
     
     # ReActor Face Swap
     if face_swap_image:
-        workflow["input_face_swap"] = {"class_type": "ETN_LoadImageBase64", "inputs": {"base64_data": face_swap_image}}
-        
+        # Save base64 image to disk to avoid using custom nodes (ETN_LoadImageBase64) which are unreliable
+        try:
+            face_img_data = base64.b64decode(face_swap_image)
+            input_dir = os.path.join(COMFY_PATH, "input")
+            if not os.path.exists(input_dir):
+                os.makedirs(input_dir)
+            
+            face_img_filename = f"face_swap_{job_id}.png"
+            face_img_path = os.path.join(input_dir, face_img_filename)
+            
+            with open(face_img_path, "wb") as f:
+                f.write(face_img_data)
+                
+            workflow["input_face_swap"] = {
+                "class_type": "LoadImage",
+                "inputs": {"image": face_img_filename}
+            }
+        except Exception as e:
+            log(f"Error saving face swap image: {e}")
+            # Fallback (will likely fail but better than crashing on import)
+            workflow["input_face_swap"] = {"class_type": "LoadImage", "inputs": {"image": "fallback.png"}}
+
         workflow["reactor"] = {
             "class_type": "ReActorFastFaceSwap",
             "inputs": {
