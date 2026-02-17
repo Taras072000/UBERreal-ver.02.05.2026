@@ -228,7 +228,10 @@ def ensure_models(custom_loras=None):
 
     # User's Custom LoRA (ID: 2696202)
     # WARNING: Requires login? We try to download it. If fails, user needs token.
-    download_file("https://civitai.com/api/download/models/2696202?type=Model&format=SafeTensor", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
+    # download_file("https://civitai.com/api/download/models/2696202?type=Model&format=SafeTensor", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
+
+    # User's Custom LoRA (Hugging Face)
+    download_file("https://huggingface.co/Taras082498/EbonyTest2/resolve/main/test2.safetensors", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
 
     # --- IPAdapter & CLIP Vision ---
     # IP-Adapter Plus Face SDXL (ViT-H) - Best for likeness
