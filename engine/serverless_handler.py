@@ -226,6 +226,10 @@ def ensure_models(custom_loras=None):
     # Allows for more dynamic and extreme poses
     download_file("https://civitai.com/api/download/models/489439", os.path.join(LORA_DIR, "DynamicPoses_PonyXL_v1.safetensors"))
 
+    # User's Custom LoRA (ID: 2696202)
+    # WARNING: Requires login? We try to download it. If fails, user needs token.
+    download_file("https://civitai.com/api/download/models/2696202?type=Model&format=SafeTensor", os.path.join(LORA_DIR, "User_Specific_Girl.safetensors"))
+
     # --- IPAdapter & CLIP Vision ---
     # IP-Adapter Plus Face SDXL (ViT-H) - Best for likeness
     download_file("https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors", IPADAPTER_MODEL)

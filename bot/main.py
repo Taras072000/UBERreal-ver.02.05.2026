@@ -97,9 +97,28 @@ def get_dimensions(aspect_ratio):
 def main_menu_keyboard():
     kb = [
         [KeyboardButton(text="📐 Формат"), KeyboardButton(text="🎨 Стиль")],
-        [KeyboardButton(text="👤 Сила сходства (Identity)")]
+        [KeyboardButton(text="👤 Сила сходства (Identity)"), KeyboardButton(text="🎭 Мои Персонажи")]
     ]
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+
+def my_characters_keyboard(user_id):
+    settings = get_settings(user_id)
+    custom_loras = settings.get("custom_loras", {})
+    active_char = settings.get("active_character")
+    
+    kb = []
+    
+    # 1. User's Specific Girl (Hardcoded for now as per request)
+    label_hardcoded = "✅ User Girl (CivitAI)" if active_char == "user_girl_civitai" else "👩 User Girl (CivitAI)"
+    kb.append([InlineKeyboardButton(text=label_hardcoded, callback_data="set_char_user_girl_civitai")])
+
+    if custom_loras:
+        for name in custom_loras.keys():
+            label = f"✅ {name}" if active_char == name else f"⚪️ {name}"
+            kb.append([InlineKeyboardButton(text=label, callback_data=f"set_char_{name}")])
+            
+    kb.append([InlineKeyboardButton(text="❌ Отключить персонажа", callback_data="set_char_none")])
+    return InlineKeyboardMarkup(inline_keyboard=kb)
 
 def identity_keyboard():
     kb = [
@@ -163,6 +182,53 @@ def style_keyboard():
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
+@dp.message(F.text == "🎭 Мои Персонажи")
+async def menu_my_characters(message: types.Message):
+    await message.answer(
+        "🎭 <b>Управление персонажами (LoRA)</b>\n\n"
+        "Здесь вы можете выбрать <b>активного персонажа</b>.\n"
+        "Когда персонаж активен, его внешность будет автоматически применяться ко всем генерациям.\n\n"
+        "💡 Чтобы добавить персонажа, используйте команду /import_lora",
+        reply_markup=my_characters_keyboard(message.from_user.id),
+        parse_mode="HTML"
+    )
+
+@dp.callback_query(F.data.startswith("set_char_"))
+async def callback_set_character(callback: types.CallbackQuery):
+    char_name = callback.data.replace("set_char_", "")
+    user_id = callback.from_user.id
+    settings = get_settings(user_id)
+    
+    if char_name == "none":
+        if "active_character" in settings:
+            del settings["active_character"]
+        msg = "❌ Персонаж отключен. Теперь генерации будут случайными (или по описанию)."
+    elif char_name == "user_girl_civitai":
+        settings["active_character"] = "user_girl_civitai"
+        msg = f"✅ Персонаж <b>User Girl (CivitAI)</b> выбран!\nТеперь он будет использоваться во всех генерациях."
+    else:
+        # Check if LoRA exists
+        if "custom_loras" in settings and char_name in settings["custom_loras"]:
+
+            settings["active_character"] = char_name
+            msg = f"✅ Персонаж <b>{char_name}</b> выбран!\nТеперь он будет использоваться во всех генерациях."
+        else:
+            msg = "❌ Ошибка: Персонаж не найден."
+            
+    save_settings()
+    await callback.message.edit_text(
+        "🎭 <b>Управление персонажами (LoRA)</b>",
+        reply_markup=my_characters_keyboard(user_id)
+    )
+    await callback.answer(msg)
+    if char_name != "none":
+        await callback.message.answer(msg, parse_mode="HTML")
+
+@dp.callback_query(F.data == "char_none_info")
+async def callback_char_none_info(callback: types.CallbackQuery):
+    await callback.answer("Используйте /import_lora для добавления!", show_alert=True)
+
+
 async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     """
     Sends a generation task to RunPod Serverless and waits for the result.
@@ -194,18 +260,37 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
     char_prefix = ""
 
     # Check Custom User LoRAs (from /train_face)
+    active_char = settings.get("active_character")
+    
+    # 1. Hardcoded User Girl (CivitAI)
+    if active_char == "user_girl_civitai":
+        loras.append({
+            "name": "User_Specific_Girl.safetensors",
+            "strength_model": 1.0,
+            "strength_clip": 1.0
+        })
+        logger.info(f"Using Hardcoded User LoRA: User_Specific_Girl.safetensors")
+    
     if "custom_loras" in settings:
         for name, url in settings["custom_loras"].items():
-            if name in prompt:
+            # Apply if explicitly named in prompt OR if it's the active character
+            if name in prompt or active_char == name:
                 logger.info(f"Using Custom LoRA: {name}")
-                loras.append({
-                    "name": f"{name}.safetensors",
-                    "url": url,
-                    "strength_model": 1.0,
-                    "strength_clip": 1.0
-                })
-                # Add trigger word explicitly if needed, but usually it's in the prompt
-                prompt = prompt.replace(name, f"photo of {name} person") # Enhance prompt
+                
+                # Avoid duplicates
+                if not any(l["name"] == f"{name}.safetensors" for l in loras):
+                    loras.append({
+                        "name": f"{name}.safetensors",
+                        "url": url,
+                        "strength_model": 1.0,
+                        "strength_clip": 1.0
+                    })
+                
+                # Add trigger word explicitly if needed
+                if name not in prompt:
+                    prompt = f"photo of {name} person, {prompt}" # Prepend
+                else:
+                    prompt = prompt.replace(name, f"photo of {name} person") # Enhance existing
 
     # Названия файлов внутри репозиториев на HF
     char_loras = {
