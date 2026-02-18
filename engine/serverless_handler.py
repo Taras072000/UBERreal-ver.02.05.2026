@@ -784,6 +784,14 @@ def setup_env():
         # Install official ComfyUI requirements
         subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
     
+    # Install project root requirements (for Bot, etc.)
+    project_reqs = os.path.join(PROJECT_ROOT, "requirements.txt")
+    if os.path.exists(project_reqs):
+        log(f"Installing project requirements from {project_reqs}...")
+        # Use --no-deps for heavy ML packages to avoid re-installing torch? No, unsafe.
+        # Trust that pip will see existing packages in the base image.
+        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", project_reqs], check=True)
+
     # 2. Force install comfy-ui-client-frontend
     subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
