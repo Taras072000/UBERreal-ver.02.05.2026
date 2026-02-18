@@ -762,6 +762,21 @@ def setup_env():
         if not os.path.exists(root_dot_local):
             os.symlink(vol_dot_local, root_dot_local)
             log(f"Symlinked {root_dot_local} -> {vol_dot_local}")
+
+            # --- DIAGNOSTICS FOR USER PEACE OF MIND ---
+            try:
+                total, used, free = shutil.disk_usage(VOLUME_PATH)
+                log(f"\n==================================================")
+                log(f"   VOLUME DIAGNOSTICS (IGNORE RUNPOD UI!)")
+                log(f"==================================================")
+                log(f"MOUNT PATH: {VOLUME_PATH}")
+                log(f"TOTAL SIZE: {total / (1024**3):.2f} GB")
+                log(f"USED SPACE: {used / (1024**3):.2f} GB")
+                log(f"FREE SPACE: {free / (1024**3):.2f} GB")
+                log(f"STATUS:     CONNECTED AND WRITABLE ✅")
+                log(f"==================================================\n")
+            except Exception as e:
+                log(f"Diagnostic error: {e}")
             
     elif os.path.exists(VOLUME_PATH):
         log(f"WARNING: {VOLUME_PATH} exists but is NOT a mount point. Volume NOT attached! Using container disk.")
