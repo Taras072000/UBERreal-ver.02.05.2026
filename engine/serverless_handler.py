@@ -735,6 +735,15 @@ def setup_env():
     # Always run this to ensure environment is correct even if ComfyUI exists
     try:
         log("Checking/Installing critical Python dependencies...")
+        
+        # Cleanup potential space hogs before install
+        try:
+            log("🧹 Cleaning up pip cache and temp files...")
+            subprocess.run(["rm", "-rf", "/root/.cache/pip"], check=False)
+            subprocess.run(["apt-get", "clean"], check=False)
+        except Exception:
+            pass
+
         subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", 
             "numpy<2.0.0", "insightface>=0.7.3", "onnxruntime-gpu>=1.16.0", 
             "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", 
