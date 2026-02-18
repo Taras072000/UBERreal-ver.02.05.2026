@@ -11,3 +11,7 @@ docker/Dockerfile.bak
 __pycache__/
 *.pyc
 .env
+upload_loras.py
+user_settings.json
+Ebony*
+logs-*.txt

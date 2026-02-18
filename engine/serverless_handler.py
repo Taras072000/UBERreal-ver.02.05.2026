@@ -639,30 +639,24 @@ def setup_volume_storage():
     """Setup symlinks for models to RunPod Network Volume if available"""
     if not os.path.exists(VOLUME_PATH):
         log(f"Network Volume not found at {VOLUME_PATH}. Using local storage.")
-        # Debug: List root directory to see what's mounted
-        try:
-            log(f"Root dir contents: {os.listdir('/')}")
-            log(f"Mounts: {os.listdir('/runpod-volume') if os.path.exists('/runpod-volume') else 'path does not exist'}")
-        except Exception as e:
-            log(f"Debug listing failed: {e}")
         return
 
     log(f"Setting up Network Volume at {VOLUME_PATH}...")
-    
+
     # Structure in volume
     vol_comfy = os.path.join(VOLUME_PATH, "ComfyUI")
     vol_models = os.path.join(vol_comfy, "models")
-    
+
     # Ensure volume directories exist
     os.makedirs(vol_models, exist_ok=True)
-    
+
     # List of model directories to persist
     dirs_to_link = [
         "checkpoints", "loras", "vae", "controlnet", 
         "upscale_models", "insightface", "facerestore_models",
         "ipadapter", "clip_vision"
     ]
-    
+
     local_models_dir = os.path.join(COMFY_PATH, "models")
     if not os.path.exists(local_models_dir):
         os.makedirs(local_models_dir, exist_ok=True)
@@ -670,42 +664,70 @@ def setup_volume_storage():
     for d in dirs_to_link:
         local_dir = os.path.join(local_models_dir, d)
         vol_dir = os.path.join(vol_models, d)
-        
+
         # 1. Create volume dir if missing
         os.makedirs(vol_dir, exist_ok=True)
-        
+
         # 2. Handle local directory
         if os.path.exists(local_dir):
             if os.path.islink(local_dir):
                 # Check if it points to the correct volume dir
                 try:
-                    if os.readlink(local_dir) == vol_dir:
-                        continue # Already linked correctly
+                    target = os.readlink(local_dir)
+                    if target == vol_dir:
+                        log(f"✅ {d} is already correctly linked to {vol_dir}")
+                        continue 
                     else:
-                        os.unlink(local_dir) # Remove incorrect link
-                except OSError:
+                        log(f"⚠️ {d} linked to wrong target {target}, fixing...")
+                        os.unlink(local_dir)
+                except OSError as e:
+                    log(f"❌ Error reading link {d}: {e}")
                     os.unlink(local_dir)
             elif os.path.isdir(local_dir):
                 # It's a real directory. 
                 # If volume dir is empty and local has files, move them.
                 if not os.listdir(vol_dir) and os.listdir(local_dir):
-                    log(f"Moving local {d} to volume...")
+                    log(f"📦 Moving local {d} content to volume...")
                     try:
                         for f in os.listdir(local_dir):
-                            shutil.move(os.path.join(local_dir, f), os.path.join(vol_dir, f))
+                            src = os.path.join(local_dir, f)
+                            dst = os.path.join(vol_dir, f)
+                            if os.path.isdir(src):
+                                shutil.copytree(src, dst, dirs_exist_ok=True)
+                                shutil.rmtree(src)
+                            else:
+                                shutil.move(src, dst)
                     except Exception as e:
-                        log(f"Error moving files: {e}")
-                
+                        log(f"❌ Error moving files for {d}: {e}")
+
                 # Remove local directory
-                shutil.rmtree(local_dir)
-        
+                try:
+                    shutil.rmtree(local_dir)
+                    log(f"🗑️ Removed local directory {d}")
+                except Exception as e:
+                    log(f"❌ Failed to remove local dir {d}: {e}")
+
         # 3. Create symlink
         try:
             if not os.path.exists(local_dir):
                 os.symlink(vol_dir, local_dir)
-                log(f"Linked {d} to volume.")
+                log(f"🔗 Linked {d} -> {vol_dir}")
         except Exception as e:
-            log(f"Failed to link {d}: {e}")
+            log(f"❌ Failed to link {d}: {e}")
+
+    # Verify links
+    log("--- Storage Verification ---")
+    try:
+        cmd = f"ls -la {local_models_dir}"
+        result = subprocess.check_output(cmd, shell=True, text=True)
+        log(f"Model dir listing:\n{result}")
+        
+        # Check volume usage
+        cmd_df = f"df -h {VOLUME_PATH}"
+        result_df = subprocess.check_output(cmd_df, shell=True, text=True)
+        log(f"Volume usage:\n{result_df}")
+    except Exception as e:
+        log(f"Verification failed: {e}")
 
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""

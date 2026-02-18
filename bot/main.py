@@ -552,10 +552,15 @@ async def generate_image_task(prompt: str, chat_id: int, user_id: int):
         await bot.send_message(chat_id, status_msg, reply_markup=main_menu_keyboard())
         
         # Run synchronous run (waits for completion)
-        run_request = endpoint.run(input_payload)
+        try:
+            run_request = endpoint.run(input_payload)
+        except Exception as run_err:
+            logger.error(f"Failed to start run: {run_err}")
+            await bot.send_message(chat_id, f"❌ Ошибка запуска задачи: {run_err}\nПроверьте Endpoint ID и API Key.")
+            return
         
-        if run_request is None:
-            await bot.send_message(chat_id, "❌ Ошибка: RunPod вернул пустой ответ.")
+        if not run_request:
+            await bot.send_message(chat_id, "❌ Ошибка: RunPod не создал задачу (возможно, Endpoint остановлен).")
             return
 
         # Polling with 20 minute timeout (1200s) as requested for heavy model downloads
