@@ -851,7 +851,23 @@ def setup_env():
     # Use --user to install to symlinked /root/.local
     install_args = [sys.executable, "-m", "pip", "install", "--user", "--no-cache-dir", "--no-warn-script-location"]
     
-    subprocess.run(install_args + ["-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+    # FILTER OUT TORCH from requirements.txt to prevent system package upgrade attempts
+    comfy_reqs_path = os.path.join(COMFY_PATH, "requirements.txt")
+    if os.path.exists(comfy_reqs_path):
+        try:
+            with open(comfy_reqs_path, 'r') as f:
+                lines = f.readlines()
+            
+            # Filter out torch-related packages
+            filtered_lines = [line for line in lines if not any(x in line for x in ['torch', 'torchvision', 'torchaudio'])]
+            
+            with open(comfy_reqs_path, 'w') as f:
+                f.writelines(filtered_lines)
+            log("Removed torch/torchvision from ComfyUI requirements.txt to use system packages.")
+        except Exception as e:
+            log(f"Error filtering requirements.txt: {e}")
+
+    subprocess.run(install_args + ["-r", comfy_reqs_path], check=True)
     
     # Install project root requirements (for Bot, etc.)
     project_reqs = os.path.join(PROJECT_ROOT, "requirements.txt")
