@@ -848,10 +848,8 @@ def setup_env():
         download_file("https://huggingface.co/sczhou/CodeFormer/resolve/main/codeformer-v0.1.0.pth", codeformer_path)
         
     # Install official ComfyUI requirements
-    # Use same target logic
-    install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
-    if is_mounted:
-            install_args.extend(["--target", PYLIBS_PATH])
+    # Use --user to install to symlinked /root/.local
+    install_args = [sys.executable, "-m", "pip", "install", "--user", "--no-cache-dir", "--no-warn-script-location"]
     
     subprocess.run(install_args + ["-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
     
