@@ -738,10 +738,16 @@ def setup_env():
     
     # 0. Create persistent library storage on Network Volume (if available)
     # This avoids filling the small 5GB container root disk.
-    if os.path.exists(VOLUME_PATH):
+    is_mounted = os.path.exists(VOLUME_PATH) and os.path.ismount(VOLUME_PATH)
+    
+    if is_mounted:
         os.makedirs(PYLIBS_PATH, exist_ok=True)
         log(f"Using Network Volume for Python libraries: {PYLIBS_PATH}")
-    
+    elif os.path.exists(VOLUME_PATH):
+        log(f"WARNING: {VOLUME_PATH} exists but is NOT a mount point. Volume NOT attached! Using container disk (may run out of space).")
+    else:
+        log(f"No Network Volume found at {VOLUME_PATH}. Using container disk.")
+
     # 1. Ensure system dependencies (Critical for InsightFace/ReActor)
     # Always run this to ensure environment is correct even if ComfyUI exists
     try:
@@ -757,7 +763,7 @@ def setup_env():
 
         # Use target if volume exists
         install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
-        if os.path.exists(PYLIBS_PATH):
+        if is_mounted:
              install_args.extend(["--target", PYLIBS_PATH])
         
         # Core deps
@@ -803,7 +809,7 @@ def setup_env():
     # Install official ComfyUI requirements
     # Use same target logic
     install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
-    if os.path.exists(PYLIBS_PATH):
+    if is_mounted:
             install_args.extend(["--target", PYLIBS_PATH])
     
     subprocess.run(install_args + ["-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
