@@ -765,14 +765,21 @@ def setup_env():
 
             # --- DIAGNOSTICS FOR USER PEACE OF MIND ---
             try:
+                # 1. Get filesystem stats (Shared Volume)
                 total, used, free = shutil.disk_usage(VOLUME_PATH)
+                
+                # 2. Get ACTUAL user data size (du -sh)
+                du_cmd = f"du -sh {VOLUME_PATH} | cut -f1"
+                user_usage = subprocess.check_output(du_cmd, shell=True, text=True).strip()
+
                 log(f"\n==================================================")
                 log(f"   VOLUME DIAGNOSTICS (IGNORE RUNPOD UI!)")
                 log(f"==================================================")
                 log(f"MOUNT PATH: {VOLUME_PATH}")
-                log(f"TOTAL SIZE: {total / (1024**3):.2f} GB")
-                log(f"USED SPACE: {used / (1024**3):.2f} GB")
-                log(f"FREE SPACE: {free / (1024**3):.2f} GB")
+                log(f"YOUR DATA:  {user_usage} (Actual Used Space)")
+                log(f"--------------------------------------------------")
+                log(f"SHARED VOL TOTAL: {total / (1024**3):.2f} GB")
+                log(f"SHARED VOL FREE:  {free / (1024**3):.2f} GB")
                 log(f"STATUS:     CONNECTED AND WRITABLE ✅")
                 log(f"==================================================\n")
             except Exception as e:
