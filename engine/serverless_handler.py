@@ -736,15 +736,35 @@ def setup_volume_storage():
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""
     
-    # 0. Create persistent library storage on Network Volume (if available)
-    # This avoids filling the small 5GB container root disk.
+    # 0. Setup Persistence via Symlink (Preferred over --target)
+    # We symlink /root/.local to /runpod-volume/dot_local
+    # This allows 'pip install --user' to see system packages (Torch) but write new ones to Volume.
+    # This prevents re-downloading 2GB+ of Torch/CUDA libraries.
     is_mounted = os.path.exists(VOLUME_PATH) and os.path.ismount(VOLUME_PATH)
     
     if is_mounted:
-        os.makedirs(PYLIBS_PATH, exist_ok=True)
-        log(f"Using Network Volume for Python libraries: {PYLIBS_PATH}")
+        log(f"Volume mounted at {VOLUME_PATH}. Configuring persistence...")
+        vol_dot_local = os.path.join(VOLUME_PATH, "dot_local")
+        root_dot_local = "/root/.local"
+        
+        os.makedirs(vol_dot_local, exist_ok=True)
+        
+        # If /root/.local exists and is a real directory, move contents to volume
+        if os.path.exists(root_dot_local) and not os.path.islink(root_dot_local):
+            log(f"Moving existing {root_dot_local} to volume...")
+            try:
+                subprocess.run(["cp", "-r", f"{root_dot_local}/.", vol_dot_local], check=False)
+                shutil.rmtree(root_dot_local)
+            except Exception as e:
+                log(f"Error moving .local: {e}")
+        
+        # Create symlink
+        if not os.path.exists(root_dot_local):
+            os.symlink(vol_dot_local, root_dot_local)
+            log(f"Symlinked {root_dot_local} -> {vol_dot_local}")
+            
     elif os.path.exists(VOLUME_PATH):
-        log(f"WARNING: {VOLUME_PATH} exists but is NOT a mount point. Volume NOT attached! Using container disk (may run out of space).")
+        log(f"WARNING: {VOLUME_PATH} exists but is NOT a mount point. Volume NOT attached! Using container disk.")
     else:
         log(f"No Network Volume found at {VOLUME_PATH}. Using container disk.")
 
@@ -761,10 +781,9 @@ def setup_env():
         except Exception:
             pass
 
-        # Use target if volume exists
-        install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
-        if is_mounted:
-             install_args.extend(["--target", PYLIBS_PATH])
+        # Use --user to install to /root/.local (which is now on volume)
+        # This allows pip to see system packages (Torch) and skip downloading them.
+        install_args = [sys.executable, "-m", "pip", "install", "--user", "--no-cache-dir", "--no-warn-script-location"]
         
         # Core deps
         deps = [
