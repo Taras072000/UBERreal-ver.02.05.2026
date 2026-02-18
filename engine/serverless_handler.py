@@ -33,6 +33,10 @@ VERSION = "2.0-PRO-PIPELINE-FIXED-ETN"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 COMFY_PATH = os.path.join(PROJECT_ROOT, "ComfyUI")
 VOLUME_PATH = "/runpod-volume"
+PYLIBS_PATH = os.path.join(VOLUME_PATH, "pylibs")
+if os.path.exists(PYLIBS_PATH):
+    sys.path.insert(0, PYLIBS_PATH)
+
 COMFY_URL = "http://127.0.0.1:8188"
 
 # Model Directories
@@ -731,6 +735,13 @@ def setup_volume_storage():
 
 def setup_env():
     """Clone ComfyUI and install dependencies if missing"""
+    
+    # 0. Create persistent library storage on Network Volume (if available)
+    # This avoids filling the small 5GB container root disk.
+    if os.path.exists(VOLUME_PATH):
+        os.makedirs(PYLIBS_PATH, exist_ok=True)
+        log(f"Using Network Volume for Python libraries: {PYLIBS_PATH}")
+    
     # 1. Ensure system dependencies (Critical for InsightFace/ReActor)
     # Always run this to ensure environment is correct even if ComfyUI exists
     try:
@@ -744,12 +755,20 @@ def setup_env():
         except Exception:
             pass
 
-        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", 
+        # Use target if volume exists
+        install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
+        if os.path.exists(PYLIBS_PATH):
+             install_args.extend(["--target", PYLIBS_PATH])
+        
+        # Core deps
+        deps = [
             "numpy<2.0.0", "insightface>=0.7.3", "onnxruntime-gpu>=1.16.0", 
             "opencv-python-headless==4.8.1.78", "requests", "aiohttp", "Pillow", 
             "scipy", "tqdm", "diffusers>=0.29.0", "accelerate", "peft", 
             "bitsandbytes", "kornia", "spandrel", "segment_anything", "ultralytics"
-        ], check=True)
+        ]
+        
+        subprocess.run(install_args + deps, check=True)
     except Exception as e:
         log(f"Dependency installation warning: {e}")
 
@@ -781,19 +800,23 @@ def setup_env():
         log("Downloading CodeFormer for ReActor...")
         download_file("https://huggingface.co/sczhou/CodeFormer/resolve/main/codeformer-v0.1.0.pth", codeformer_path)
         
-        # Install official ComfyUI requirements
-        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
+    # Install official ComfyUI requirements
+    # Use same target logic
+    install_args = [sys.executable, "-m", "pip", "install", "--no-cache-dir"]
+    if os.path.exists(PYLIBS_PATH):
+            install_args.extend(["--target", PYLIBS_PATH])
+    
+    subprocess.run(install_args + ["-r", os.path.join(COMFY_PATH, "requirements.txt")], check=True)
     
     # Install project root requirements (for Bot, etc.)
     project_reqs = os.path.join(PROJECT_ROOT, "requirements.txt")
     if os.path.exists(project_reqs):
         log(f"Installing project requirements from {project_reqs}...")
-        # Use --no-deps for heavy ML packages to avoid re-installing torch? No, unsafe.
-        # Trust that pip will see existing packages in the base image.
-        subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "-r", project_reqs], check=True)
+        subprocess.run(install_args + ["-r", project_reqs], check=True)
 
     # 2. Force install comfy-ui-client-frontend
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-cache-dir", "comfy-ui-client"], check=True)
+    subprocess.run(install_args + ["comfy-ui-client"], check=True)
+
         # REMOVED: pip install -e . (Caused Multiple top-level packages error)
     
     # 4. Training Script Download REMOVED per user request
